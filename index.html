@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>MemoMap - Bản đồ Dấu chân Kỷ niệm</title>
-  <meta name="description" content="MemoMap - Ứng dụng lưu giữ kỷ niệm hành trình du lịch và tính toán lộ trình đường bộ thực tế qua bản đồ tương tác." />
+  <title>Gạo Maps - Bản đồ Dấu chân Kỷ niệm</title>
+  <meta name="description" content="Gạo Maps - Ứng dụng lưu giữ kỷ niệm hành trình du lịch và tính toán lộ trình đường bộ thực tế qua bản đồ tương tác." />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,6 +37,9 @@
   <!-- Leaflet Routing Machine CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Canvas Confetti for Celebration FX -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -123,13 +126,26 @@
       background-color: #0284c7;
       animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
+    /* GPS Nav Heading Marker */
+    .nav-user-heading-arrow {
+      transition: transform 0.25s linear;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    }
+    .nav-pulse-wave {
+      animation: nav-pulse 2s infinite;
+    }
+    @keyframes nav-pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      70% { transform: scale(2.4); opacity: 0; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
   </style>
 </head>
 <body class="h-full w-full overflow-hidden bg-slate-100 text-slate-800 antialiased select-none font-sans">
   <div id="app" class="relative flex h-full w-full overflow-hidden">
     
     <!-- ==================== SIDEBAR ==================== -->
-    <aside id="sidebar" class="absolute lg:static inset-y-0 left-0 z-30 flex flex-col w-full sm:w-96 md:w-[420px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0">
+    <aside id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-30 flex flex-col w-full sm:w-96 md:w-[420px] lg:w-[420px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 ease-in-out -translate-x-full lg:translate-x-0 shrink-0">
       
       <!-- App Header -->
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-sky-600 to-indigo-600 text-white shrink-0">
@@ -138,11 +154,15 @@
             <i class="fa-solid fa-map-location-dot"></i>
           </div>
           <div>
-            <h1 class="font-bold text-lg leading-tight tracking-tight">MemoMap</h1>
+            <h1 class="font-black text-lg leading-tight tracking-tight">GẠO MAPS</h1>
             <p class="text-xs text-sky-100 font-medium">Bản đồ Dấu chân Kỷ niệm</p>
           </div>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1.5">
+          <button onclick="openWelcomePoster(true)" title="Xem Poster Chào Mừng" class="px-2 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 flex items-center gap-1 text-xs font-bold transition">
+            <i class="fa-solid fa-image"></i>
+            <span class="hidden sm:inline">Poster</span>
+          </button>
           <button onclick="openQuickGuideModal()" title="Hướng dẫn sử dụng" class="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 flex items-center gap-1.5 text-xs font-semibold transition">
             <i class="fa-regular fa-lightbulb text-amber-300"></i>
             <span>Hướng dẫn</span>
@@ -150,7 +170,7 @@
           <button id="btn-theme-toggle" title="Đổi giao diện Sáng/Tối" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition">
             <i class="fa-solid fa-moon"></i>
           </button>
-          <button id="btn-close-sidebar" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition" title="Đóng danh sách">
+          <button id="btn-close-sidebar" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition" title="Đóng danh sách">
             <i class="fa-solid fa-xmark text-base"></i>
           </button>
         </div>
@@ -195,6 +215,23 @@
             <button class="cat-filter-btn shrink-0 px-2.5 py-1 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition" data-cat="hotel">🏨 Khách sạn</button>
             <button class="cat-filter-btn shrink-0 px-2.5 py-1 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition" data-cat="camping">🏕️ Cắm trại</button>
           </div>
+
+          <!-- Route Filter Dropdown -->
+          <div class="flex items-center gap-1.5 pt-0.5">
+            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0">
+              <i class="fa-solid fa-route text-indigo-500"></i> Lộ trình:
+            </span>
+            <div class="relative flex-1 min-w-0">
+              <select id="pins-route-filter-select" onchange="handleFilterByRoute(this.value)" class="w-full pl-2.5 pr-7 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-sky-500 appearance-none cursor-pointer truncate">
+                <option value="all">🌐 Tất cả kỷ niệm</option>
+                <!-- Dynamically populated -->
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[9px] pointer-events-none"></i>
+            </div>
+            <button id="btn-reset-route-filter" onclick="handleFilterByRoute('all')" class="hidden px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 shrink-0 transition" title="Hiện tất cả">
+              Tất cả
+            </button>
+          </div>
         </div>
 
         <!-- Pin Cards Scrollable List -->
@@ -212,130 +249,153 @@
         </div>
       </div>
 
-      <!-- Tab Content 2: Route Planner -->
+      <!-- Tab Content 2: Route Planner (Khoa học, Gọn gàng & Công thái học) -->
       <div id="tab-route" class="hidden flex-1 flex-col min-h-0 overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-        <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3 shrink-0">
+        
+        <!-- Compact Control Bar -->
+        <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2.5 shrink-0 shadow-xs">
           
-          <!-- Multiple Route Selector & Management Header -->
-          <div class="space-y-2">
+          <!-- 1. Header: Chọn Lộ Trình + Nút Tạo/Quản Lý -->
+          <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-map-location-dot text-indigo-500"></i> Lộ trình đang chọn
+                <i class="fa-solid fa-route text-indigo-500"></i> Chọn Lộ trình
               </span>
               <div class="flex items-center gap-1">
-                <button onclick="openManageRoutesModal()" class="px-2 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 flex items-center gap-1 transition" title="Quản lý tất cả lộ trình">
-                  <i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">Quản lý</span>
+                <button onclick="openManageRoutesModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1 transition" title="Quản lý danh sách lộ trình">
+                  <i class="fa-solid fa-list-check text-indigo-500"></i> <span>Quản lý</span>
                 </button>
-                <button onclick="openCreateRouteModal()" class="px-2 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 flex items-center gap-1 transition" title="Tạo chuyến đi mới">
-                  <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Tạo mới</span>
+                <button onclick="openCreateRouteModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 flex items-center gap-1 transition" title="Tạo chuyến đi mới">
+                  <i class="fa-solid fa-plus"></i> <span>Tạo mới</span>
                 </button>
               </div>
             </div>
 
-            <!-- Route Selector Dropdown & Quick Edit / Share -->
-            <div class="flex items-center gap-2">
-              <div class="relative flex-1">
-                <select id="route-selector-dropdown" onchange="handleSelectRoute(this.value)" class="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer">
+            <!-- Route Dropdown Row with Color Pill & Action Tools -->
+            <div class="flex items-center gap-1.5">
+              <div class="relative flex-1 min-w-0">
+                <select id="route-selector-dropdown" onchange="handleSelectRoute(this.value)" class="w-full pl-8 pr-7 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer truncate">
                   <!-- Populated dynamically -->
                 </select>
-                <i class="fa-solid fa-route absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500 text-xs pointer-events-none"></i>
-                <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+                <span id="active-route-color-indicator" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-indigo-500 pointer-events-none ring-2 ring-white dark:ring-slate-800 shadow-xs"></span>
+                <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
               </div>
 
-              <!-- Share Route Button (Always Visible) -->
-              <button onclick="openShareRouteModal()" class="px-3 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 flex items-center gap-1.5 shrink-0 transition active:scale-95" title="Chia sẻ liên kết lộ trình cho người khác">
-                <i class="fa-solid fa-share-nodes"></i>
-                <span>Chia sẻ</span>
-              </button>
+              <!-- Quick Action Icon Buttons: Share, Edit, Delete -->
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="openShareRouteModal()" class="h-8 px-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-xs flex items-center gap-1 transition active:scale-95" title="Chia sẻ liên kết lộ trình">
+                  <i class="fa-solid fa-share-nodes"></i>
+                  <span class="hidden sm:inline">Chia sẻ</span>
+                </button>
+                <button onclick="openEditActiveRouteModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-xs transition" title="Đổi tên / Ghi chú">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="openDeleteRouteConfirmModal(activeRouteId)" class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/80 flex items-center justify-center text-xs transition" title="Xóa lộ trình này">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Route Description Note (Editable) -->
-            <p id="active-route-desc" class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 italic px-1"></p>
+            <p id="active-route-desc" class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 italic px-0.5"></p>
           </div>
 
-          <!-- Travel Mode Selector -->
-          <div class="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium">
-            <button id="mode-driving" class="py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-2 transition" onclick="setTravelMode('driving')">
-              <i class="fa-solid fa-car-side"></i> Ô tô / Xe máy
-            </button>
-            <button id="mode-walking" class="py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition" onclick="setTravelMode('walking')">
-              <i class="fa-solid fa-person-walking"></i> Đi bộ
-            </button>
-          </div>
-
-          <!-- Route Action Buttons -->
+          <!-- 2. Integrated Controls Row: Mode Selector + TSP Optimization -->
           <div class="flex items-center gap-2 pt-0.5">
-            <button onclick="optimizeRouteOrder()" class="flex-1 py-1.5 px-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold hover:bg-indigo-100 flex items-center justify-center gap-1.5 transition">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Tối ưu thứ tự
-            </button>
-            <button onclick="openEditActiveRouteModal()" class="py-1.5 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition" title="Đổi tên / Ghi chú">
-              <i class="fa-solid fa-pen"></i> Sửa
-            </button>
-            <button onclick="clearCurrentRoute()" class="py-1.5 px-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold hover:bg-rose-100 flex items-center justify-center gap-1 transition" title="Xóa điểm trong lộ trình">
-              <i class="fa-solid fa-trash-can"></i>
+            <!-- Travel Mode Toggle (Driving / Walking) -->
+            <div class="flex-1 grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium border border-slate-200/60 dark:border-slate-700/60">
+              <button id="mode-driving" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-1.5 transition text-[11px]" onclick="setTravelMode('driving')">
+                <i class="fa-solid fa-car-side"></i> <span>Ô tô / Xe máy</span>
+              </button>
+              <button id="mode-walking" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition text-[11px]" onclick="setTravelMode('walking')">
+                <i class="fa-solid fa-person-walking"></i> <span>Đi bộ</span>
+              </button>
+            </div>
+
+            <!-- Optimize Order Button -->
+            <button onclick="optimizeRouteOrder()" class="py-1.5 px-3 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-indigo-950/60 dark:to-sky-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 text-[11px] font-bold hover:bg-indigo-100 flex items-center justify-center gap-1.5 shrink-0 transition shadow-xs" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất (TSP)">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+              <span>Tối ưu</span>
             </button>
           </div>
 
-          <!-- Route Custom Color Selector & Dragging Options -->
-          <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+          <!-- 3. Collapsible / Compact Route Styling & Dragging Tools -->
+          <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5">
             <div class="flex items-center justify-between">
-              <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-palette text-indigo-500"></i> Màu sắc Tuyến đường
-              </label>
               <div class="flex items-center gap-1.5">
-                <label for="route-color-input" class="text-[11px] text-slate-500 cursor-pointer font-medium hover:text-indigo-500 flex items-center gap-1">
-                  <span>Tùy chỉnh:</span>
-                  <input type="color" id="route-color-input" value="#6366f1" onchange="setRouteColor(this.value)" class="w-6 h-6 rounded-lg cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" />
-                </label>
+                <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <i class="fa-solid fa-palette text-indigo-500"></i> Màu tuyến
+                </span>
+                <!-- Mini Color Swatches -->
+                <div class="flex items-center gap-1.5" id="route-color-presets">
+                  <button type="button" onclick="setRouteColor('#6366f1')" data-color="#6366f1" class="route-color-chip w-5 h-5 rounded-md bg-indigo-500 shadow-xs ring-2 ring-indigo-400 ring-offset-1 transition hover:scale-110" title="Chàm Indigo"></button>
+                  <button type="button" onclick="setRouteColor('#0ea5e9')" data-color="#0ea5e9" class="route-color-chip w-5 h-5 rounded-md bg-sky-500 shadow-xs transition hover:scale-110" title="Xanh Da Trời"></button>
+                  <button type="button" onclick="setRouteColor('#10b981')" data-color="#10b981" class="route-color-chip w-5 h-5 rounded-md bg-emerald-500 shadow-xs transition hover:scale-110" title="Xanh Ngọc"></button>
+                  <button type="button" onclick="setRouteColor('#f43f5e')" data-color="#f43f5e" class="route-color-chip w-5 h-5 rounded-md bg-rose-500 shadow-xs transition hover:scale-110" title="Đỏ Hồng"></button>
+                  <button type="button" onclick="setRouteColor('#f59e0b')" data-color="#f59e0b" class="route-color-chip w-5 h-5 rounded-md bg-amber-500 shadow-xs transition hover:scale-110" title="Vàng Cam"></button>
+                  <button type="button" onclick="setRouteColor('#8b5cf6')" data-color="#8b5cf6" class="route-color-chip w-5 h-5 rounded-md bg-purple-500 shadow-xs transition hover:scale-110" title="Tím"></button>
+                </div>
               </div>
+
+              <!-- Color picker input -->
+              <label for="route-color-input" class="text-[11px] text-slate-500 cursor-pointer hover:text-indigo-500 flex items-center gap-1 shrink-0">
+                <input type="color" id="route-color-input" value="#6366f1" onchange="setRouteColor(this.value)" class="w-5 h-5 rounded-md cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" title="Chọn màu tùy biến khác" />
+              </label>
             </div>
 
-            <!-- Color Swatches Grid -->
-            <div class="grid grid-cols-8 gap-1.5" id="route-color-presets">
-              <button type="button" onclick="setRouteColor('#6366f1')" data-color="#6366f1" class="route-color-chip w-7 h-7 rounded-lg bg-indigo-500 shadow-sm ring-2 ring-indigo-400 ring-offset-1 transition hover:scale-110 active:scale-95" title="Chàm Indigo"></button>
-              <button type="button" onclick="setRouteColor('#0ea5e9')" data-color="#0ea5e9" class="route-color-chip w-7 h-7 rounded-lg bg-sky-500 shadow-sm transition hover:scale-110 active:scale-95" title="Xanh Da Trời"></button>
-              <button type="button" onclick="setRouteColor('#10b981')" data-color="#10b981" class="route-color-chip w-7 h-7 rounded-lg bg-emerald-500 shadow-sm transition hover:scale-110 active:scale-95" title="Xanh Ngọc"></button>
-              <button type="button" onclick="setRouteColor('#f43f5e')" data-color="#f43f5e" class="route-color-chip w-7 h-7 rounded-lg bg-rose-500 shadow-sm transition hover:scale-110 active:scale-95" title="Đỏ Hồng"></button>
-              <button type="button" onclick="setRouteColor('#f59e0b')" data-color="#f59e0b" class="route-color-chip w-7 h-7 rounded-lg bg-amber-500 shadow-sm transition hover:scale-110 active:scale-95" title="Vàng Hổ Phách"></button>
-              <button type="button" onclick="setRouteColor('#8b5cf6')" data-color="#8b5cf6" class="route-color-chip w-7 h-7 rounded-lg bg-purple-500 shadow-sm transition hover:scale-110 active:scale-95" title="Tím Hoàng Gia"></button>
-              <button type="button" onclick="setRouteColor('#06b6d4')" data-color="#06b6d4" class="route-color-chip w-7 h-7 rounded-lg bg-cyan-500 shadow-sm transition hover:scale-110 active:scale-95" title="Xanh Biển"></button>
-              <button type="button" onclick="setRouteColor('#1e293b')" data-color="#1e293b" class="route-color-chip w-7 h-7 rounded-lg bg-slate-800 shadow-sm transition hover:scale-110 active:scale-95" title="Xám Đen"></button>
-            </div>
-
-            <!-- Route Drag Tip Banner & Reset Waypoints Button -->
-            <div class="p-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/60 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 text-[11px] leading-tight">
-                <i class="fa-solid fa-hand-pointer text-indigo-500 text-sm shrink-0 animate-bounce"></i>
-                <span>Chạm & kéo đường đi trên bản đồ để uốn lộ trình!</span>
-              </div>
-              <button onclick="resetRouteWaypoints()" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-semibold text-[10px] border border-indigo-200 dark:border-indigo-700 shrink-0 transition" title="Khôi phục đường đi trực tiếp giữa các điểm">
+            <!-- Route Drag Tip Banner (Compact) -->
+            <div class="px-2.5 py-1.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-bezier-curve text-indigo-500 shrink-0"></i>
+                <span class="truncate">Kéo đường đi trên bản đồ để uốn lộ trình</span>
+              </span>
+              <button onclick="resetRouteWaypoints()" class="px-2 py-0.5 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold text-[10px] border border-slate-200 dark:border-slate-600 shrink-0 transition ml-2" title="Khôi phục đường đi trực tiếp giữa các điểm">
                 <i class="fa-solid fa-rotate-left"></i> Đặt lại
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Route Summary Banner -->
-        <div id="route-summary-box" class="m-3 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-sky-600 to-teal-600 text-white shadow-lg shrink-0">
-          <div class="grid grid-cols-2 divide-x divide-white/20 text-center">
-            <div class="pr-2">
-              <p class="text-xs text-sky-100 uppercase tracking-wider font-semibold">Tổng quãng đường</p>
-              <p id="summary-total-dist" class="text-2xl font-black mt-0.5 tracking-tight">0.0 km</p>
-              <span class="text-[10px] text-sky-200">Khoảng cách thực tế</span>
+        <!-- 4. Route Metrics Telemetry Bar (Scientific, Crisp & Clear) -->
+        <div id="route-summary-box" class="mx-3 mt-3 p-3 rounded-2xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 border border-indigo-500/20 text-white shadow-md shrink-0">
+          <div class="grid grid-cols-3 divide-x divide-white/10 text-center">
+            <div class="px-1">
+              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Quãng đường</span>
+              <p id="summary-total-dist" class="text-base sm:text-lg font-black text-white mt-0.5 tracking-tight">0.0 km</p>
+              <span class="text-[9px] text-sky-300/80 block truncate">Thực tế OSRM</span>
             </div>
-            <div class="pl-2">
-              <p class="text-xs text-sky-100 uppercase tracking-wider font-semibold">Thời gian ước tính</p>
-              <p id="summary-total-time" class="text-2xl font-black mt-0.5 tracking-tight">0 phút</p>
-              <span class="text-[10px] text-sky-200" id="summary-speed-label">Theo tốc độ giao thông</span>
+            <div class="px-1">
+              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Thời gian</span>
+              <p id="summary-total-time" class="text-base sm:text-lg font-black text-amber-300 mt-0.5 tracking-tight">0 phút</p>
+              <span class="text-[9px] text-sky-300/80 block truncate" id="summary-speed-label">Tốc độ xe</span>
+            </div>
+            <div class="px-1">
+              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Điểm dừng</span>
+              <p class="text-base sm:text-lg font-black text-emerald-400 mt-0.5 tracking-tight"><span id="route-stops-count-badge">0</span> điểm</p>
+              <span class="text-[9px] text-sky-300/80 block truncate">Đã kết nối</span>
             </div>
           </div>
         </div>
 
-        <!-- Route Stops & Legs List -->
-        <div class="flex-1 overflow-y-auto px-3 pb-4 space-y-2">
-          <div class="flex items-center justify-between px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <!-- 4.5. Action Buttons: Live GPS Navigation (Google Maps Style) & Simulation/Media Export Studio -->
+        <div class="mx-3 mt-2 grid grid-cols-2 gap-2 shrink-0">
+          <button onclick="startGpsNavigation()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition active:scale-95 group" title="Bắt đầu dẫn đường theo vị trí GPS thực tế như Google Maps">
+            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs group-hover:rotate-45 transition-transform duration-300">
+              <i class="fa-solid fa-location-arrow text-emerald-100"></i>
+            </div>
+            <span>Dẫn đường GPS</span>
+          </button>
+          <button onclick="openRouteCinemaModal()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 transition active:scale-95" title="Mô phỏng lộ trình xe chạy và xuất ảnh Poster / Video kỷ niệm">
+            <i class="fa-solid fa-film text-purple-200"></i>
+            <span>Mô phỏng & Xuất</span>
+          </button>
+        </div>
+
+        <!-- 5. Route Stops List Section -->
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
+          <div class="flex items-center justify-between px-1 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             <span>Danh sách điểm dừng (<span id="route-stops-count">0</span>)</span>
-            <span class="text-[11px] lowercase text-slate-400">Kéo/Chuyển thứ tự</span>
+            <span class="text-[10px] lowercase text-slate-400 font-normal">Kéo/chuyển thứ tự</span>
           </div>
 
           <div id="route-stops-list" class="space-y-2">
@@ -343,9 +403,11 @@
           </div>
 
           <div id="route-empty-prompt" class="p-6 text-center text-slate-400">
-            <i class="fa-solid fa-route text-3xl mb-2 text-slate-300 dark:text-slate-700"></i>
-            <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Chưa có điểm nào trong lộ trình</p>
-            <p class="text-xs text-slate-400 mt-1">Mở popup của bất kỳ kỷ niệm nào và nhấn <b>"Thêm vào lộ trình"</b> hoặc bấm nút "+" ở danh sách.</p>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-400 mx-auto flex items-center justify-center text-xl mb-2">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Chưa có điểm nào trong lộ trình</p>
+            <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Mở popup của bất kỳ kỷ niệm nào và nhấn <b>"Thêm vào lộ trình"</b> hoặc nhấn nút "+" ở danh sách Kỷ niệm.</p>
           </div>
         </div>
       </div>
@@ -404,13 +466,13 @@
 
       <!-- Sidebar Footer -->
       <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-        <span>© MemoMap • Bản đồ Kỷ niệm</span>
+        <span>© Gạo Maps • Bản đồ Kỷ niệm</span>
         <span class="text-sky-600 dark:text-sky-400 font-medium">OSRM + Leaflet</span>
       </div>
     </aside>
 
     <!-- Backdrop overlay for Mobile Sidebar -->
-    <div id="sidebar-backdrop" onclick="closeSidebar()" class="hidden lg:hidden fixed inset-0 z-20 bg-slate-950/50 backdrop-blur-xs transition-opacity duration-300"></div>
+    <div id="sidebar-backdrop" onclick="closeSidebar()" class="fixed inset-0 z-20 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
 
     <!-- ==================== MAIN MAP VIEWPORT ==================== -->
     <main class="relative flex-1 h-full w-full overflow-hidden bg-slate-200">
@@ -423,8 +485,8 @@
         
         <!-- Sidebar Toggle & Quick Help (Mobile / Desktop) -->
         <div class="pointer-events-auto flex items-center gap-2">
-          <button id="btn-toggle-sidebar" class="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 shrink-0" title="Mở danh sách">
-            <i class="fa-solid fa-bars text-lg"></i>
+          <button id="btn-toggle-sidebar" class="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 active:scale-90 shrink-0 group" title="Mở/Đóng danh sách">
+            <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-lg transition-all duration-300 group-hover:scale-110"></i>
           </button>
           
           <button onclick="openQuickGuideModal()" class="h-11 px-3 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 text-xs font-bold shrink-0 sm:hidden">
@@ -526,6 +588,68 @@
         </button>
       </div>
 
+      <!-- ==================== REAL-TIME GPS NAVIGATION HUD (Google Maps Turn-by-Turn Style) ==================== -->
+      <div id="gps-nav-hud-container" class="hidden absolute inset-0 z-40 pointer-events-none flex flex-col justify-between p-3 sm:p-5">
+        
+        <!-- Top Turn-by-Turn Instruction Banner -->
+        <div class="pointer-events-auto max-w-lg mx-auto w-full bg-slate-950/95 backdrop-blur-md rounded-2xl shadow-2xl border border-emerald-500/40 text-white p-3.5 flex items-center justify-between gap-3 animate-in slide-in-from-top duration-300">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="nav-hud-direction-icon" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-2xl shadow-lg shrink-0">
+              <i class="fa-solid fa-location-arrow"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Trạm tiếp theo</span>
+                <span id="nav-hud-step-count" class="text-[10px] text-slate-400 font-semibold">1 / 4 trạm</span>
+              </div>
+              <h3 id="nav-hud-next-stop-name" class="font-black text-sm sm:text-base text-white truncate mt-0.5">Điểm đến</h3>
+              <p class="text-[11px] text-slate-300 truncate mt-0.5">
+                Cách bạn: <span id="nav-hud-dist-left" class="font-bold text-amber-300">-- m</span> • 
+                <span id="nav-hud-time-left" class="text-sky-300">-- phút</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick actions: Exit Navigation & Voice Toggle -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="btn-nav-toggle-voice" onclick="toggleNavVoice()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 flex items-center justify-center text-sm transition" title="Bật/Tắt giọng đọc Tiếng Việt">
+              <i id="nav-voice-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+            <button onclick="stopGpsNavigation()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center text-sm transition shadow-md" title="Dừng dẫn đường">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Navigation Status Cockpit -->
+        <div class="pointer-events-auto max-w-lg mx-auto w-full bg-slate-950/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 text-white p-3 flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-300">
+          <!-- Speedometer & Status -->
+          <div class="flex items-center gap-3">
+            <div class="text-center px-2.5 py-0.5 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Tốc độ</span>
+              <span id="nav-hud-speed" class="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight leading-none">0</span>
+              <span class="text-[8px] text-slate-400 block">km/h</span>
+            </div>
+            <div class="min-w-0">
+              <span id="nav-hud-gps-accuracy" class="text-[10px] text-slate-300 flex items-center gap-1 font-medium">
+                <i class="fa-solid fa-satellite text-sky-400"></i> GPS: ±5m
+              </span>
+              <span id="nav-hud-active-route-name" class="text-xs font-bold text-white block truncate max-w-[130px] sm:max-w-[180px]">Lộ trình Gạo Maps</span>
+            </div>
+          </div>
+
+          <!-- Navigation Control Actions -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="recenterNavigationMap()" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-bold flex items-center gap-1.5 transition" title="Căn giữa theo xe">
+              <i class="fa-solid fa-crosshairs"></i> <span class="hidden sm:inline">Căn giữa</span>
+            </button>
+            <button id="btn-nav-sim-toggle" onclick="toggleNavigationSimulation()" class="px-2.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm" title="Chạy mô phỏng lái xe ảo nếu không ra đường">
+              <i class="fa-solid fa-play"></i> <span id="nav-sim-btn-text">Mô phỏng lái</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- ==================== MOBILE BOTTOM NAVIGATION BAR ==================== -->
       <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 shadow-2xl flex items-center justify-around">
         <!-- 1. Map View Button -->
@@ -584,7 +708,7 @@
               <i class="fa-regular fa-lightbulb"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">Hướng dẫn dùng MemoMap</h3>
+              <h3 class="font-bold text-base">Hướng dẫn dùng Gạo Maps</h3>
               <p class="text-xs text-sky-100">Rất đơn giản - ai cũng dùng được!</p>
             </div>
           </div>
@@ -816,6 +940,25 @@
             <textarea id="form-notes" rows="3" placeholder="Ghi lại cảm xúc, món ăn ngon nhất, hoặc lưu ý cho chuyến đi sau..." class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 dark:text-slate-100 text-base sm:text-sm outline-none transition resize-none"></textarea>
           </div>
 
+          <!-- Route Assignment Selection -->
+          <div class="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-indigo-900 dark:text-indigo-200 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-route text-indigo-600 dark:text-indigo-400"></i>
+                <span>Gắn vào Lộ trình</span>
+              </label>
+              <button type="button" onclick="openCreateRouteModal()" class="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-circle-plus"></i> Tạo lộ trình mới
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+              Chọn các chuyến đi / lộ trình mà điểm kỷ niệm này sẽ được thêm vào:
+            </p>
+            <div id="form-routes-checkbox-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <!-- Dynamically populated by renderFormRoutesList -->
+            </div>
+          </div>
+
           <!-- Modal Sticky Action Buttons (Always visible on mobile) -->
           <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0">
             <button type="button" id="btn-modal-delete-pin" onclick="handleModalDeletePin()" class="hidden px-3.5 py-2.5 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs sm:text-sm font-bold transition flex items-center gap-1.5 active:scale-95">
@@ -851,6 +994,29 @@
             Hủy
           </button>
           <button type="button" onclick="executePendingDelete()" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/30 transition">
+            Xác nhận xóa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dedicated In-App Route Delete Confirmation Modal -->
+    <div id="delete-route-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+      <div class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4 animate-in zoom-in-95 duration-150">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center text-xl shadow-inner">
+          <i class="fa-solid fa-route"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base" id="delete-route-confirm-title">Xóa lộ trình này?</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed" id="delete-route-confirm-desc">
+            Lộ trình này sẽ bị xóa. Các điểm kỷ niệm vẫn sẽ được giữ lại an toàn trên bản đồ.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <button type="button" onclick="closeDeleteRouteConfirmModal()" class="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            Hủy
+          </button>
+          <button type="button" onclick="executePendingDeleteRoute()" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/30 transition">
             Xác nhận xóa
           </button>
         </div>
@@ -1017,6 +1183,7 @@
     </div>
 
     <!-- ==================== CREATE / EDIT ROUTE MODAL ==================== -->
+    <!-- Route Create / Edit Modal -->
     <div id="create-edit-route-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
       <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
         
@@ -1027,25 +1194,25 @@
               <i class="fa-solid fa-pen-ruler"></i>
             </div>
             <div>
-              <h3 id="create-edit-route-title" class="font-bold text-base">Tạo Lộ trình Mới</h3>
+              <h3 id="create-edit-route-modal-title" class="font-bold text-base">Tạo Lộ trình Mới</h3>
               <p class="text-xs text-sky-100">Đặt tên và thông tin cho chuyến đi</p>
             </div>
           </div>
-          <button onclick="closeCreateEditRouteModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition">
+          <button type="button" onclick="closeCreateEditRouteModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition">
             <i class="fa-solid fa-xmark text-sm"></i>
           </button>
         </div>
 
         <!-- Form -->
         <form id="route-form" onsubmit="handleSaveRouteForm(event)" class="p-6 space-y-4">
-          <input type="hidden" id="form-route-id" value="" />
+          <input type="hidden" id="route-form-id" value="" />
 
           <!-- Route Name -->
           <div>
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Tên chuyến đi / Lộ trình <span class="text-rose-500">*</span>
             </label>
-            <input type="text" id="form-route-name" required placeholder="Ví dụ: Phượt Xuyên Việt 2026, Du lịch Đà Lạt 3N2Đ..." class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition" />
+            <input type="text" id="route-form-name" required placeholder="Ví dụ: Phượt Xuyên Việt 2026, Du lịch Đà Lạt 3N2Đ..." class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition" />
           </div>
 
           <!-- Description -->
@@ -1053,7 +1220,7 @@
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Ghi chú / Mục tiêu chuyến đi
             </label>
-            <textarea id="form-route-desc" rows="2" placeholder="Ghi chú về thành viên tham gia, ngân sách hoặc lịch trình dự kiến..." class="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none"></textarea>
+            <textarea id="route-form-desc" rows="2" placeholder="Ghi chú về thành viên tham gia, ngân sách hoặc lịch trình dự kiến..." class="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none"></textarea>
           </div>
 
           <!-- Route Color -->
@@ -1062,29 +1229,300 @@
               Màu sắc hiển thị trên bản đồ
             </label>
             <div class="flex items-center gap-3">
-              <input type="color" id="form-route-color" value="#6366f1" class="w-10 h-10 rounded-xl cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" />
+              <input type="color" id="route-form-color" value="#6366f1" oninput="updateRouteModalColorSelection(this.value)" class="w-10 h-10 rounded-xl cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" />
               <div class="flex items-center gap-1.5 flex-wrap">
-                <button type="button" onclick="document.getElementById('form-route-color').value='#6366f1'" class="w-6 h-6 rounded-lg bg-indigo-500"></button>
-                <button type="button" onclick="document.getElementById('form-route-color').value='#0ea5e9'" class="w-6 h-6 rounded-lg bg-sky-500"></button>
-                <button type="button" onclick="document.getElementById('form-route-color').value='#10b981'" class="w-6 h-6 rounded-lg bg-emerald-500"></button>
-                <button type="button" onclick="document.getElementById('form-route-color').value='#f43f5e'" class="w-6 h-6 rounded-lg bg-rose-500"></button>
-                <button type="button" onclick="document.getElementById('form-route-color').value='#f59e0b'" class="w-6 h-6 rounded-lg bg-amber-500"></button>
-                <button type="button" onclick="document.getElementById('form-route-color').value='#8b5cf6'" class="w-6 h-6 rounded-lg bg-purple-500"></button>
+                <button type="button" data-color="#6366f1" onclick="setRouteModalColor('#6366f1')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-indigo-500"></button>
+                <button type="button" data-color="#0ea5e9" onclick="setRouteModalColor('#0ea5e9')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-sky-500"></button>
+                <button type="button" data-color="#10b981" onclick="setRouteModalColor('#10b981')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-emerald-500"></button>
+                <button type="button" data-color="#f43f5e" onclick="setRouteModalColor('#f43f5e')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-rose-500"></button>
+                <button type="button" data-color="#f59e0b" onclick="setRouteModalColor('#f59e0b')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-amber-500"></button>
+                <button type="button" data-color="#8b5cf6" onclick="setRouteModalColor('#8b5cf6')" class="route-modal-color-btn w-6 h-6 rounded-lg bg-purple-500"></button>
               </div>
             </div>
           </div>
 
           <!-- Action buttons -->
-          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
-            <button type="button" onclick="closeCreateEditRouteModal()" class="px-5 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition">
-              Hủy
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+            <button type="button" id="btn-modal-delete-route" onclick="handleModalDeleteRoute()" class="hidden px-3.5 py-2.5 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold transition flex items-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>Xóa lộ trình này</span>
             </button>
-            <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-sky-500/25 active:scale-95 transition flex items-center gap-2">
-              <i class="fa-solid fa-check"></i>
-              <span>Lưu Lộ trình</span>
-            </button>
+            <div class="flex items-center gap-2 ml-auto">
+              <button type="button" onclick="closeCreateEditRouteModal()" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition">
+                Hủy
+              </button>
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-sky-500/25 active:scale-95 transition flex items-center gap-2">
+                <i class="fa-solid fa-check"></i>
+                <span>Lưu Lộ trình</span>
+              </button>
+            </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ==================== ROUTE CINEMA SIMULATION & MEDIA STUDIO MODAL ==================== -->
+    <div id="route-cinema-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+      <div class="relative w-full max-w-4xl bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden my-auto flex flex-col max-h-[95vh] text-white animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="px-4 sm:px-5 py-2.5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-sky-500 text-white flex items-center justify-center text-base shadow-lg shrink-0">
+              <i class="fa-solid fa-film"></i>
+            </div>
+            <div>
+              <h3 id="cinema-route-title" class="font-black text-sm sm:text-base text-white">Mô Phỏng Lộ Trình Kỷ Niệm</h3>
+              <p class="text-[11px] text-slate-400">Camera bám cận cảnh lộ trình dài & xuất video kỷ niệm sắc nét</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Camera Mode Selector (Follow / Cinematic / Overview) -->
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
+              <i class="fa-solid fa-video text-xs text-indigo-400"></i>
+              <label for="cinema-cam-mode-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Góc quay:</label>
+              <select id="cinema-cam-mode-select" onchange="changeCinemaCameraMode(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+                <option value="follow" class="bg-slate-900 text-white" selected>🎥 Bám theo xe (Cận cảnh)</option>
+                <option value="cinematic" class="bg-slate-900 text-white">🎬 Điện ảnh (Zoom & Dừng trạm)</option>
+                <option value="overview" class="bg-slate-900 text-white">🗺️ Toàn cảnh (Bao quát)</option>
+              </select>
+            </div>
+
+            <!-- Zoom Detail Level Selector -->
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
+              <i class="fa-solid fa-magnifying-glass-location text-xs text-emerald-400"></i>
+              <label for="cinema-zoom-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Chi tiết:</label>
+              <select id="cinema-zoom-select" onchange="changeCinemaZoomLevel(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+                <option value="auto" class="bg-slate-900 text-white" selected>🔍 Tự động</option>
+                <option value="15" class="bg-slate-900 text-white">🏙️ Cực cận (Z15)</option>
+                <option value="13" class="bg-slate-900 text-white">🏘️ Đô thị (Z13)</option>
+                <option value="11" class="bg-slate-900 text-white">🛣️ Liên tỉnh (Z11)</option>
+              </select>
+            </div>
+
+            <!-- 3D Perspective Tilt Angle Selector -->
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
+              <i class="fa-solid fa-cube text-xs text-amber-400"></i>
+              <label for="cinema-tilt-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Góc nhìn:</label>
+              <select id="cinema-tilt-select" onchange="changeCinemaTiltAngle(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+                <option value="35" class="bg-slate-900 text-white" selected>📐 3D Nghiêng (Êm ái, không xoay)</option>
+                <option value="45" class="bg-slate-900 text-white">📐 3D Nghiêng sâu (45°)</option>
+                <option value="0" class="bg-slate-900 text-white">🗺️ 2D Nhìn thẳng (0°)</option>
+              </select>
+            </div>
+
+            <!-- Map Background Selector -->
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
+              <i class="fa-solid fa-layer-group text-xs text-sky-400"></i>
+              <select id="cinema-map-style-select" onchange="changeCinemaMapStyle(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+                <option value="voyager" class="bg-slate-900 text-white" selected>🗺️ Voyager</option>
+                <option value="satellite" class="bg-slate-900 text-white">🛰️ Vệ tinh</option>
+                <option value="dark" class="bg-slate-900 text-white">🌑 Tối</option>
+                <option value="light" class="bg-slate-900 text-white">☀️ Sáng</option>
+                <option value="osm" class="bg-slate-900 text-white">🛣️ OSM</option>
+                <option value="grid" class="bg-slate-900 text-white">🌌 Cyber</option>
+              </select>
+            </div>
+
+            <button onclick="closeRouteCinemaModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Đóng modal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cinema Viewport with Canvas & Overlays -->
+        <div class="relative flex-1 bg-slate-950 flex items-center justify-center min-h-[340px] sm:min-h-[460px] overflow-hidden select-none">
+          <!-- Canvas for 2D Route Journey Visualization & Video Recording Stream -->
+          <canvas id="cinema-canvas" width="1080" height="720" class="w-full h-full max-h-[480px] object-contain rounded-xl shadow-2xl bg-slate-950"></canvas>
+
+          <!-- Active Stop Hover Popover during Simulation -->
+          <div id="cinema-stop-popup" class="hidden absolute top-4 left-4 max-w-[280px] sm:max-w-xs bg-slate-900/95 backdrop-blur-md rounded-2xl p-3 border border-indigo-500/50 shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none">
+            <div class="flex items-center gap-2 mb-1">
+              <span id="cinema-popup-num" class="w-6 h-6 rounded-full bg-indigo-500 text-white font-black text-xs flex items-center justify-center shadow-sm">1</span>
+              <span id="cinema-popup-cat" class="text-[10px] uppercase font-bold text-sky-400">Tham quan</span>
+            </div>
+            <h4 id="cinema-popup-title" class="font-bold text-sm text-white truncate">Hồ Gươm</h4>
+            <div id="cinema-popup-img-wrap" class="w-full h-28 rounded-xl overflow-hidden mt-1.5 bg-slate-800 relative hidden border border-white/10">
+              <img id="cinema-popup-img" src="" class="w-full h-full object-cover" />
+            </div>
+            <p id="cinema-popup-notes" class="text-xs text-slate-300 mt-1.5 line-clamp-2 italic font-light"></p>
+          </div>
+
+          <!-- Video Recording Status Pill -->
+          <div id="cinema-rec-badge" class="hidden absolute top-4 right-4 px-3 py-1.5 rounded-full bg-rose-600/95 text-white text-xs font-black flex items-center gap-2 shadow-2xl border border-white/20">
+            <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+            <span>REC • ĐANG GHI VIDEO</span>
+          </div>
+
+          <!-- Progress Bar on Canvas Bottom -->
+          <div class="absolute bottom-2 left-4 right-4 bg-slate-800/80 backdrop-blur-md rounded-full h-2 overflow-hidden border border-white/10">
+            <div id="cinema-progress-fill" class="h-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 transition-all duration-100" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Cinema Bottom Control Bar & Media Exporter -->
+        <div class="p-3 sm:p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            <button id="btn-cinema-play" onclick="toggleCinemaPlay()" class="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 transition active:scale-95 shadow-md shadow-indigo-600/30">
+              <i id="cinema-play-icon" class="fa-solid fa-play"></i>
+              <span id="cinema-play-text">Phát mô phỏng</span>
+            </button>
+            <button onclick="restartCinemaSimulation()" class="h-10 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition" title="Phát lại từ đầu">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            
+            <!-- Speed Selector -->
+            <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer">
+              <option value="1">1x (Thong thả)</option>
+              <option value="2" selected>2x (Chuẩn)</option>
+              <option value="4">4x (Nhanh)</option>
+              <option value="8">8x (Tốc độ cao)</option>
+            </select>
+          </div>
+
+          <!-- Media Export Actions: Poster & Video -->
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <!-- 1. Export Poster Image -->
+            <button onclick="exportRoutePosterCard()" class="flex-1 sm:flex-initial h-10 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-sm" title="Tải ảnh Poster Infographic Hành trình HD">
+              <i class="fa-solid fa-image"></i>
+              <span>Xuất Ảnh Poster (HD)</span>
+            </button>
+
+            <!-- 2. Record & Export Video -->
+            <button id="btn-export-video" onclick="recordAndExportRouteVideo()" class="flex-1 sm:flex-initial h-10 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white text-xs font-bold shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition active:scale-95" title="Ghi và tải video chuyển động lộ trình (.webm)">
+              <i class="fa-solid fa-video"></i>
+              <span id="export-video-btn-text">Ghi & Tải Video</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== WELCOME POSTER SPLASH SCREEN ==================== -->
+    <div id="welcome-poster-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto transition-all duration-500 ease-out">
+      <div class="relative w-full max-w-md md:max-w-lg bg-gradient-to-b from-sky-900/90 via-slate-900/95 to-slate-950 rounded-3xl shadow-[0_0_50px_rgba(14,165,233,0.35)] border border-sky-400/30 overflow-hidden my-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
+        
+        <!-- Top Control Bar (Countdown & Close) -->
+        <div class="w-full px-4 py-3 bg-white/5 backdrop-blur-md border-b border-white/10 flex items-center justify-between z-20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-xs font-bold text-sky-200 tracking-wide">CHÀO MỪNG BẠN ĐẾN VỚI GẠO MAPS</span>
+          </div>
+
+          <!-- 3-Second Timer Pill -->
+          <div class="flex items-center gap-2">
+            <div id="welcome-countdown-pill" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold shadow-sm">
+              <i class="fa-solid fa-clock-rotate-left text-[11px] animate-spin"></i>
+              <span>Tự động vào sau <b id="welcome-countdown-number" class="text-white text-sm">3s</b></span>
+            </div>
+            <button onclick="dismissWelcomePoster()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xs transition active:scale-90" title="Bỏ qua">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Poster Graphic Area -->
+        <div class="relative w-full aspect-[3/4] max-h-[65vh] overflow-hidden bg-slate-900 group select-none">
+          <img id="welcome-poster-img" src="/gao_maps_poster.jpg" onerror="this.src='/src/assets/images/gao_maps_welcome_poster_1787071343090.jpg'" alt="Gạo Maps Poster" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" />
+          
+          <!-- Subtle Decorative Overlay Gradient -->
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none"></div>
+
+          <!-- Live Progress Bar at Poster Bottom -->
+          <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
+            <div id="welcome-progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 transition-all duration-100 ease-linear" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Interactive Bottom Action Area -->
+        <div class="w-full p-4 sm:p-5 bg-gradient-to-t from-slate-950 via-slate-900 to-slate-900/90 border-t border-white/10 flex flex-col items-center gap-3 z-20">
+          
+          <!-- Golden Explorer CTA Button -->
+          <button id="btn-welcome-start" onclick="dismissWelcomePoster()" class="relative group w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-base sm:text-lg shadow-[0_8px_25px_rgba(245,158,11,0.5)] hover:shadow-[0_12px_35px_rgba(245,158,11,0.75)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 border-2 border-white/80 flex items-center justify-center gap-3 cursor-pointer">
+            <span class="tracking-wider uppercase drop-shadow-xs">BẮT ĐẦU KHÁM PHÁ</span>
+            <div class="w-7 h-7 rounded-full bg-slate-950/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <i class="fa-solid fa-arrow-right text-base"></i>
+            </div>
+          </button>
+
+          <!-- Quick Tip -->
+          <div class="flex items-center justify-between w-full text-[11px] text-slate-400 px-1">
+            <span class="flex items-center gap-1">
+              <i class="fa-solid fa-compass text-amber-400"></i> Khám phá Việt Nam cùng Gạo
+            </span>
+            <button onclick="dismissWelcomePoster()" class="text-sky-400 hover:underline font-semibold">
+              Vào ngay (Bỏ qua) ➔
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== PIN ROUTE PICKER MODAL (TÙY CHỌN THÊM VÀO LỘ TRÌNH) ==================== -->
+    <div id="pin-route-picker-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closePinRouteSelectorModal()">
+      <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="p-5 bg-gradient-to-r from-indigo-600 to-sky-600 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-inner">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base">Thêm vào Lộ trình</h3>
+              <p class="text-xs text-sky-100">Chọn chuyến đi bạn muốn gắn điểm kỷ niệm này</p>
+            </div>
+          </div>
+          <button onclick="closePinRouteSelectorModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition" title="Đóng">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Pin Info Banner -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
+            <div id="picker-pin-thumb" class="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center text-lg font-bold shrink-0 overflow-hidden shadow-xs">
+              <i class="fa-solid fa-camera-retro"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <span id="picker-pin-category-badge" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Tham quan</span>
+              <h4 id="picker-pin-title" class="font-bold text-sm text-slate-800 dark:text-slate-100 truncate mt-0.5">Tên kỷ niệm</h4>
+            </div>
+          </div>
+
+          <!-- Routes Checklist Container -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-list-check text-indigo-500"></i>
+                <span>Chọn các lộ trình áp dụng:</span>
+              </label>
+              <button onclick="createRouteFromPicker()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-plus text-[10px]"></i> Tạo lộ trình mới
+              </button>
+            </div>
+
+            <div id="picker-routes-list" class="max-h-64 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <button onclick="createRouteFromPicker()" class="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-xs font-bold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tạo mới</span>
+          </button>
+          <button onclick="closePinRouteSelectorModal()" class="px-6 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition">
+            Xong
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -1210,6 +1648,7 @@
       updateStatistics();
       initSearchAutocomplete();
       initStarRating();
+      initWelcomePoster();
 
       // Check URL parameters for shared route link
       checkSharedRouteFromUrl();
@@ -1620,6 +2059,33 @@
       if (descEl) {
         descEl.textContent = active.description || 'Lộ trình di chuyển liên kết các điểm kỷ niệm';
       }
+
+      // Update color input & swatches
+      const colorPicker = document.getElementById('route-color-input');
+      if (colorPicker) colorPicker.value = routeColor;
+      document.querySelectorAll('.route-color-chip, .route-color-btn').forEach(btn => {
+        if (btn.getAttribute('data-color') === routeColor) {
+          btn.classList.add('ring-2', 'ring-indigo-400', 'ring-offset-1');
+        } else {
+          btn.classList.remove('ring-2', 'ring-indigo-400', 'ring-offset-1');
+        }
+      });
+
+      // Update travel mode UI
+      const driveBtn = document.getElementById('mode-driving');
+      const walkBtn = document.getElementById('mode-walking');
+      const speedLabel = document.getElementById('summary-speed-label');
+      if (driveBtn && walkBtn) {
+        if (activeTravelMode === 'driving') {
+          driveBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-2 transition';
+          walkBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
+          if (speedLabel) speedLabel.textContent = 'Theo tốc độ ô tô / xe máy';
+        } else {
+          walkBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-2 transition';
+          driveBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
+          if (speedLabel) speedLabel.textContent = 'Theo tốc độ đi bộ (4-5 km/h)';
+        }
+      }
     }
 
     function savePinsToStorage(syncCloud = true) {
@@ -1944,8 +2410,7 @@
     function buildPopupHtml(pin) {
       const cat = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
       const currentPinColor = pin.color || cat.color;
-      const isInRoute = routePinIds.includes(pin.id);
-      
+
       // Star rating stars
       let starsHtml = '';
       for (let i = 1; i <= 5; i++) {
@@ -1957,6 +2422,29 @@
       const colorDotsHtml = colorOptions.map(c => `
         <button type="button" onclick="changePinColorDirectly('${pin.id}', '${c}')" class="w-4 h-4 rounded-full transition hover:scale-125 ${c === currentPinColor ? 'ring-2 ring-slate-900 dark:ring-white scale-110' : ''}" style="background-color: ${c};" title="Đổi sang màu này"></button>
       `).join('');
+
+      // Render routes list for popup
+      const routeListHtml = (routes && routes.length > 0) ? routes.map(r => {
+        const inThis = Array.isArray(r.pinIds) && r.pinIds.includes(pin.id);
+        const isCurrentActive = (r.id === activeRouteId);
+        return `
+          <button type="button" onclick="togglePinInSpecificRoute('${pin.id}', '${r.id}')" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition ${inThis ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'}">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
+              <span class="truncate">${escapeHtml(r.name)}</span>
+              ${isCurrentActive ? '<span class="text-[9px] px-1 py-0.2 rounded bg-indigo-200/60 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 shrink-0 font-bold">Đang xem</span>' : ''}
+            </div>
+            <div class="flex items-center gap-1 shrink-0 ml-1">
+              <i class="fa-solid ${inThis ? 'fa-circle-check text-indigo-600 dark:text-indigo-400' : 'fa-circle-plus text-slate-400'} text-xs"></i>
+            </div>
+          </button>
+        `;
+      }).join('') : `
+        <div class="text-[11px] text-slate-400 p-1 italic flex items-center justify-between">
+          <span>Chưa có lộ trình nào.</span>
+          <button type="button" onclick="openCreateRouteModal()" class="text-indigo-600 font-bold underline">Tạo mới</button>
+        </div>
+      `;
 
       return `
         <div class="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
@@ -2002,17 +2490,26 @@
               </div>
             </div>
 
+            <!-- Route selection inside popup -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px] flex items-center gap-1">
+                  <i class="fa-solid fa-route text-indigo-500"></i> Lộ trình tham gia:
+                </span>
+                <button type="button" onclick="openCreateRouteModal()" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-0.5">
+                  <i class="fa-solid fa-plus"></i> Tạo lộ trình
+                </button>
+              </div>
+              <div class="space-y-1 max-h-28 overflow-y-auto pr-0.5">
+                ${routeListHtml}
+              </div>
+            </div>
+
             <!-- Popup Actions -->
             <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
-              <button onclick="togglePinInRoute('${pin.id}')" class="flex-1 py-1.5 px-2 rounded-xl ${isInRoute ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300'} font-bold text-xs hover:opacity-90 flex items-center justify-center gap-1 transition">
-                <i class="fa-solid ${isInRoute ? 'fa-circle-minus' : 'fa-route'}"></i>
-                <span>${isInRoute ? 'Bỏ khỏi lộ trình' : 'Thêm vào lộ trình'}</span>
+              <button onclick="openEditMemoryModal('${pin.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5" title="Chỉnh sửa chi tiết">
+                <i class="fa-solid fa-pen-to-square text-sky-500"></i> <span>Chỉnh sửa</span>
               </button>
-
-              <button onclick="openEditMemoryModal('${pin.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 flex items-center justify-center text-xs transition" title="Chỉnh sửa">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-
               <button onclick="openDeletePinConfirmModal('${pin.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs transition" title="Xóa kỷ niệm">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
@@ -2045,6 +2542,43 @@
     // ==========================================
     // ADD & EDIT MEMORY MODAL LOGIC
     // ==========================================
+    function renderFormRoutesList(pinId = null) {
+      const container = document.getElementById('form-routes-checkbox-list');
+      if (!container) return;
+
+      if (!routes || routes.length === 0) {
+        container.innerHTML = `
+          <div class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-xs text-slate-500 flex items-center justify-between">
+            <span>Chưa có lộ trình nào.</span>
+            <button type="button" onclick="openCreateRouteModal()" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">+ Tạo lộ trình mới</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = routes.map(r => {
+        const isChecked = pinId
+          ? (Array.isArray(r.pinIds) && r.pinIds.includes(pinId))
+          : (r.id === activeRouteId);
+        const stopCount = (r.pinIds && r.pinIds.length) || 0;
+        const isActive = (r.id === activeRouteId);
+
+        return `
+          <label class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800/90 border ${isChecked ? 'border-indigo-400 dark:border-indigo-600 shadow-xs' : 'border-slate-200 dark:border-slate-700/80'} hover:border-indigo-300 transition cursor-pointer select-none">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <input type="checkbox" name="pin-route-checkbox" value="${r.id}" ${isChecked ? 'checked' : ''} onchange="this.closest('label').classList.toggle('border-indigo-400', this.checked); this.closest('label').classList.toggle('border-slate-200', !this.checked);" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer" />
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
+              <span class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(r.name)}</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${isActive ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">Đang xem</span>' : ''}
+              <span class="text-[10px] text-slate-400 font-medium">${stopCount} điểm</span>
+            </div>
+          </label>
+        `;
+      }).join('');
+    }
+
     async function openAddMemoryModal(lat, lng) {
       document.getElementById('modal-title').textContent = 'Ghim Kỷ niệm Mới';
       document.getElementById('modal-subtitle').textContent = 'Lưu lại khoảnh khắc đáng nhớ của bạn';
@@ -2068,6 +2602,9 @@
       setStarRating(5);
       removePhotoPreview();
       document.getElementById('form-notes').value = '';
+
+      // Populate route checkboxes
+      renderFormRoutesList(null);
 
       // Open modal
       document.getElementById('memory-modal').classList.remove('hidden');
@@ -2128,6 +2665,10 @@
       }
 
       document.getElementById('form-notes').value = pin.notes || '';
+
+      // Populate route checkboxes with current pin's assigned routes
+      renderFormRoutesList(pin.id);
+
       document.getElementById('memory-modal').classList.remove('hidden');
     }
 
@@ -2297,6 +2838,7 @@
         return;
       }
 
+      let savedPinId = id;
       if (id) {
         // Edit existing pin
         const index = pins.findIndex(p => p.id === id);
@@ -2327,21 +2869,43 @@
           photo,
           notes
         };
+        savedPinId = newPin.id;
         pins.unshift(newPin);
         showToast('Đã ghim kỷ niệm mới vào bản đồ!', 'success');
       }
 
+      // Synchronize routes based on user checkbox selections
+      const checkedBoxes = document.querySelectorAll('input[name="pin-route-checkbox"]:checked');
+      const selectedRouteIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+      if (Array.isArray(routes)) {
+        routes.forEach(r => {
+          if (!Array.isArray(r.pinIds)) r.pinIds = [];
+          const shouldInclude = selectedRouteIds.includes(r.id);
+          const hasPin = r.pinIds.includes(savedPinId);
+
+          if (shouldInclude && !hasPin) {
+            r.pinIds.push(savedPinId);
+            r.customWaypoints = null;
+            r.updatedAt = new Date().toISOString();
+          } else if (!shouldInclude && hasPin) {
+            r.pinIds = r.pinIds.filter(pid => pid !== savedPinId);
+            r.customWaypoints = null;
+            r.updatedAt = new Date().toISOString();
+          }
+        });
+      }
+
+      syncActiveRouteShortcuts();
       savePinsToStorage();
+      saveRoutesToStorage();
+      populateRouteSelectorDropdown();
       closeMemoryModal();
       renderAllPins();
       renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
       updateStatistics();
-
-      // If this pin is in route, re-render route stats
-      if (id && routePinIds.includes(id)) {
-        renderRouteStops();
-        updateRouteCalculation();
-      }
     }
 
     // ==========================================
@@ -2480,44 +3044,152 @@
       }
     }
 
-    function toggleSidebar() {
+    function isSidebarCurrentlyOpen() {
       const sb = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebar-backdrop');
-      const isHidden = sb.classList.contains('-translate-x-full');
-      if (isHidden) {
-        openSidebar();
-      } else {
+      if (!sb) return false;
+      if (window.innerWidth >= 1024) {
+        return !sb.classList.contains('lg:-ml-[420px]');
+      }
+      return !sb.classList.contains('-translate-x-full');
+    }
+
+    function toggleSidebar() {
+      if (isSidebarCurrentlyOpen()) {
         closeSidebar();
+      } else {
+        openSidebar();
       }
     }
 
     function openSidebar() {
-      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      const sb = document.getElementById('sidebar');
       const backdrop = document.getElementById('sidebar-backdrop');
-      if (backdrop) backdrop.classList.remove('hidden');
+      const icon = document.getElementById('toggle-sidebar-icon');
+      const toggleBtn = document.getElementById('btn-toggle-sidebar');
+
+      if (sb) {
+        sb.classList.remove('-translate-x-full', 'lg:-ml-[420px]', 'lg:opacity-0', 'lg:pointer-events-none');
+        sb.classList.add('translate-x-0');
+      }
+
+      if (backdrop) {
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        backdrop.classList.add('opacity-100', 'pointer-events-auto');
+      }
+
+      if (icon) {
+        icon.classList.add('rotate-90', 'text-sky-600', 'dark:text-sky-400');
+      }
+      if (toggleBtn) {
+        toggleBtn.classList.add('ring-2', 'ring-sky-500/50');
+      }
+
+      // Smoothly recalculate map layout size
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 320);
     }
 
     function closeSidebar() {
-      document.getElementById('sidebar').classList.add('-translate-x-full');
+      const sb = document.getElementById('sidebar');
       const backdrop = document.getElementById('sidebar-backdrop');
-      if (backdrop) backdrop.classList.add('hidden');
+      const icon = document.getElementById('toggle-sidebar-icon');
+      const toggleBtn = document.getElementById('btn-toggle-sidebar');
+
+      if (sb) {
+        sb.classList.remove('translate-x-0');
+        sb.classList.add('-translate-x-full', 'lg:-ml-[420px]', 'lg:opacity-0', 'lg:pointer-events-none');
+      }
+
+      if (backdrop) {
+        backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+      }
+
+      if (icon) {
+        icon.classList.remove('rotate-90', 'text-sky-600', 'dark:text-sky-400');
+      }
+      if (toggleBtn) {
+        toggleBtn.classList.remove('ring-2', 'ring-sky-500/50');
+      }
+
       updateMobileNavState('map');
+
+      // Smoothly recalculate map layout size
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 320);
     }
 
     // Render Pin Cards in Sidebar
     let activeFilterCategory = 'all';
     let activeSearchKeyword = '';
+    let activeFilterRouteId = 'all'; // 'all', 'none', or route ID
+
+    function updateRouteFilterDropdown() {
+      const select = document.getElementById('pins-route-filter-select');
+      if (!select) return;
+
+      const totalPinsCount = pins.length;
+      const unassignedCount = pins.filter(p => !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id))).length;
+
+      let optionsHtml = `<option value="all" ${activeFilterRouteId === 'all' ? 'selected' : ''}>🌐 Tất cả kỷ niệm (${totalPinsCount})</option>`;
+      
+      if (routes && routes.length > 0) {
+        optionsHtml += routes.map(r => {
+          const stopCount = (r.pinIds && r.pinIds.length) || 0;
+          const isSelected = activeFilterRouteId === r.id ? 'selected' : '';
+          return `<option value="${r.id}" ${isSelected}>🛣️ ${escapeHtml(r.name)} (${stopCount} điểm)</option>`;
+        }).join('');
+      }
+
+      optionsHtml += `<option value="none" ${activeFilterRouteId === 'none' ? 'selected' : ''}>⚪ Chưa vào lộ trình (${unassignedCount})</option>`;
+      select.innerHTML = optionsHtml;
+
+      const resetBtn = document.getElementById('btn-reset-route-filter');
+      if (resetBtn) {
+        if (activeFilterRouteId !== 'all') {
+          resetBtn.classList.remove('hidden');
+        } else {
+          resetBtn.classList.add('hidden');
+        }
+      }
+    }
+
+    function handleFilterByRoute(routeId) {
+      activeFilterRouteId = routeId || 'all';
+      updateRouteFilterDropdown();
+      renderSidebarList();
+      
+      if (routeId !== 'all' && routeId !== 'none') {
+        const r = routes.find(item => item.id === routeId);
+        if (r) {
+          showToast(`Đang lọc kỷ niệm trong lộ trình: "${r.name}"`, 'info');
+        }
+      }
+    }
 
     function renderSidebarList() {
       const container = document.getElementById('pins-list-container');
       const emptyState = document.getElementById('pins-empty-state');
       
+      updateRouteFilterDropdown();
+
       const filtered = pins.filter(pin => {
         const matchCat = (activeFilterCategory === 'all' || pin.category === activeFilterCategory);
         const matchKw = !activeSearchKeyword || 
           pin.title.toLowerCase().includes(activeSearchKeyword.toLowerCase()) || 
           (pin.notes && pin.notes.toLowerCase().includes(activeSearchKeyword.toLowerCase()));
-        return matchCat && matchKw;
+        
+        let matchRoute = true;
+        if (activeFilterRouteId === 'none') {
+          matchRoute = !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(pin.id));
+        } else if (activeFilterRouteId !== 'all') {
+          const targetRoute = routes.find(r => r.id === activeFilterRouteId);
+          matchRoute = targetRoute && Array.isArray(targetRoute.pinIds) && targetRoute.pinIds.includes(pin.id);
+        }
+
+        return matchCat && matchKw && matchRoute;
       });
 
       if (filtered.length === 0) {
@@ -2530,11 +3202,27 @@
 
       container.innerHTML = filtered.map(pin => {
         const cat = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
-        const isInRoute = routePinIds.includes(pin.id);
+        const isInActiveRoute = routePinIds.includes(pin.id);
+        const assignedRoutes = (routes || []).filter(r => Array.isArray(r.pinIds) && r.pinIds.includes(pin.id));
 
         let starsHtml = '';
         for (let i = 1; i <= 5; i++) {
           starsHtml += `<i class="fa-solid fa-star ${i <= (pin.rating || 5) ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'}"></i>`;
+        }
+
+        // Build route badges showing exact route names
+        let routeBadgesHtml = '';
+        if (assignedRoutes.length > 0) {
+          routeBadgesHtml = `
+            <div class="flex flex-wrap items-center gap-1 mt-1.5" onclick="event.stopPropagation()">
+              ${assignedRoutes.map(r => `
+                <button onclick="handleFilterByRoute('${r.id}')" class="px-2 py-0.5 rounded-md text-[10px] font-bold text-white max-w-[170px] truncate shadow-xs flex items-center gap-1 hover:opacity-90 active:scale-95 transition" style="background-color: ${r.color || '#6366f1'};" title="Thuộc lộ trình: ${escapeHtml(r.name)} (Nhấn để lọc)">
+                  <i class="fa-solid fa-route text-[9px] shrink-0"></i>
+                  <span class="truncate">${escapeHtml(r.name)}</span>
+                </button>
+              `).join('')}
+            </div>
+          `;
         }
 
         return `
@@ -2565,24 +3253,28 @@
                     <span class="text-[11px] text-slate-400">${pin.date || ''}</span>
                   </div>
                   <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 mt-1 truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">${escapeHtml(pin.title)}</h4>
+                  
+                  ${pin.notes ? `
+                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 italic mt-0.5">"${escapeHtml(pin.notes)}"</p>
+                  ` : ''}
+
+                  <!-- Specific Route Name Badges -->
+                  ${routeBadgesHtml}
                 </div>
 
-                ${pin.notes ? `
-                  <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 italic">"${escapeHtml(pin.notes)}"</p>
-                ` : ''}
-
                 <!-- Quick actions -->
-                <div class="flex items-center justify-between pt-1 text-xs" onclick="event.stopPropagation()">
-                  <button onclick="togglePinInRoute('${pin.id}')" class="px-2 py-0.5 rounded-lg ${isInRoute ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold' : 'text-slate-500 hover:text-indigo-600'} flex items-center gap-1 transition text-[11px]">
-                    <i class="fa-solid ${isInRoute ? 'fa-circle-check text-indigo-500' : 'fa-plus'}"></i>
-                    <span>${isInRoute ? 'Trong lộ trình' : '+ Lộ trình'}</span>
+                <div class="flex items-center justify-between pt-1.5 text-xs" onclick="event.stopPropagation()">
+                  <button onclick="openPinRouteSelectorModal('${pin.id}')" class="px-2.5 py-1 rounded-lg ${assignedRoutes.length > 0 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800' : 'bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 font-medium border border-transparent'} flex items-center gap-1.5 transition text-[11px]" title="Chọn lộ trình để thêm/bớt điểm này">
+                    <i class="fa-solid ${assignedRoutes.length > 0 ? 'fa-route text-indigo-600 dark:text-indigo-400' : 'fa-circle-plus text-indigo-500'}"></i>
+                    <span>${assignedRoutes.length > 0 ? `Trong ${assignedRoutes.length} lộ trình` : '+ Vào lộ trình'}</span>
+                    <i class="fa-solid fa-chevron-right text-[9px] opacity-70"></i>
                   </button>
 
                   <div class="flex items-center space-x-1">
-                    <button onclick="openEditMemoryModal('${pin.id}')" class="p-1 text-slate-400 hover:text-sky-600 rounded transition" title="Sửa">
+                    <button onclick="openEditMemoryModal('${pin.id}')" class="p-1 text-slate-400 hover:text-sky-600 rounded transition" title="Sửa kỷ niệm">
                       <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button onclick="openDeletePinConfirmModal('${pin.id}')" class="p-1 text-slate-400 hover:text-rose-600 rounded transition" title="Xóa">
+                    <button onclick="openDeletePinConfirmModal('${pin.id}')" class="p-1 text-slate-400 hover:text-rose-600 rounded transition" title="Xóa kỷ niệm">
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
@@ -2643,11 +3335,15 @@
         return `<option value="${r.id}" ${isSelected}>${escapeHtml(r.name)} (${stopCount} điểm)</option>`;
       }).join('');
 
-      // Update desc in header
+      // Update desc and color indicator in header
       const active = getActiveRoute();
       const descEl = document.getElementById('active-route-desc');
       if (descEl && active) {
         descEl.textContent = active.description || 'Lộ trình di chuyển liên kết các điểm kỷ niệm';
+      }
+      const colorIndicator = document.getElementById('active-route-color-indicator');
+      if (colorIndicator && active) {
+        colorIndicator.style.backgroundColor = active.color || '#6366f1';
       }
     }
 
@@ -2702,11 +3398,9 @@
               <button onclick="openEditRouteModal('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-amber-600 flex items-center justify-center text-xs transition" title="Chỉnh sửa tên / màu sắc">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              ${routes.length > 1 ? `
-                <button onclick="deleteRoute('${r.id}')" class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500 hover:bg-rose-100 flex items-center justify-center text-xs transition" title="Xóa lộ trình">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              ` : ''}
+              <button onclick="openDeleteRouteConfirmModal('${r.id}')" class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500 hover:bg-rose-100 flex items-center justify-center text-xs transition" title="Xóa lộ trình">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           </div>
         `;
@@ -2728,6 +3422,7 @@
       const nameInput = document.getElementById('route-form-name');
       const descInput = document.getElementById('route-form-desc');
       const colorInput = document.getElementById('route-form-color');
+      const deleteBtn = document.getElementById('btn-modal-delete-route');
 
       if (title) title.textContent = 'Tạo Lộ trình Mới';
       if (idInput) idInput.value = '';
@@ -2737,6 +3432,7 @@
         colorInput.value = '#0ea5e9';
         updateRouteModalColorSelection('#0ea5e9');
       }
+      if (deleteBtn) deleteBtn.classList.add('hidden');
 
       if (modal) modal.classList.remove('hidden');
       setTimeout(() => nameInput && nameInput.focus(), 100);
@@ -2755,6 +3451,7 @@
       const nameInput = document.getElementById('route-form-name');
       const descInput = document.getElementById('route-form-desc');
       const colorInput = document.getElementById('route-form-color');
+      const deleteBtn = document.getElementById('btn-modal-delete-route');
 
       if (title) title.textContent = 'Chỉnh sửa Thông tin Lộ trình';
       if (idInput) idInput.value = target.id;
@@ -2764,6 +3461,7 @@
         colorInput.value = target.color || '#6366f1';
         updateRouteModalColorSelection(target.color || '#6366f1');
       }
+      if (deleteBtn) deleteBtn.classList.remove('hidden');
 
       if (modal) modal.classList.remove('hidden');
       setTimeout(() => nameInput && nameInput.focus(), 100);
@@ -2789,6 +3487,14 @@
     function closeCreateEditRouteModal() {
       const modal = document.getElementById('create-edit-route-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    function handleModalDeleteRoute() {
+      const idInput = document.getElementById('route-form-id');
+      const routeId = idInput?.value;
+      if (!routeId) return;
+      closeCreateEditRouteModal();
+      openDeleteRouteConfirmModal(routeId);
     }
 
     function handleSaveRouteForm(e) {
@@ -2838,6 +3544,14 @@
       renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
+
+      // If memory modal is open, refresh its route checklist
+      const memoryModal = document.getElementById('memory-modal');
+      if (memoryModal && !memoryModal.classList.contains('hidden')) {
+        const currentModalPinId = (document.getElementById('form-pin-id')?.value || '').trim();
+        renderFormRoutesList(currentModalPinId || null);
+      }
+
       closeCreateEditRouteModal();
     }
 
@@ -2864,18 +3578,68 @@
       showToast(`Đã nhân bản lộ trình: "${cloned.name}"`, 'success');
     }
 
-    function deleteRoute(routeId) {
-      if (routes.length <= 1) {
-        showToast('Bạn cần giữ lại ít nhất 1 lộ trình!', 'error');
-        return;
+    // ==========================================
+    // ROUTE DELETION & IN-APP CONFIRMATION MODAL
+    // ==========================================
+    let pendingDeleteRouteId = null;
+
+    function openDeleteRouteConfirmModal(routeId) {
+      if (!routeId) routeId = activeRouteId;
+      const target = routes.find(r => r.id === routeId);
+      const name = target ? target.name : 'lộ trình này';
+
+      pendingDeleteRouteId = routeId;
+      const titleEl = document.getElementById('delete-route-confirm-title');
+      const descEl = document.getElementById('delete-route-confirm-desc');
+      if (titleEl) titleEl.textContent = `Xóa "${name}"?`;
+      if (descEl) {
+        if (routes.length <= 1) {
+          descEl.textContent = `Đây là lộ trình duy nhất. Khi xóa, các điểm dừng trong lộ trình sẽ được giải phóng và làm mới.`;
+        } else {
+          descEl.textContent = `Lộ trình này sẽ bị xóa vĩnh viễn. Các điểm kỷ niệm vẫn được lưu giữ an toàn trên bản đồ.`;
+        }
       }
 
-      const target = routes.find(r => r.id === routeId);
-      if (!confirm(`Bạn có chắc muốn xóa lộ trình "${target ? target.name : ''}"?`)) return;
+      const modal = document.getElementById('delete-route-confirm-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
 
-      routes = routes.filter(r => r.id !== routeId);
-      if (activeRouteId === routeId) {
-        activeRouteId = routes[0].id;
+    function closeDeleteRouteConfirmModal() {
+      const modal = document.getElementById('delete-route-confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      pendingDeleteRouteId = null;
+    }
+
+    function executePendingDeleteRoute() {
+      if (!pendingDeleteRouteId) {
+        closeDeleteRouteConfirmModal();
+        return;
+      }
+      const id = pendingDeleteRouteId;
+      closeDeleteRouteConfirmModal();
+      deleteRoute(id);
+    }
+
+    function deleteRoute(routeId) {
+      const target = routes.find(r => r.id === routeId);
+      const targetName = target ? target.name : 'Lộ trình';
+
+      if (routes.length <= 1) {
+        routes[0].name = 'Lộ trình mới';
+        routes[0].description = '';
+        routes[0].pinIds = [];
+        routes[0].customWaypoints = null;
+        routes[0].color = '#6366f1';
+        routes[0].updatedAt = new Date().toISOString();
+        routePinIds = [];
+        customRouteWaypoints = null;
+        showToast('Đã làm trống và làm mới lộ trình!', 'info');
+      } else {
+        routes = routes.filter(r => r.id !== routeId);
+        if (activeRouteId === routeId) {
+          activeRouteId = routes[0].id;
+        }
+        showToast(`Đã xóa vĩnh viễn lộ trình: "${targetName}"`, 'success');
       }
 
       syncActiveRouteShortcuts();
@@ -2885,8 +3649,19 @@
       renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
-      openManageRoutesModal();
-      showToast('Đã xóa lộ trình!', 'info');
+
+      // If manage routes modal is open, refresh it
+      const manageModal = document.getElementById('manage-routes-modal');
+      if (manageModal && !manageModal.classList.contains('hidden')) {
+        openManageRoutesModal();
+      }
+
+      // If memory modal is open, refresh its route checklist
+      const memoryModal = document.getElementById('memory-modal');
+      if (memoryModal && !memoryModal.classList.contains('hidden')) {
+        const currentModalPinId = (document.getElementById('form-pin-id')?.value || '').trim();
+        renderFormRoutesList(currentModalPinId || null);
+      }
     }
 
     // ==========================================
@@ -2976,8 +3751,8 @@
       const active = getActiveRoute();
       if (navigator.share && input) {
         navigator.share({
-          title: `Lộ trình: ${active.name} - MemoMap`,
-          text: `Xem lộ trình du lịch "${active.name}" được tạo trên bản đồ MemoMap Việt Nam:`,
+          title: `Lộ trình: ${active.name} - Gạo Maps`,
+          text: `Xem lộ trình du lịch "${active.name}" được tạo trên bản đồ Gạo Maps Việt Nam:`,
           url: input.value
         }).catch(err => {
           if (err.name !== 'AbortError') copyShareLink();
@@ -2997,20 +3772,77 @@
         const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
         const sharedData = JSON.parse(decodedJson);
 
-        if (sharedData && Array.isArray(sharedData.stops)) {
+        if (sharedData && Array.isArray(sharedData.stops) && sharedData.stops.length > 0) {
           isSharedViewMode = true;
           sharedRoutePayload = sharedData;
 
           // Show Shared Banner
-          const banner = document.getElementById('shared-route-banner');
-          const titleEl = document.getElementById('shared-route-banner-title');
-          const stopsEl = document.getElementById('shared-route-banner-stops');
+          const banner = document.getElementById('shared-route-view-banner');
+          const titleEl = document.getElementById('shared-route-title-text');
+          const subtitleEl = document.getElementById('shared-route-subtitle-text');
 
           if (banner) {
             banner.classList.remove('hidden');
             if (titleEl) titleEl.textContent = sharedData.name || 'Lộ trình được chia sẻ';
-            if (stopsEl) stopsEl.textContent = `${sharedData.stops.length} điểm tham quan`;
+            if (subtitleEl) subtitleEl.textContent = `${sharedData.stops.length} điểm tham quan • ${sharedData.desc || 'Bấm "Lưu vào Lộ trình của tôi" để nhập'}`;
           }
+
+          // If previewing shared stops, fit bounds and render interactive route
+          setTimeout(() => {
+            if (sharedData.stops.length >= 2) {
+              const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
+              map.fitBounds(bounds, { padding: [60, 60] });
+
+              const waypoints = sharedData.stops.map(s => L.latLng(s.lat, s.lng));
+              if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+              }
+              const routerService = L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1',
+                profile: sharedData.mode === 'walking' ? 'foot' : 'driving'
+              });
+              routingControl = L.Routing.control({
+                waypoints: waypoints,
+                router: routerService,
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: false,
+                show: false,
+                lineOptions: {
+                  styles: [{ color: sharedData.color || '#6366f1', opacity: 0.85, weight: 5 }]
+                },
+                createMarker: function(i, wp) {
+                  const stopInfo = sharedData.stops[i];
+                  const num = i + 1;
+                  const isFirst = (i === 0);
+                  const isLast = (i === sharedData.stops.length - 1);
+                  const bgClass = isFirst ? 'bg-emerald-500' : (isLast ? 'bg-rose-500' : 'bg-indigo-600');
+                  const iconHtml = `
+                    <div class="relative group cursor-pointer">
+                      <div class="w-8 h-8 rounded-full ${bgClass} text-white font-bold text-xs flex items-center justify-center shadow-lg border-2 border-white transform transition hover:scale-110">
+                        ${num}
+                      </div>
+                    </div>
+                  `;
+                  const markerIcon = L.divIcon({
+                    className: 'custom-preview-marker',
+                    html: iconHtml,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                  });
+                  const marker = L.marker(wp.latLng, { icon: markerIcon });
+                  if (stopInfo) {
+                    marker.bindPopup(`<b>${escapeHtml(stopInfo.title || `Điểm #${num}`)}</b><br>${escapeHtml(stopInfo.notes || '')}`);
+                  }
+                  return marker;
+                }
+              }).addTo(map);
+            } else if (sharedData.stops.length === 1) {
+              map.setView([sharedData.stops[0].lat, sharedData.stops[0].lng], 14);
+            }
+          }, 400);
 
           showToast(`Đang mở lộ trình được chia sẻ: "${sharedData.name}"`, 'success');
         }
@@ -3081,7 +3913,7 @@
     }
 
     function closeSharedRouteBanner() {
-      const banner = document.getElementById('shared-route-banner');
+      const banner = document.getElementById('shared-route-view-banner');
       if (banner) banner.classList.add('hidden');
       // Clean query params from address bar without reload
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -3144,21 +3976,231 @@
     }
 
     function togglePinInRoute(pinId) {
-      if (routePinIds.includes(pinId)) {
-        routePinIds = routePinIds.filter(id => id !== pinId);
-        showToast('Đã bỏ điểm khỏi lộ trình', 'info');
-      } else {
-        routePinIds.push(pinId);
-        showToast('Đã thêm điểm vào lộ trình', 'success');
+      togglePinInSpecificRoute(pinId, activeRouteId);
+    }
+
+    function togglePinInSpecificRoute(pinId, targetRouteId) {
+      if (!targetRouteId) targetRouteId = activeRouteId;
+      const targetRoute = (routes || []).find(r => r.id === targetRouteId);
+      if (!targetRoute) {
+        showToast('Không tìm thấy lộ trình!', 'error');
+        return;
       }
 
-      customRouteWaypoints = null;
+      if (!Array.isArray(targetRoute.pinIds)) targetRoute.pinIds = [];
+      const inRoute = targetRoute.pinIds.includes(pinId);
+
+      if (inRoute) {
+        targetRoute.pinIds = targetRoute.pinIds.filter(id => id !== pinId);
+        showToast(`Đã bỏ điểm khỏi "${targetRoute.name}"`, 'info');
+      } else {
+        targetRoute.pinIds.push(pinId);
+        showToast(`Đã thêm điểm vào "${targetRoute.name}"`, 'success');
+      }
+
+      targetRoute.customWaypoints = null;
+      targetRoute.updatedAt = new Date().toISOString();
+
+      // If toggling the currently active route, sync routePinIds
+      if (targetRouteId === activeRouteId) {
+        routePinIds = targetRoute.pinIds;
+        customRouteWaypoints = null;
+      }
+
       saveRoutesToStorage();
       populateRouteSelectorDropdown();
       renderAllPins();
       renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
+
+      // Refresh map popup if open for this pin
+      const marker = markersMap.get(pinId);
+      if (marker && marker.isPopupOpen()) {
+        const pin = pins.find(p => p.id === pinId);
+        if (pin) {
+          marker.setPopupContent(buildPopupHtml(pin));
+        }
+      }
+
+      // If route picker modal is currently open for this pin, refresh its items
+      if (activePickerPinId === pinId) {
+        renderPickerRoutesList(pinId);
+      }
+    }
+
+    // ==========================================
+    // PIN ROUTE SELECTOR MODAL (TÙY CHỌN THÊM VÀO LỘ TRÌNH NÀO)
+    // ==========================================
+    let activePickerPinId = null;
+
+    function openPinRouteSelectorModal(pinId) {
+      const pin = pins.find(p => p.id === pinId);
+      if (!pin) return;
+
+      activePickerPinId = pinId;
+      const cat = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
+
+      const modal = document.getElementById('pin-route-picker-modal');
+      const titleEl = document.getElementById('picker-pin-title');
+      const catEl = document.getElementById('picker-pin-category');
+      const thumbEl = document.getElementById('picker-pin-thumb');
+
+      if (titleEl) titleEl.textContent = pin.title;
+      if (catEl) catEl.textContent = `${cat.name} • ${pin.date || 'Chưa ghi ngày'}`;
+      if (thumbEl) {
+        if (pin.photo) {
+          thumbEl.innerHTML = `<img src="${pin.photo}" class="w-full h-full object-cover" />`;
+        } else {
+          thumbEl.className = `w-12 h-12 rounded-xl ${cat.bgClass} text-white flex items-center justify-center text-lg font-bold shrink-0`;
+          thumbEl.innerHTML = `<i class="fa-solid ${cat.icon}"></i>`;
+        }
+      }
+
+      renderPickerRoutesList(pinId);
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePinRouteSelectorModal() {
+      const modal = document.getElementById('pin-route-picker-modal');
+      if (modal) modal.classList.add('hidden');
+      activePickerPinId = null;
+    }
+
+    function renderPickerRoutesList(pinId) {
+      const container = document.getElementById('picker-routes-list');
+      if (!container) return;
+
+      if (!routes || routes.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 text-center space-y-2 border border-dashed border-slate-200 dark:border-slate-700">
+            <p class="text-xs text-slate-500">Chưa có lộ trình nào được tạo.</p>
+            <button onclick="createRouteFromPicker()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm">
+              + Tạo Lộ Trình Đầu Tiên
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = routes.map((r, idx) => {
+        const inThisRoute = Array.isArray(r.pinIds) && r.pinIds.includes(pinId);
+        const isActiveCurrent = (r.id === activeRouteId);
+        const stopCount = (r.pinIds && r.pinIds.length) || 0;
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${inThisRoute ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-700 shadow-xs' : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" onclick="togglePinInPickerRoute('${pinId}', '${r.id}')">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <!-- Custom Checkbox Icon -->
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-colors ${inThisRoute ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-transparent border border-slate-300 dark:border-slate-600'}">
+                <i class="fa-solid fa-check text-xs"></i>
+              </div>
+
+              <!-- Color swatch and route info -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
+                  <h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(r.name)}</h5>
+                  ${isActiveCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-200/80 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold shrink-0">Đang xem</span>' : ''}
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">${stopCount} điểm dừng ${r.travelMode === 'walking' ? '• Đi bộ' : '• Ô tô / Xe máy'}</p>
+              </div>
+            </div>
+
+            <!-- Status Pill -->
+            <div class="shrink-0 ml-2">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold transition ${inThisRoute ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">
+                ${inThisRoute ? 'Đã thêm ✓' : '+ Thêm vào'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePinInPickerRoute(pinId, routeId) {
+      togglePinInSpecificRoute(pinId, routeId);
+    }
+
+    function createRouteFromPicker() {
+      const pinId = activePickerPinId;
+      openCreateRouteModal();
+      // If a pin is being assigned, notify user
+      if (pinId) {
+        showToast('Sau khi tạo lộ trình mới, bạn có thể tích chọn để thêm kỷ niệm vào ngay!', 'info');
+      }
+    }
+
+    // ==========================================
+    // WELCOME POSTER SPLASH SCREEN CONTROLLER
+    // ==========================================
+    let welcomeCountdownTimer = null;
+    let welcomeCountdownRemaining = 3;
+    let welcomeProgressInterval = null;
+
+    function initWelcomePoster() {
+      // Show automatically on page entry
+      openWelcomePoster(false);
+    }
+
+    function openWelcomePoster(isManual = false) {
+      const modal = document.getElementById('welcome-poster-modal');
+      if (!modal) return;
+
+      modal.classList.remove('hidden');
+      modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+      modal.classList.add('opacity-100');
+
+      // Reset countdown
+      welcomeCountdownRemaining = 3;
+      const numEl = document.getElementById('welcome-countdown-number');
+      if (numEl) numEl.textContent = '3s';
+
+      const barEl = document.getElementById('welcome-progress-bar');
+      if (barEl) barEl.style.width = '0%';
+
+      startWelcomeCountdown();
+    }
+
+    function startWelcomeCountdown() {
+      clearInterval(welcomeCountdownTimer);
+      clearInterval(welcomeProgressInterval);
+
+      const startTime = Date.now();
+      const totalDuration = 3000; // 3 seconds
+
+      // Progress bar smooth update every 30ms
+      welcomeProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const pct = Math.min(100, (elapsed / totalDuration) * 100);
+        const barEl = document.getElementById('welcome-progress-bar');
+        if (barEl) barEl.style.width = `${pct}%`;
+
+        const remainingSec = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
+        const numEl = document.getElementById('welcome-countdown-number');
+        if (numEl) numEl.textContent = `${remainingSec}s`;
+
+        if (elapsed >= totalDuration) {
+          clearInterval(welcomeProgressInterval);
+          dismissWelcomePoster();
+        }
+      }, 30);
+    }
+
+    function dismissWelcomePoster() {
+      clearInterval(welcomeCountdownTimer);
+      clearInterval(welcomeProgressInterval);
+
+      const modal = document.getElementById('welcome-poster-modal');
+      if (!modal) return;
+
+      // Smooth fade & slight zoom transition
+      modal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 400);
+
+      showToast('Chào mừng bạn đến với Gạo Maps! Chúc bạn có những hành trình tuyệt vời.', 'info');
     }
 
     function removeStopFromRoute(pinId) {
@@ -3247,21 +4289,26 @@
       const list = document.getElementById('route-stops-list');
       const emptyPrompt = document.getElementById('route-empty-prompt');
       const countEl = document.getElementById('route-stops-count');
+      const countBadge = document.getElementById('route-stops-count-badge');
       const badgeCount = document.getElementById('badge-route-stops');
 
-      countEl.textContent = routePinIds.length;
+      if (countEl) countEl.textContent = routePinIds.length;
+      if (countBadge) countBadge.textContent = routePinIds.length;
       if (badgeCount) badgeCount.textContent = routePinIds.length;
       const badgeCountMob = document.getElementById('badge-route-stops-mobile');
       if (badgeCountMob) badgeCountMob.textContent = routePinIds.length;
 
       // Update color picker selection in UI
-      const routeColorPicker = document.getElementById('route-color-picker');
+      const routeColorPicker = document.getElementById('route-color-input') || document.getElementById('route-color-picker');
       if (routeColorPicker) routeColorPicker.value = routeColor;
-      document.querySelectorAll('.route-color-btn').forEach(btn => {
+      const colorIndicator = document.getElementById('active-route-color-indicator');
+      if (colorIndicator) colorIndicator.style.backgroundColor = routeColor;
+
+      document.querySelectorAll('.route-color-chip, .route-color-btn').forEach(btn => {
         if (btn.getAttribute('data-color') === routeColor) {
-          btn.classList.add('ring-4', 'ring-indigo-400', 'ring-offset-1');
+          btn.classList.add('ring-2', 'ring-indigo-400', 'ring-offset-1');
         } else {
-          btn.classList.remove('ring-4', 'ring-indigo-400', 'ring-offset-1');
+          btn.classList.remove('ring-2', 'ring-indigo-400', 'ring-offset-1');
         }
       });
 
@@ -3393,6 +4440,13 @@
             const totalMeters = summary.totalDistance;
             const totalSeconds = summary.totalTime;
             
+            // Store high-resolution road coordinates for simulation & GPS navigation
+            if (foundRoutes[0].coordinates && foundRoutes[0].coordinates.length > 0) {
+              currentRouteCoordinates = foundRoutes[0].coordinates;
+            } else {
+              currentRouteCoordinates = waypoints;
+            }
+
             const totalKm = (totalMeters / 1000).toFixed(1);
             const timeStr = formatTravelTime(totalSeconds);
 
@@ -3443,6 +4497,7 @@
     }
 
     function calculateStraightLineFallback(waypoints) {
+      currentRouteCoordinates = waypoints;
       let totalMeters = 0;
       for (let i = 0; i < waypoints.length - 1; i++) {
         totalMeters += waypoints[i].distanceTo(waypoints[i + 1]);
@@ -3471,6 +4526,7 @@
     }
 
     function hideRouteSummaryStats() {
+      currentRouteCoordinates = [];
       document.getElementById('summary-total-dist').textContent = '0.0 km';
       document.getElementById('summary-total-time').textContent = '0 phút';
       document.getElementById('floating-route-pill').classList.add('hidden');
@@ -3539,6 +4595,1584 @@
       }
 
       return 0;
+    }
+
+    // ==========================================
+    // REAL-TIME GPS NAVIGATION SYSTEM (Google Maps Style)
+    // ==========================================
+    let isGpsNavigating = false;
+    let gpsWatchId = null;
+    let navCurrentTargetIndex = 1;
+    let navGpsMarker = null;
+    let navAccuracyCircle = null;
+    let isNavVoiceEnabled = true;
+    let isNavSimulating = false;
+    let navSimTimer = null;
+    let navSimCoordIndex = 0;
+    let lastNavHeading = 0;
+    let lastNavPos = null;
+    let hasAlertedNearStop = false;
+    let currentRouteCoordinates = [];
+
+    function startGpsNavigation(simulated = false) {
+      if (routePinIds.length < 2) {
+        showToast('Lộ trình cần ít nhất 2 điểm dừng để bắt đầu dẫn đường!', 'error');
+        return;
+      }
+
+      const active = getActiveRoute();
+      if (!active) return;
+
+      // Collapse sidebar on mobile & desktop to give full road map view
+      closeSidebar();
+
+      isGpsNavigating = true;
+      isNavSimulating = simulated;
+      navCurrentTargetIndex = 1; // start heading to second stop
+      hasAlertedNearStop = false;
+
+      // Show HUD Overlay
+      const hud = document.getElementById('gps-nav-hud-container');
+      if (hud) hud.classList.remove('hidden');
+
+      const routeNameEl = document.getElementById('nav-hud-active-route-name');
+      if (routeNameEl) routeNameEl.textContent = active.name;
+
+      updateNavTargetStopInfo();
+
+      // Audio & Voice greeting
+      speakVoice(`Bắt đầu dẫn đường theo lộ trình ${active.name}.`);
+
+      if (simulated) {
+        startNavSimulationLoop();
+        return;
+      }
+
+      // Check geolocation support
+      if (!navigator.geolocation) {
+        showToast('Thiết bị không hỗ trợ Geolocation. Đang chuyển sang chế độ mô phỏng...', 'info');
+        toggleNavigationSimulation();
+        return;
+      }
+
+      showToast('Đang kết nối tín hiệu vệ tinh GPS dẫn đường...', 'info');
+
+      // Watch user's real GPS position continuously
+      gpsWatchId = navigator.geolocation.watchPosition(
+        (pos) => handleGpsNavPosition(pos),
+        (err) => {
+          console.warn('GPS Watch error:', err);
+          showToast('Tín hiệu GPS yếu hoặc chưa cấp quyền. Đang bật mô phỏng ảo để bạn trải nghiệm!', 'info');
+          if (!isNavSimulating) {
+            toggleNavigationSimulation();
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 12000
+        }
+      );
+    }
+
+    function stopGpsNavigation() {
+      isGpsNavigating = false;
+      if (gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+      }
+      if (navSimTimer) {
+        clearInterval(navSimTimer);
+        navSimTimer = null;
+      }
+      isNavSimulating = false;
+
+      const hud = document.getElementById('gps-nav-hud-container');
+      if (hud) hud.classList.add('hidden');
+
+      if (navGpsMarker && map) {
+        map.removeLayer(navGpsMarker);
+        navGpsMarker = null;
+      }
+      if (navAccuracyCircle && map) {
+        map.removeLayer(navAccuracyCircle);
+        navAccuracyCircle = null;
+      }
+
+      const simBtn = document.getElementById('btn-nav-sim-toggle');
+      if (simBtn) {
+        simBtn.className = 'px-2.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm';
+        document.getElementById('nav-sim-btn-text').textContent = 'Mô phỏng lái';
+      }
+
+      showToast('Đã dừng chế độ dẫn đường GPS', 'info');
+    }
+
+    function toggleNavVoice() {
+      isNavVoiceEnabled = !isNavVoiceEnabled;
+      const icon = document.getElementById('nav-voice-icon');
+      if (isNavVoiceEnabled) {
+        if (icon) icon.className = 'fa-solid fa-volume-high';
+        showToast('Đã bật giọng đọc chỉ dẫn Tiếng Việt', 'info');
+        speakVoice('Đã bật hướng dẫn bằng giọng nói');
+      } else {
+        if (icon) icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+        showToast('Đã tắt giọng đọc chỉ dẫn', 'info');
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      }
+    }
+
+    function toggleNavigationSimulation() {
+      if (!isGpsNavigating) {
+        startGpsNavigation(true);
+        return;
+      }
+
+      if (isNavSimulating) {
+        // Switch back to real GPS
+        if (navSimTimer) {
+          clearInterval(navSimTimer);
+          navSimTimer = null;
+        }
+        isNavSimulating = false;
+        const simBtn = document.getElementById('btn-nav-sim-toggle');
+        if (simBtn) {
+          simBtn.className = 'px-2.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm';
+          document.getElementById('nav-sim-btn-text').textContent = 'Mô phỏng lái';
+        }
+        showToast('Đã chuyển sang tín hiệu GPS thực tế', 'info');
+      } else {
+        // Switch to simulation
+        if (gpsWatchId !== null) {
+          navigator.geolocation.clearWatch(gpsWatchId);
+          gpsWatchId = null;
+        }
+        isNavSimulating = true;
+        const simBtn = document.getElementById('btn-nav-sim-toggle');
+        if (simBtn) {
+          simBtn.className = 'px-2.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm';
+          document.getElementById('nav-sim-btn-text').textContent = 'Dừng mô phỏng';
+        }
+        showToast('Đang chạy mô phỏng di chuyển lộ trình...', 'info');
+        startNavSimulationLoop();
+      }
+    }
+
+    function startNavSimulationLoop() {
+      if (navSimTimer) clearInterval(navSimTimer);
+      navSimCoordIndex = 0;
+
+      const pathCoords = getInterpolatedRouteCoords();
+      if (!pathCoords || pathCoords.length === 0) {
+        showToast('Chưa có dữ liệu tọa độ đường đi để mô phỏng', 'error');
+        return;
+      }
+
+      const simBtn = document.getElementById('btn-nav-sim-toggle');
+      if (simBtn) {
+        simBtn.className = 'px-2.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm';
+        document.getElementById('nav-sim-btn-text').textContent = 'Dừng mô phỏng';
+      }
+
+      navSimTimer = setInterval(() => {
+        if (!isGpsNavigating || !isNavSimulating) {
+          clearInterval(navSimTimer);
+          return;
+        }
+
+        if (navSimCoordIndex >= pathCoords.length - 1) {
+          // Route completed
+          clearInterval(navSimTimer);
+          playChimeSound();
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 } });
+          }
+          speakVoice('Chúc mừng bạn đã hoàn thành trọn vẹn toàn bộ lộ trình hành trình!');
+          showToast('🎉 Chúc mừng bạn đã hoàn thành trọn vẹn lộ trình!', 'success');
+          return;
+        }
+
+        const currentPt = pathCoords[navSimCoordIndex];
+        const nextPt = pathCoords[Math.min(navSimCoordIndex + 1, pathCoords.length - 1)];
+        const heading = calculateBearing(currentPt.lat, currentPt.lng, nextPt.lat, nextPt.lng);
+        const speedKmH = activeTravelMode === 'walking' ? 5 : (35 + Math.floor(Math.random() * 15));
+
+        handleGpsNavPosition({
+          coords: {
+            latitude: currentPt.lat,
+            longitude: currentPt.lng,
+            accuracy: 3,
+            speed: speedKmH / 3.6,
+            heading: heading
+          },
+          timestamp: Date.now()
+        });
+
+        navSimCoordIndex += 1;
+      }, 500);
+    }
+
+    function handleGpsNavPosition(pos) {
+      if (!isGpsNavigating) return;
+
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const accuracy = Math.round(pos.coords.accuracy || 5);
+      let speedKmH = 0;
+
+      if (pos.coords.speed !== null && !isNaN(pos.coords.speed) && pos.coords.speed > 0) {
+        speedKmH = Math.round(pos.coords.speed * 3.6);
+      } else if (lastNavPos) {
+        const dist = L.latLng(lastNavPos.lat, lastNavPos.lng).distanceTo(L.latLng(lat, lng));
+        const dt = (pos.timestamp - lastNavPos.time) / 1000;
+        if (dt > 0 && dt < 10) {
+          speedKmH = Math.round((dist / dt) * 3.6);
+        }
+      }
+
+      let heading = lastNavHeading;
+      if (pos.coords.heading !== null && !isNaN(pos.coords.heading) && pos.coords.heading >= 0) {
+        heading = pos.coords.heading;
+      } else if (lastNavPos) {
+        const dist = L.latLng(lastNavPos.lat, lastNavPos.lng).distanceTo(L.latLng(lat, lng));
+        if (dist > 1.5) {
+          heading = calculateBearing(lastNavPos.lat, lastNavPos.lng, lat, lng);
+        }
+      }
+      lastNavHeading = heading;
+      lastNavPos = { lat, lng, time: pos.timestamp || Date.now() };
+
+      updateNavVehicleMarker(lat, lng, heading, accuracy, speedKmH);
+      checkNavProximity(lat, lng);
+    }
+
+    function updateNavVehicleMarker(lat, lng, heading, accuracy, speedKmH) {
+      if (!map) return;
+
+      const speedEl = document.getElementById('nav-hud-speed');
+      if (speedEl) speedEl.textContent = speedKmH;
+
+      const accEl = document.getElementById('nav-hud-gps-accuracy');
+      if (accEl) accEl.innerHTML = `<i class="fa-solid fa-satellite text-sky-400"></i> GPS: ±${accuracy}m`;
+
+      const navIconHtml = `
+        <div class="relative flex items-center justify-center pointer-events-none" style="width: 44px; height: 44px;">
+          <div class="absolute inset-0 rounded-full bg-emerald-500/25 nav-pulse-wave"></div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 border-2 border-white shadow-2xl flex items-center justify-center text-white text-base nav-user-heading-arrow" style="transform: rotate(${heading}deg);">
+            <i class="fa-solid fa-location-arrow -rotate-45"></i>
+          </div>
+        </div>
+      `;
+
+      if (!navGpsMarker) {
+        const customNavIcon = L.divIcon({
+          className: 'custom-nav-heading-icon',
+          html: navIconHtml,
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
+        });
+        navGpsMarker = L.marker([lat, lng], { icon: customNavIcon, zIndexOffset: 9999 }).addTo(map);
+        map.setView([lat, lng], 17, { animate: true });
+      } else {
+        navGpsMarker.setLatLng([lat, lng]);
+        const el = navGpsMarker.getElement();
+        if (el) {
+          const arrow = el.querySelector('.nav-user-heading-arrow');
+          if (arrow) {
+            arrow.style.transform = `rotate(${heading}deg)`;
+          }
+        }
+        // Smoothly pan map along with car/user
+        map.panTo([lat, lng], { animate: true, duration: 0.4 });
+      }
+    }
+
+    function recenterNavigationMap() {
+      if (lastNavPos && map) {
+        map.setView([lastNavPos.lat, lastNavPos.lng], 17, { animate: true });
+        showToast('Đã căn giữa bản đồ theo vị trí của bạn', 'info');
+      } else {
+        showToast('Chưa nhận diện được vị trí hiện tại', 'info');
+      }
+    }
+
+    function updateNavTargetStopInfo() {
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      if (activePins.length === 0) return;
+
+      const targetPin = activePins[Math.min(navCurrentTargetIndex, activePins.length - 1)];
+      if (!targetPin) return;
+
+      const stepCountEl = document.getElementById('nav-hud-step-count');
+      if (stepCountEl) stepCountEl.textContent = `${navCurrentTargetIndex + 1} / ${activePins.length} trạm`;
+
+      const nextNameEl = document.getElementById('nav-hud-next-stop-name');
+      if (nextNameEl) nextNameEl.textContent = targetPin.title;
+    }
+
+    function checkNavProximity(userLat, userLng) {
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      if (activePins.length <= navCurrentTargetIndex) return;
+
+      const targetPin = activePins[navCurrentTargetIndex];
+      if (!targetPin) return;
+
+      const distMeters = getHaversineDistance(userLat, userLng, targetPin.lat, targetPin.lng);
+      
+      const distLeftEl = document.getElementById('nav-hud-dist-left');
+      const timeLeftEl = document.getElementById('nav-hud-time-left');
+
+      if (distLeftEl) {
+        distLeftEl.textContent = distMeters < 1000 
+          ? `${Math.round(distMeters)} m` 
+          : `${(distMeters / 1000).toFixed(1)} km`;
+      }
+
+      if (timeLeftEl) {
+        const estSeconds = activeTravelMode === 'walking' ? (distMeters / 1.2) : (distMeters / 10);
+        timeLeftEl.textContent = formatTravelTime(estSeconds);
+      }
+
+      // 300m approaching voice announcement
+      if (distMeters <= 300 && distMeters > 50 && !hasAlertedNearStop) {
+        hasAlertedNearStop = true;
+        speakVoice(`Sắp đến điểm kỷ niệm ${targetPin.title} trong 300 mét.`);
+      }
+
+      // Arrived at destination (< 45 meters)
+      if (distMeters <= 45) {
+        playChimeSound();
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        }
+        speakVoice(`Bạn đã đến điểm kỷ niệm ${targetPin.title}!`);
+        showToast(`📍 Bạn đã đến: "${targetPin.title}"!`, 'success');
+
+        // Focus & open pin popup on map
+        const m = markersMap.get(targetPin.id);
+        if (m) m.openPopup();
+
+        // Increment target
+        navCurrentTargetIndex++;
+        hasAlertedNearStop = false;
+
+        if (navCurrentTargetIndex >= activePins.length) {
+          // Completed route
+          playChimeSound();
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 } });
+          }
+          speakVoice('Chúc mừng bạn đã hoàn thành trọn vẹn toàn bộ lộ trình!');
+          showToast('🎉 Chúc mừng bạn đã hoàn thành lộ trình!', 'success');
+        } else {
+          updateNavTargetStopInfo();
+          const nextTarget = activePins[navCurrentTargetIndex];
+          speakVoice(`Điểm tiếp theo: ${nextTarget.title}.`);
+        }
+      }
+    }
+
+    function calculateBearing(lat1, lon1, lat2, lon2) {
+      const toRad = Math.PI / 180;
+      const toDeg = 180 / Math.PI;
+      const dLon = (lon2 - lon1) * toRad;
+      const y = Math.sin(dLon) * Math.cos(lat2 * toRad);
+      const x = Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
+                Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos(dLon);
+      let brng = Math.atan2(y, x) * toDeg;
+      return (brng + 360) % 360;
+    }
+
+    function speakVoice(text) {
+      if (!isNavVoiceEnabled) return;
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'vi-VN';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const viVoice = voices.find(v => (v.lang && v.lang.includes('vi')) || (v.name && v.name.toLowerCase().includes('vietnam')));
+        if (viVoice) utterance.voice = viVoice;
+        
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('SpeechSynthesis error:', err);
+      }
+    }
+
+    function playChimeSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.4);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12); // E5
+        gain2.gain.setValueAtTime(0.25, ctx.currentTime + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.12);
+        osc2.stop(ctx.currentTime + 0.6);
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    function getInterpolatedRouteCoords() {
+      if (Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
+        return currentRouteCoordinates.map(c => ({
+          lat: typeof c.lat === 'number' ? c.lat : c[0],
+          lng: typeof c.lng === 'number' ? c.lng : c[1]
+        }));
+      }
+
+      // Fallback: interpolate between route stop pins
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      if (activePins.length < 2) return [];
+
+      const points = [];
+      for (let i = 0; i < activePins.length - 1; i++) {
+        const p1 = activePins[i];
+        const p2 = activePins[i + 1];
+        const steps = 25;
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          points.push({
+            lat: p1.lat + (p2.lat - p1.lat) * t,
+            lng: p1.lng + (p2.lng - p1.lng) * t
+          });
+        }
+      }
+      return points;
+    }
+
+    // ==========================================
+    // ROUTE CINEMA SIMULATION & MEDIA STUDIO (Video & Poster Card Export with 3D Perspective Tilt)
+    // ==========================================
+    let cinemaAnimationId = null;
+    let isCinemaPlaying = false;
+    let cinemaProgress = 0.0;
+    let cinemaSpeed = 2; // default 2x
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingVideo = false;
+    let cinemaMapStyle = 'voyager'; // 'voyager', 'satellite', 'dark', 'light', 'osm', 'grid'
+    let cinemaCameraMode = 'follow'; // 'follow', 'cinematic', 'overview'
+    let cinemaZoomSetting = 'auto'; // 'auto', '15', '13', '11'
+    let cinemaTiltAngle = 35; // 35 (mild 3D tilt, steady north-up), 45 (deep tilt), 0 (2D flat)
+    const cinemaTileCache = new Map();
+
+    function getCinemaTileUrl(style, zoom, tx, ty) {
+      const numTiles = Math.pow(2, zoom);
+      const wrappedTx = ((tx % numTiles) + numTiles) % numTiles;
+      if (ty < 0 || ty >= numTiles) return null;
+
+      if (style === 'voyager') {
+        const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
+        return `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${wrappedTx}/${ty}.png`;
+      } else if (style === 'dark') {
+        const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
+        return `https://${sub}.basemaps.cartocdn.com/dark_all/${zoom}/${wrappedTx}/${ty}.png`;
+      } else if (style === 'light') {
+        const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
+        return `https://${sub}.basemaps.cartocdn.com/light_all/${zoom}/${wrappedTx}/${ty}.png`;
+      } else if (style === 'satellite') {
+        return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${ty}/${wrappedTx}`;
+      } else if (style === 'osm') {
+        const sub = ['a', 'b', 'c'][(wrappedTx + ty) % 3];
+        return `https://${sub}.tile.openstreetmap.org/${zoom}/${wrappedTx}/${ty}.png`;
+      }
+      return null;
+    }
+
+    function getOrCreateTileImage(style, zoom, tx, ty) {
+      const url = getCinemaTileUrl(style, zoom, tx, ty);
+      if (!url) return null;
+      const cacheKey = `${style}_${zoom}_${tx}_${ty}`;
+      if (cinemaTileCache.has(cacheKey)) {
+        return cinemaTileCache.get(cacheKey);
+      }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = url;
+      img.onload = () => {
+        if (!isCinemaPlaying) {
+          const pathCoords = getInterpolatedRouteCoords();
+          if (pathCoords && pathCoords.length >= 2) {
+            drawCinemaFrame(cinemaProgress, pathCoords);
+          }
+        }
+      };
+      cinemaTileCache.set(cacheKey, img);
+      return img;
+    }
+
+    function latLngToMercatorWorld(lat, lng, zoom) {
+      const worldSize = 256 * Math.pow(2, zoom);
+      const x = ((lng + 180) / 360) * worldSize;
+      const clampedLat = Math.max(Math.min(lat, 85.0511), -85.0511);
+      const sin = Math.sin(clampedLat * Math.PI / 180);
+      const y = (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * worldSize;
+      return { x, y };
+    }
+
+    function getEffectiveCinemaZoom(pathCoords, canvasW, canvasH) {
+      if (cinemaZoomSetting !== 'auto') {
+        return parseInt(cinemaZoomSetting, 10);
+      }
+
+      let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+      pathCoords.forEach(pt => {
+        if (pt.lat < minLat) minLat = pt.lat;
+        if (pt.lat > maxLat) maxLat = pt.lat;
+        if (pt.lng < minLng) minLng = pt.lng;
+        if (pt.lng > maxLng) maxLng = pt.lng;
+      });
+      const latSpan = maxLat - minLat;
+      const lngSpan = maxLng - minLng;
+      const maxSpan = Math.max(latSpan, lngSpan);
+
+      // In overview mode, find zoom to fit whole route
+      if (cinemaCameraMode === 'overview') {
+        for (let z = 17; z >= 2; z--) {
+          const pNW = latLngToMercatorWorld(maxLat + latSpan * 0.25, minLng - lngSpan * 0.25, z);
+          const pSE = latLngToMercatorWorld(minLat - latSpan * 0.25, maxLng + lngSpan * 0.25, z);
+          if (Math.abs(pSE.x - pNW.x) <= canvasW - 120 && Math.abs(pSE.y - pNW.y) <= canvasH - 120) {
+            return z;
+          }
+        }
+        return 6;
+      }
+
+      // In follow / cinematic mode:
+      // When 3D tilt is on, a slightly wider zoom allows dramatic long-distance horizon views!
+      if (cinemaTiltAngle > 0) {
+        if (maxSpan > 2.0) return 10; // Cross-country
+        if (maxSpan > 0.5) return 12; // Inter-provincial
+        if (maxSpan > 0.08) return 13; // Suburban
+        return 14; // Urban
+      }
+
+      if (maxSpan > 2.0) return 11;
+      if (maxSpan > 0.5) return 13;
+      if (maxSpan > 0.08) return 14;
+      return 15;
+    }
+
+    function getDynamicCinemaViewport(pathCoords, progress, canvasW, canvasH) {
+      if (!pathCoords || pathCoords.length < 2) return null;
+
+      let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+      pathCoords.forEach(pt => {
+        if (pt.lat < minLat) minLat = pt.lat;
+        if (pt.lat > maxLat) maxLat = pt.lat;
+        if (pt.lng < minLng) minLng = pt.lng;
+        if (pt.lng > maxLng) maxLng = pt.lng;
+      });
+
+      const wholeCenterLat = (minLat + maxLat) / 2;
+      const wholeCenterLng = (minLng + maxLng) / 2;
+
+      // Find current vehicle coordinates along path
+      const currentIdxFloat = progress * (pathCoords.length - 1);
+      const currentIdx = Math.floor(currentIdxFloat);
+      const nextIdx = Math.min(currentIdx + 1, pathCoords.length - 1);
+      const segmentT = currentIdxFloat - currentIdx;
+
+      const pt1 = pathCoords[currentIdx];
+      const pt2 = pathCoords[nextIdx];
+      const carLat = pt1.lat + (pt2.lat - pt1.lat) * segmentT;
+      const carLng = pt1.lng + (pt2.lng - pt1.lng) * segmentT;
+
+      const currentZoom = getEffectiveCinemaZoom(pathCoords, canvasW, canvasH);
+
+      let camCenterLat = carLat;
+      let camCenterLng = carLng;
+
+      if (cinemaCameraMode === 'overview') {
+        camCenterLat = wholeCenterLat;
+        camCenterLng = wholeCenterLng;
+      } else if (cinemaCameraMode === 'cinematic') {
+        if (progress < 0.05) {
+          const easeT = progress / 0.05;
+          camCenterLat = wholeCenterLat + (carLat - wholeCenterLat) * easeT;
+          camCenterLng = wholeCenterLng + (carLng - wholeCenterLng) * easeT;
+        } else if (progress > 0.95) {
+          const easeT = (progress - 0.95) / 0.05;
+          camCenterLat = carLat + (wholeCenterLat - carLat) * easeT;
+          camCenterLng = carLng + (wholeCenterLng - carLng) * easeT;
+        } else {
+          camCenterLat = carLat;
+          camCenterLng = carLng;
+        }
+      } else {
+        camCenterLat = carLat;
+        camCenterLng = carLng;
+      }
+
+      const centerWorld = latLngToMercatorWorld(camCenterLat, camCenterLng, currentZoom);
+      const carWorld = latLngToMercatorWorld(carLat, carLng, currentZoom);
+
+      // Compute vehicle heading vector in mercator space
+      const w1 = latLngToMercatorWorld(pt1.lat, pt1.lng, currentZoom);
+      const w2 = latLngToMercatorWorld(pt2.lat, pt2.lng, currentZoom);
+      let headingAngle = 0;
+      if (Math.hypot(w2.x - w1.x, w2.y - w1.y) > 0.1) {
+        headingAngle = Math.atan2(w2.y - w1.y, w2.x - w1.x);
+      }
+
+      const tileRadius = cinemaTiltAngle > 0 ? 5 : 3;
+      const centerTx = Math.floor(centerWorld.x / 256);
+      const centerTy = Math.floor(centerWorld.y / 256);
+
+      const minTx = centerTx - tileRadius;
+      const maxTx = centerTx + tileRadius;
+      const minTy = centerTy - tileRadius;
+      const maxTy = centerTy + tileRadius;
+
+      return {
+        zoom: currentZoom,
+        centerWorldX: centerWorld.x,
+        centerWorldY: centerWorld.y,
+        carWorldX: carWorld.x,
+        carWorldY: carWorld.y,
+        minTx,
+        maxTx,
+        minTy,
+        maxTy,
+        carLat,
+        carLng,
+        headingAngle,
+        minLat,
+        maxLat,
+        minLng,
+        maxLng
+      };
+    }
+
+    function preloadCinemaTiles(style, pathCoords, canvasW, canvasH) {
+      return new Promise((resolve) => {
+        if (style === 'grid' || !pathCoords || pathCoords.length < 2) {
+          resolve();
+          return;
+        }
+        const zoom = getEffectiveCinemaZoom(pathCoords, canvasW, canvasH);
+        const tileKeySet = new Set();
+
+        const step = Math.max(1, Math.floor(pathCoords.length / 90));
+        for (let i = 0; i < pathCoords.length; i += step) {
+          const pt = pathCoords[i];
+          const wPt = latLngToMercatorWorld(pt.lat, pt.lng, zoom);
+          const centerTx = Math.floor(wPt.x / 256);
+          const centerTy = Math.floor(wPt.y / 256);
+          const r = cinemaTiltAngle > 0 ? 3 : 2;
+          for (let dx = -r; dx <= r; dx++) {
+            for (let dy = -r; dy <= r; dy++) {
+              tileKeySet.add(`${centerTx + dx},${centerTy + dy}`);
+            }
+          }
+        }
+
+        let pending = 0;
+        let finished = false;
+        const finish = () => {
+          if (!finished) {
+            finished = true;
+            resolve();
+          }
+        };
+
+        tileKeySet.forEach(coordsStr => {
+          const [tx, ty] = coordsStr.split(',').map(Number);
+          const img = getOrCreateTileImage(style, zoom, tx, ty);
+          if (img && !img.complete) {
+            pending++;
+            img.addEventListener('load', () => {
+              pending--;
+              if (pending <= 0) finish();
+            }, { once: true });
+            img.addEventListener('error', () => {
+              pending--;
+              if (pending <= 0) finish();
+            }, { once: true });
+          }
+        });
+
+        if (pending === 0) {
+          finish();
+        } else {
+          setTimeout(finish, 2600); // 2.6s safe fallback
+        }
+      });
+    }
+
+    function changeCinemaTiltAngle(val) {
+      cinemaTiltAngle = parseInt(val, 10) || 0;
+      const pathCoords = getInterpolatedRouteCoords();
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      const label = cinemaTiltAngle > 0 ? `📐 3D Nghiêng Phối cảnh (${cinemaTiltAngle}° - Nhìn xa chân trời)` : '🗺️ 2D Nhìn thẳng đứng';
+      showToast(`Đã chuyển góc nhìn camera: ${label}`, 'info');
+    }
+
+    function changeCinemaCameraMode(mode) {
+      cinemaCameraMode = mode || 'follow';
+      const pathCoords = getInterpolatedRouteCoords();
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      const modeNames = {
+        follow: '🎥 Bám theo xe (Cận cảnh)',
+        cinematic: '🎬 Điện ảnh (Tự động Zoom & Dừng trạm)',
+        overview: '🗺️ Toàn cảnh lộ trình (Bao quát)'
+      };
+      showToast(`Đã chuyển góc quay: ${modeNames[mode] || mode}`, 'info');
+    }
+
+    function changeCinemaZoomLevel(zoomVal) {
+      cinemaZoomSetting = zoomVal || 'auto';
+      const pathCoords = getInterpolatedRouteCoords();
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      showToast(`Đã đổi mức độ chi tiết camera: ${zoomVal === 'auto' ? 'Tự động tối ưu' : 'Zoom ' + zoomVal}`, 'info');
+    }
+
+    function changeCinemaMapStyle(style) {
+      cinemaMapStyle = style || 'voyager';
+      const pathCoords = getInterpolatedRouteCoords();
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      const styleNames = {
+        voyager: 'Đường phố (Voyager)',
+        satellite: 'Vệ tinh Không gian (Esri)',
+        dark: 'Bản đồ Tối (Carto Dark)',
+        light: 'Bản đồ Sáng (Carto Light)',
+        osm: 'OpenStreetMap',
+        grid: 'Nền Dạ quang Cyber'
+      };
+      showToast(`Đã chuyển nền bản đồ video sang: ${styleNames[style] || style}`, 'info');
+    }
+
+    function openRouteCinemaModal() {
+      if (routePinIds.length < 2) {
+        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để phát mô phỏng và xuất video!', 'error');
+        return;
+      }
+
+      const active = getActiveRoute();
+      if (!active) return;
+
+      const modal = document.getElementById('route-cinema-modal');
+      if (modal) modal.classList.remove('hidden');
+
+      const titleEl = document.getElementById('cinema-route-title');
+      if (titleEl) titleEl.textContent = `Mô Phỏng: ${active.name}`;
+
+      const savedTile = localStorage.getItem(LS_TILE_KEY) || 'voyager';
+      cinemaMapStyle = ['voyager', 'satellite', 'dark', 'light', 'osm'].includes(savedTile) ? savedTile : 'voyager';
+      const selectEl = document.getElementById('cinema-map-style-select');
+      if (selectEl) selectEl.value = cinemaMapStyle;
+
+      const modeSelect = document.getElementById('cinema-cam-mode-select');
+      if (modeSelect) modeSelect.value = cinemaCameraMode;
+
+      const zoomSelect = document.getElementById('cinema-zoom-select');
+      if (zoomSelect) zoomSelect.value = cinemaZoomSetting;
+
+      const tiltSelect = document.getElementById('cinema-tilt-select');
+      if (tiltSelect) tiltSelect.value = cinemaTiltAngle.toString();
+
+      cinemaProgress = 0.0;
+      isCinemaPlaying = true;
+      document.getElementById('cinema-play-icon').className = 'fa-solid fa-pause';
+      document.getElementById('cinema-play-text').textContent = 'Tạm dừng';
+
+      const canvas = document.getElementById('cinema-canvas');
+      const pathCoords = getInterpolatedRouteCoords();
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+
+      requestAnimationFrame(runCinemaLoop);
+      showToast('Đang phát mô phỏng góc nghiêng 3D trên nền bản đồ...', 'info');
+    }
+
+    function closeRouteCinemaModal() {
+      isCinemaPlaying = false;
+      if (cinemaAnimationId) {
+        cancelAnimationFrame(cinemaAnimationId);
+        cinemaAnimationId = null;
+      }
+      if (isRecordingVideo && mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        isRecordingVideo = false;
+        document.getElementById('cinema-rec-badge').classList.add('hidden');
+      }
+
+      const modal = document.getElementById('route-cinema-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setCinemaSpeed(val) {
+      cinemaSpeed = parseFloat(val) || 2;
+    }
+
+    function toggleCinemaPlay() {
+      isCinemaPlaying = !isCinemaPlaying;
+      const icon = document.getElementById('cinema-play-icon');
+      const text = document.getElementById('cinema-play-text');
+
+      if (isCinemaPlaying) {
+        if (cinemaProgress >= 1.0) cinemaProgress = 0.0;
+        if (icon) icon.className = 'fa-solid fa-pause';
+        if (text) text.textContent = 'Tạm dừng';
+        requestAnimationFrame(runCinemaLoop);
+      } else {
+        if (icon) icon.className = 'fa-solid fa-play';
+        if (text) text.textContent = 'Tiếp tục';
+      }
+    }
+
+    function restartCinemaSimulation() {
+      cinemaProgress = 0.0;
+      isCinemaPlaying = true;
+      document.getElementById('cinema-play-icon').className = 'fa-solid fa-pause';
+      document.getElementById('cinema-play-text').textContent = 'Tạm dừng';
+      requestAnimationFrame(runCinemaLoop);
+    }
+
+    function runCinemaLoop() {
+      if (!isCinemaPlaying) return;
+
+      const pathCoords = getInterpolatedRouteCoords();
+      if (!pathCoords || pathCoords.length < 2) return;
+
+      const stepIncrement = (0.0012 * cinemaSpeed);
+      cinemaProgress += stepIncrement;
+
+      if (cinemaProgress >= 1.0) {
+        cinemaProgress = 1.0;
+        isCinemaPlaying = false;
+        document.getElementById('cinema-play-icon').className = 'fa-solid fa-rotate-left';
+        document.getElementById('cinema-play-text').textContent = 'Phát lại';
+
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 70, spread: 75, origin: { y: 0.6 } });
+        }
+      }
+
+      drawCinemaFrame(cinemaProgress, pathCoords);
+
+      const progFill = document.getElementById('cinema-progress-fill');
+      if (progFill) {
+        progFill.style.width = `${(cinemaProgress * 100).toFixed(1)}%`;
+      }
+
+      if (isCinemaPlaying) {
+        cinemaAnimationId = requestAnimationFrame(runCinemaLoop);
+      }
+    }
+
+    function drawCinemaFrame(progress, pathCoords) {
+      const canvas = document.getElementById('cinema-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const vp = getDynamicCinemaViewport(pathCoords, progress, w, h);
+      if (!vp) return;
+
+      // Determine 3D Perspective Tilt Parameters (Steady Camera - North-Up, No Map Rotation)
+      const isTilt = cinemaTiltAngle > 0 && cinemaCameraMode !== 'overview';
+      const tiltRad = (cinemaTiltAngle * Math.PI) / 180;
+      const pitchScaleY = isTilt ? Math.cos(tiltRad) : 1.0;
+      const anchorScreenX = w / 2;
+      const anchorScreenY = isTilt ? (h * 0.58) : (h / 2);
+
+      // Function to transform world point to screen coordinates
+      function worldToScreen(wx, wy) {
+        if (!isTilt) {
+          return {
+            x: (w / 2) + (wx - vp.centerWorldX),
+            y: (h / 2) + (wy - vp.centerWorldY)
+          };
+        }
+        const dx = wx - vp.carWorldX;
+        const dy = wy - vp.carWorldY;
+        return {
+          x: anchorScreenX + dx,
+          y: anchorScreenY + dy * pitchScaleY
+        };
+      }
+
+      // 1. Clear background
+      ctx.fillStyle = cinemaMapStyle === 'dark' ? '#090d16' : (cinemaMapStyle === 'satellite' ? '#050c1c' : '#cbd5e1');
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Render Map Tiles (3D Transformed or 2D Flat - Steady Orientation)
+      ctx.save();
+      if (isTilt) {
+        ctx.translate(anchorScreenX, anchorScreenY);
+        ctx.scale(1, pitchScaleY);
+        ctx.translate(-vp.carWorldX, -vp.carWorldY);
+      } else {
+        ctx.translate((w / 2) - vp.centerWorldX, (h / 2) - vp.centerWorldY);
+      }
+
+      if (cinemaMapStyle === 'grid') {
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(vp.minTx * 256, vp.minTy * 256, (vp.maxTx - vp.minTx + 1) * 256, (vp.maxTy - vp.minTy + 1) * 256);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.5;
+        const startX = vp.minTx * 256;
+        const endX = (vp.maxTx + 1) * 256;
+        const startY = vp.minTy * 256;
+        const endY = (vp.maxTy + 1) * 256;
+        for (let x = startX; x <= endX; x += 50) {
+          ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, endY); ctx.stroke();
+        }
+        for (let y = startY; y <= endY; y += 50) {
+          ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(endX, y); ctx.stroke();
+        }
+      } else {
+        for (let tx = vp.minTx; tx <= vp.maxTx; tx++) {
+          for (let ty = vp.minTy; ty <= vp.maxTy; ty++) {
+            const img = getOrCreateTileImage(cinemaMapStyle, vp.zoom, tx, ty);
+            if (img && img.complete && img.naturalWidth > 0) {
+              ctx.drawImage(img, tx * 256, ty * 256, 256, 256);
+            }
+          }
+        }
+      }
+
+      // 3. Draw Road Polyline in Map Space
+      const worldRoutePoints = pathCoords.map(pt => latLngToMercatorWorld(pt.lat, pt.lng, vp.zoom));
+
+      // Inactive track (dark outline)
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      worldRoutePoints.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = cinemaMapStyle === 'dark' ? '#334155' : '#64748b';
+      ctx.lineWidth = 7;
+      worldRoutePoints.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+
+      // Active traversed glowing route
+      const currentIdxFloat = progress * (worldRoutePoints.length - 1);
+      const currentIdx = Math.floor(currentIdxFloat);
+      const nextIdx = Math.min(currentIdx + 1, worldRoutePoints.length - 1);
+      const segmentT = currentIdxFloat - currentIdx;
+
+      const pCur = worldRoutePoints[currentIdx];
+      const pNxt = worldRoutePoints[nextIdx];
+      const curCarWorldX = pCur.x + (pNxt.x - pCur.x) * segmentT;
+      const curCarWorldY = pCur.y + (pNxt.y - pCur.y) * segmentT;
+
+      // Glow line
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
+      ctx.lineWidth = 16;
+      for (let i = 0; i <= currentIdx; i++) {
+        if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+        else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+      }
+      ctx.lineTo(curCarWorldX, curCarWorldY);
+      ctx.stroke();
+
+      // Sharp bright neon trail
+      ctx.beginPath();
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 7;
+      for (let i = 0; i <= currentIdx; i++) {
+        if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+        else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+      }
+      ctx.lineTo(curCarWorldX, curCarWorldY);
+      ctx.stroke();
+
+      ctx.restore(); // Exit 3D map tile coordinate space
+
+      // 4. Atmospheric Horizon Sky Effect (For 3D Tilt View)
+      if (isTilt) {
+        const horizonGrad = ctx.createLinearGradient(0, 0, 0, 160);
+        if (cinemaMapStyle === 'satellite') {
+          horizonGrad.addColorStop(0, 'rgba(5, 12, 28, 0.96)');
+          horizonGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.3)');
+          horizonGrad.addColorStop(1, 'rgba(5, 12, 28, 0)');
+        } else if (cinemaMapStyle === 'dark') {
+          horizonGrad.addColorStop(0, 'rgba(9, 13, 22, 0.98)');
+          horizonGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.25)');
+          horizonGrad.addColorStop(1, 'rgba(9, 13, 22, 0)');
+        } else {
+          horizonGrad.addColorStop(0, 'rgba(203, 213, 225, 0.95)');
+          horizonGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.4)');
+          horizonGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        }
+        ctx.fillStyle = horizonGrad;
+        ctx.fillRect(0, 0, w, 160);
+
+        // Subtle horizon line accent
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(w, 8);
+        ctx.strokeStyle = cinemaMapStyle === 'dark' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 5. Draw Billboarded Stop Badges (Upright, High-Contrast)
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      let closestStop = null;
+      let closestDist = 9999;
+
+      activePins.forEach((pin, index) => {
+        const wPt = latLngToMercatorWorld(pin.lat, pin.lng, vp.zoom);
+        const pt = worldToScreen(wPt.x, wPt.y);
+
+        const carScr = worldToScreen(curCarWorldX, curCarWorldY);
+        const distToCar = Math.hypot(pt.x - carScr.x, pt.y - carScr.y);
+
+        if (distToCar < closestDist) {
+          closestDist = distToCar;
+          closestStop = pin;
+        }
+
+        const isPassed = (index / (activePins.length - 1)) <= (progress + 0.05);
+
+        // Only draw if inside or near canvas
+        if (pt.x >= -60 && pt.x <= w + 60 && pt.y >= 20 && pt.y <= h + 60) {
+          // Glow ground pin
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, isPassed ? 14 : 10, 0, Math.PI * 2);
+          ctx.fillStyle = isPassed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(99, 102, 241, 0.35)';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, isPassed ? 9 : 7, 0, Math.PI * 2);
+          ctx.fillStyle = isPassed ? '#10b981' : '#6366f1';
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
+          ctx.fill();
+          ctx.stroke();
+
+          // Upright Billboard Label Pill
+          const labelText = `${index + 1}. ${pin.title}`;
+          ctx.font = 'bold 12px sans-serif';
+          const textMetrics = ctx.measureText(labelText);
+          const pillW = textMetrics.width + 16;
+          const pillH = 22;
+          const pillX = pt.x - (pillW / 2);
+          const pillY = pt.y - 32;
+
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+          ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.8)' : 'rgba(99, 102, 241, 0.8)';
+          ctx.lineWidth = 1;
+          roundRect(ctx, pillX, pillY, pillW, pillH, 6, true, true);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(labelText, pt.x, pillY + (pillH / 2));
+        }
+      });
+
+      // Show Stop Info Popup in UI when car passes by (< 60px)
+      const popupEl = document.getElementById('cinema-stop-popup');
+      if (closestDist < 60 && closestStop) {
+        if (popupEl) {
+          popupEl.classList.remove('hidden');
+          const stopIdx = activePins.findIndex(p => p.id === closestStop.id);
+          document.getElementById('cinema-popup-num').textContent = `${stopIdx + 1}`;
+          document.getElementById('cinema-popup-title').textContent = closestStop.title;
+
+          const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
+          document.getElementById('cinema-popup-cat').textContent = catConfig.name;
+
+          const notesEl = document.getElementById('cinema-popup-notes');
+          notesEl.textContent = closestStop.notes || 'Điểm check-in trong lộ trình Gạo Maps';
+
+          const imgWrap = document.getElementById('cinema-popup-img-wrap');
+          const imgEl = document.getElementById('cinema-popup-img');
+          if (closestStop.photo) {
+            imgEl.src = closestStop.photo;
+            imgWrap.classList.remove('hidden');
+          } else {
+            imgWrap.classList.add('hidden');
+          }
+        }
+      } else if (closestDist > 90 && popupEl) {
+        popupEl.classList.add('hidden');
+      }
+
+      // 6. Draw Traveling Vehicle (Glowing Marker with Headlight Beams)
+      const carScreenPos = worldToScreen(curCarWorldX, curCarWorldY);
+
+      ctx.save();
+      ctx.translate(carScreenPos.x, carScreenPos.y);
+      ctx.rotate(vp.headingAngle);
+
+      // Forward Headlight Beam
+      const beamGrad = ctx.createLinearGradient(0, 0, 75, 0);
+      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+      beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = beamGrad;
+      ctx.beginPath();
+      ctx.moveTo(8, 0);
+      ctx.lineTo(75, -22);
+      ctx.lineTo(75, 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // Halo pulse
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.4)';
+      ctx.fill();
+
+      // Vehicle base circle
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#0284c7';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.5;
+      ctx.fill();
+      ctx.stroke();
+
+      // Arrow indicator pointing forward
+      ctx.beginPath();
+      ctx.moveTo(9, 0);
+      ctx.lineTo(-5, -7);
+      ctx.lineTo(-2, 0);
+      ctx.lineTo(-5, 7);
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.restore();
+
+      // 7. Draw Mini-Map Radar Inset in Bottom-Right Corner
+      if (cinemaCameraMode !== 'overview') {
+        const radarW = 190;
+        const radarH = 130;
+        const radarX = w - radarW - 20;
+        const radarY = h - radarH - 24;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, radarX, radarY, radarW, radarH, 12, true, true);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('📡 RADAR TOÀN TUYẾN', radarX + 10, radarY + 8);
+
+        const padR = 14;
+        const availRW = radarW - padR * 2;
+        const availRH = radarH - padR * 2 - 16;
+        const latSpan = Math.max(vp.maxLat - vp.minLat, 0.005);
+        const lngSpan = Math.max(vp.maxLng - vp.minLng, 0.005);
+
+        function mapToRadar(lat, lng) {
+          return {
+            x: radarX + padR + ((lng - vp.minLng) / lngSpan) * availRW,
+            y: radarY + radarH - padR - ((lat - vp.minLat) / latSpan) * availRH
+          };
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 3;
+        pathCoords.forEach((pt, i) => {
+          const rP = mapToRadar(pt.lat, pt.lng);
+          if (i === 0) ctx.moveTo(rP.x, rP.y);
+          else ctx.lineTo(rP.x, rP.y);
+        });
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3.5;
+        for (let i = 0; i <= currentIdx; i++) {
+          const rP = mapToRadar(pathCoords[i].lat, pathCoords[i].lng);
+          if (i === 0) ctx.moveTo(rP.x, rP.y);
+          else ctx.lineTo(rP.x, rP.y);
+        }
+        const rCarP = mapToRadar(vp.carLat, vp.carLng);
+        ctx.lineTo(rCarP.x, rCarP.y);
+        ctx.stroke();
+
+        activePins.forEach(pin => {
+          const rPinP = mapToRadar(pin.lat, pin.lng);
+          ctx.beginPath();
+          ctx.arc(rPinP.x, rPinP.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#10b981';
+          ctx.fill();
+        });
+
+        ctx.beginPath();
+        ctx.arc(rCarP.x, rCarP.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - 10, radarY + 8);
+      }
+
+      // 8. Watermark and Metadata Branding Box (Top-Left)
+      const active = getActiveRoute();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1;
+      roundRect(ctx, 16, 16, 350, 54, 12, true, true);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 28, 38);
+
+      const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
+      const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(active ? `${active.name} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 28, 56);
+    }
+
+    // ==========================================
+    // EXPORT HIGH-RESOLUTION TRAVEL POSTER INFOGRAPHIC (PNG)
+    // ==========================================
+    function exportRoutePosterCard() {
+      const active = getActiveRoute();
+      if (!active || routePinIds.length < 2) {
+        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Poster!', 'error');
+        return;
+      }
+
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      if (activePins.length === 0) return;
+
+      showToast('Đang tạo thiết kế Poster Hành trình HD trên nền bản đồ...', 'info');
+
+      // Create high-res 1200 x 1600 canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 1600;
+      const ctx = canvas.getContext('2d');
+
+      // 1. Background Gradient (Dark Navy / Luxury Slate)
+      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 1600);
+      bgGrad.addColorStop(0, '#0a0f1d');
+      bgGrad.addColorStop(0.5, '#0f172a');
+      bgGrad.addColorStop(1, '#1e1b4b');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1200, 1600);
+
+      // Subtle Decorative Grid & Ornaments
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < 1200; x += 50) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1600); ctx.stroke();
+      }
+      for (let y = 0; y < 1600; y += 50) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1200, y); ctx.stroke();
+      }
+
+      // 2. Header Branding
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('GẠO MAPS • TRAVEL MEMORIES & ROUTE POSTER', 600, 75);
+
+      // Main Route Name
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 46px sans-serif';
+      ctx.fillText(active.name, 600, 135);
+
+      // Route description
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '20px sans-serif';
+      ctx.fillText(active.description || 'Lưu giữ những khoảnh khắc và dấu chân đáng nhớ trên mọi nẻo đường Việt Nam', 600, 175);
+
+      // 3. Telemetry Statistics Card Box
+      const statsBoxY = 215;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, 80, statsBoxY, 1040, 110, 24, true, true);
+
+      const totalKm = calculateRouteDistanceKm(active);
+      const estTimeStr = active.distanceKm 
+        ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
+        : `${activePins.length * 30} phút`;
+
+      // Stat 1: Distance
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('TỔNG QUÃNG ĐƯỜNG', 250, statsBoxY + 40);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillText(`${totalKm} km`, 250, statsBoxY + 80);
+
+      // Stat 2: Time
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('THỜI GIAN DỰ TÍNH', 600, statsBoxY + 40);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillText(estTimeStr, 600, statsBoxY + 80);
+
+      // Stat 3: Stops
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('ĐIỂM DỪNG KỶ NIỆM', 950, statsBoxY + 40);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillText(`${activePins.length} điểm`, 950, statsBoxY + 80);
+
+      // 4. Stops Timeline List
+      let startY = 365;
+      const maxStopsToDraw = Math.min(activePins.length, 5);
+      const rowHeight = (1120 / maxStopsToDraw);
+
+      activePins.slice(0, maxStopsToDraw).forEach((pin, idx) => {
+        const itemY = startY + idx * rowHeight;
+        
+        // Card surface
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, 80, itemY, 1040, rowHeight - 20, 20, true, true);
+
+        // Step number circle
+        ctx.beginPath();
+        ctx.arc(140, itemY + (rowHeight - 20) / 2, 28, 0, Math.PI * 2);
+        ctx.fillStyle = '#6366f1';
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${idx + 1}`, 140, itemY + (rowHeight - 20) / 2 + 8);
+
+        // Stop Details
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 16px sans-serif';
+        const catConfig = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
+        ctx.fillText(`${catConfig.name.toUpperCase()} • ${pin.date ? new Date(pin.date).toLocaleDateString('vi-VN') : 'Kỷ niệm'}`, 200, itemY + 40);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.fillText(pin.title, 200, itemY + 75);
+
+        // Star rating
+        let starsStr = '★'.repeat(pin.rating || 5);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '22px sans-serif';
+        ctx.fillText(starsStr, 200, itemY + 110);
+
+        // Notes
+        if (pin.notes) {
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = 'italic 18px sans-serif';
+          ctx.fillText(`"${pin.notes.substring(0, 60)}${pin.notes.length > 60 ? '...' : ''}"`, 200, itemY + 145);
+        }
+      });
+
+      // 5. Sovereignty & Brand Footer
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🇻🇳 Quần đảo Hoàng Sa & Trường Sa là một phần không thể tách rời của lãnh thổ Việt Nam', 600, 1540);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Được thiết kế và xuất từ Gạo Maps • Ứng dụng Bản đồ Kỷ niệm Du lịch', 600, 1570);
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = active.name.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        a.download = `gaomaps-poster-${safeName}-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Đã tải ảnh Poster Hành trình HD thành công!', 'success');
+      }, 'image/png');
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      if (typeof radius === 'undefined') radius = 5;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    // ==========================================
+    // RECORD AND EXPORT ANIMATED ROUTE VIDEO (.webm) WITH MAP BACKGROUND
+    // ==========================================
+    async function recordAndExportRouteVideo() {
+      const canvas = document.getElementById('cinema-canvas');
+      if (!canvas) return;
+
+      if (typeof MediaRecorder === 'undefined') {
+        showToast('Trình duyệt không hỗ trợ MediaRecorder để quay video trực tiếp', 'error');
+        return;
+      }
+
+      const active = getActiveRoute();
+      if (!active || routePinIds.length < 2) {
+        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để quay video!', 'error');
+        return;
+      }
+
+      showToast('Đang tải đầy đủ mảnh bản đồ nền trước khi ghi video...', 'info');
+      document.getElementById('export-video-btn-text').textContent = 'Đang tải bản đồ...';
+
+      // 1. Ensure all map background tiles are 100% preloaded before recording
+      const pathCoords = getInterpolatedRouteCoords();
+      await preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height);
+
+      // Select supported mime type
+      const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+      let selectedMime = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+
+      const stream = canvas.captureStream(30);
+      try {
+        recordedChunks = [];
+        mediaRecorder = selectedMime ? new MediaRecorder(stream, { mimeType: selectedMime }) : new MediaRecorder(stream);
+      } catch (err) {
+        console.error('Error creating MediaRecorder:', err);
+        showToast('Lỗi khởi tạo bộ ghi video canvas!', 'error');
+        document.getElementById('export-video-btn-text').textContent = 'Ghi & Tải Video';
+        return;
+      }
+
+      mediaRecorder.ondataavailable = function(e) {
+        if (e.data && e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = function() {
+        isRecordingVideo = false;
+        document.getElementById('cinema-rec-badge').classList.add('hidden');
+        document.getElementById('export-video-btn-text').textContent = 'Ghi & Tải Video';
+
+        if (recordedChunks.length === 0) {
+          showToast('Không có dữ liệu video được ghi!', 'error');
+          return;
+        }
+
+        const blob = new Blob(recordedChunks, { type: selectedMime || 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = active.name.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        a.download = `gaomaps-video-${safeName}-${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('🎉 Đã xuất và tải video hành trình có nền bản đồ thực tế thành công!', 'success');
+      };
+
+      // Start recording
+      isRecordingVideo = true;
+      mediaRecorder.start();
+
+      document.getElementById('cinema-rec-badge').classList.remove('hidden');
+      document.getElementById('export-video-btn-text').textContent = 'Đang ghi video...';
+
+      // Restart cinema simulation from beginning at 2x speed
+      cinemaProgress = 0.0;
+      isCinemaPlaying = true;
+      setCinemaSpeed(2);
+      document.getElementById('cinema-speed-select').value = '2';
+      requestAnimationFrame(runCinemaLoop);
+
+      // Auto-stop recording when progress finishes
+      const checkFinishedTimer = setInterval(() => {
+        if (cinemaProgress >= 1.0) {
+          clearInterval(checkFinishedTimer);
+          setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+              mediaRecorder.stop();
+            }
+          }, 600);
+        }
+      }, 300);
+
+      showToast('Đang quay video có nền bản đồ từ đầu đến cuối...', 'info');
     }
 
     // ==========================================
@@ -3795,7 +6429,7 @@
           startIn: 'documents'
         });
 
-        const dirName = deviceDirHandle.name || 'Thư mục MemoMap';
+        const dirName = deviceDirHandle.name || 'Thư mục Gạo Maps';
         localStorage.setItem(LS_DIR_NAME_KEY, dirName);
         updateFolderUIState(dirName, true);
 
@@ -3835,9 +6469,9 @@
       }
 
       try {
-        // 1. Write memomap_data.json
+        // 1. Write gaomaps_data.json
         const dataObj = {
-          appName: 'MemoMap - Bản đồ Dấu chân Kỷ niệm Việt Nam',
+          appName: 'Gạo Maps - Bản đồ Dấu chân Kỷ niệm Việt Nam',
           version: '2.0',
           lastUpdated: new Date().toLocaleString('vi-VN'),
           pinsCount: pins.length,
@@ -3846,7 +6480,7 @@
           activeRouteId: activeRouteId
         };
 
-        const fileHandle = await deviceDirHandle.getFileHandle('memomap_data.json', { create: true });
+        const fileHandle = await deviceDirHandle.getFileHandle('gaomaps_data.json', { create: true });
         const writable = await fileHandle.createWritable();
         await writable.write(JSON.stringify(dataObj, null, 2));
         await writable.close();
@@ -3884,7 +6518,12 @@
       }
 
       try {
-        const fileHandle = await deviceDirHandle.getFileHandle('memomap_data.json');
+        let fileHandle;
+        try {
+          fileHandle = await deviceDirHandle.getFileHandle('gaomaps_data.json');
+        } catch {
+          fileHandle = await deviceDirHandle.getFileHandle('memomap_data.json');
+        }
         const file = await fileHandle.getFile();
         const text = await file.text();
         const imported = JSON.parse(text);
@@ -3919,17 +6558,17 @@
           updateRouteCalculation();
           showToast(`Đã nạp thành công ${pins.length} kỷ niệm & ${routes.length} lộ trình từ thư mục!`, 'success');
         } else {
-          showToast('Tệp memomap_data.json không chứa dữ liệu hợp lệ!', 'error');
+          showToast('Tệp dữ liệu không chứa định dạng hợp lệ!', 'error');
         }
       } catch (err) {
         console.error('Error reading from device folder:', err);
-        showToast('Không tìm thấy tệp memomap_data.json trong thư mục đã chọn!', 'error');
+        showToast('Không tìm thấy tệp dữ liệu trong thư mục đã chọn!', 'error');
       }
     }
 
     function generateTextReport() {
       let report = `====================================================\n`;
-      report += `  MEMOMAP - BẢN ĐỒ DẤU CHÂN KỶ NIỆM DU LỊCH VIỆT NAM\n`;
+      report += `  GẠO MAPS - BẢN ĐỒ DẤU CHÂN KỶ NIỆM DU LỊCH VIỆT NAM\n`;
       report += `  Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
       report += `  Tổng số kỷ niệm: ${pins.length} địa điểm\n`;
       report += `  Tổng số lộ trình: ${routes.length} hành trình\n`;
@@ -3973,7 +6612,7 @@
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `nhat-ky-hanh-trinh-memomap-${Date.now()}.txt`;
+      anchor.download = `nhat-ky-hanh-trinh-gaomaps-${Date.now()}.txt`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -3983,7 +6622,7 @@
 
     function exportDataJson() {
       const exportObject = {
-        appName: 'MemoMap',
+        appName: 'GaoMaps',
         version: '2.0',
         exportedAt: new Date().toISOString(),
         pins: pins,
@@ -3994,7 +6633,7 @@
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObject, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute('href', dataStr);
-      downloadAnchor.setAttribute('download', `memomap-backup-${Date.now()}.json`);
+      downloadAnchor.setAttribute('download', `gaomaps-backup-${Date.now()}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -4040,7 +6679,7 @@
             updateRouteCalculation();
             showToast(`Khôi phục thành công ${pins.length} kỷ niệm & ${routes.length} lộ trình!`, 'success');
           } else {
-            showToast('Tệp JSON không đúng định dạng MemoMap!', 'error');
+            showToast('Tệp JSON không đúng định dạng Gạo Maps!', 'error');
           }
         } catch (err) {
           showToast('Lỗi đọc tệp JSON!', 'error');
