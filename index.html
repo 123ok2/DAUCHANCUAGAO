@@ -126,18 +126,27 @@
       background-color: #0284c7;
       animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
-    /* GPS Nav Heading Marker */
-    .nav-user-heading-arrow {
-      transition: transform 0.25s linear;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    /* GPU Hardware Acceleration & Smooth Rendering */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    .nav-pulse-wave {
-      animation: nav-pulse 2s infinite;
+    html, body {
+      overscroll-behavior: none;
+      touch-action: pan-y pinch-zoom;
     }
-    @keyframes nav-pulse {
-      0% { transform: scale(0.9); opacity: 0.8; }
-      70% { transform: scale(2.4); opacity: 0; }
-      100% { transform: scale(2.4); opacity: 0; }
+    .leaflet-tile {
+      will-change: transform, opacity;
+      image-rendering: auto;
+    }
+    .leaflet-container {
+      transform: translateZ(0);
+      -webkit-tap-highlight-color: transparent;
+    }
+    #cinema-canvas {
+      image-rendering: auto;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
   </style>
 </head>
@@ -148,45 +157,45 @@
     <aside id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-30 flex flex-col w-full sm:w-96 md:w-[420px] lg:w-[420px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 ease-in-out -translate-x-full lg:translate-x-0 shrink-0">
       
       <!-- App Header -->
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-sky-600 to-indigo-600 text-white shrink-0">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-inner">
+      <div class="px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-sky-600 to-indigo-600 text-white shrink-0">
+        <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg sm:text-xl shadow-inner shrink-0">
             <i class="fa-solid fa-map-location-dot"></i>
           </div>
-          <div>
-            <h1 class="font-black text-lg leading-tight tracking-tight">GẠO MAPS</h1>
-            <p class="text-xs text-sky-100 font-medium">Bản đồ Dấu chân Kỷ niệm</p>
+          <div class="min-w-0">
+            <h1 class="font-black text-base sm:text-lg leading-tight tracking-tight truncate">GẠO MAPS</h1>
+            <p class="text-[11px] sm:text-xs text-sky-100 font-medium truncate">Bản đồ Dấu chân Kỷ niệm</p>
           </div>
         </div>
-        <div class="flex items-center space-x-1.5">
-          <button onclick="openQuickGuideModal()" title="Hướng dẫn sử dụng" class="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 flex items-center gap-1.5 text-xs font-semibold transition">
+        <div class="flex items-center space-x-1.5 shrink-0">
+          <button onclick="openQuickGuideModal()" title="Hướng dẫn sử dụng" class="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 flex items-center gap-1.5 text-xs font-semibold transition whitespace-nowrap">
             <i class="fa-regular fa-lightbulb text-amber-300"></i>
-            <span>Hướng dẫn</span>
+            <span class="hidden xs:inline sm:inline">Hướng dẫn</span>
           </button>
-          <button id="btn-theme-toggle" title="Đổi giao diện Sáng/Tối" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition">
+          <button id="btn-theme-toggle" title="Đổi giao diện Sáng/Tối" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-sm transition">
             <i class="fa-solid fa-moon"></i>
           </button>
-          <button id="btn-close-sidebar" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition" title="Đóng danh sách">
+          <button id="btn-close-sidebar" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-sm transition" title="Đóng danh sách">
             <i class="fa-solid fa-xmark text-base"></i>
           </button>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
-      <div class="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-1.5 shrink-0 text-sm font-medium">
-        <button id="tab-pins-btn" class="flex-1 py-2 px-3 rounded-lg text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center gap-2 transition" onclick="switchTab('pins')">
-          <i class="fa-solid fa-camera-retro"></i>
-          <span>Kỷ niệm</span>
-          <span id="badge-pins-count" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold">0</span>
+      <div class="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-1.5 shrink-0 text-xs sm:text-sm font-medium gap-1">
+        <button id="tab-pins-btn" class="flex-1 py-2 px-1.5 sm:px-3 rounded-xl text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center gap-1 sm:gap-1.5 transition font-bold whitespace-nowrap select-none" onclick="switchTab('pins')">
+          <i class="fa-solid fa-camera-retro text-xs sm:text-sm shrink-0"></i>
+          <span class="whitespace-nowrap">Kỷ niệm</span>
+          <span id="badge-pins-count" class="min-w-[18px] h-4 px-1 text-[10px] sm:text-xs rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold inline-flex items-center justify-center leading-none">0</span>
         </button>
-        <button id="tab-route-btn" class="flex-1 py-2 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-2 transition" onclick="switchTab('route')">
-          <i class="fa-solid fa-route"></i>
-          <span>Lộ trình</span>
-          <span id="badge-route-stops" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold">0</span>
+        <button id="tab-route-btn" class="flex-1 py-2 px-1.5 sm:px-3 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1 sm:gap-1.5 transition font-medium whitespace-nowrap select-none" onclick="switchTab('route')">
+          <i class="fa-solid fa-route text-xs sm:text-sm shrink-0"></i>
+          <span class="whitespace-nowrap">Lộ trình</span>
+          <span id="badge-route-stops" class="min-w-[18px] h-4 px-1 text-[10px] sm:text-xs rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold inline-flex items-center justify-center leading-none">0</span>
         </button>
-        <button id="tab-stats-btn" class="flex-1 py-2 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-2 transition" onclick="switchTab('stats')">
-          <i class="fa-solid fa-chart-pie"></i>
-          <span>Thống kê</span>
+        <button id="tab-stats-btn" class="flex-1 py-2 px-1.5 sm:px-3 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1 sm:gap-1.5 transition font-medium whitespace-nowrap select-none" onclick="switchTab('stats')">
+          <i class="fa-solid fa-chart-pie text-xs sm:text-sm shrink-0"></i>
+          <span class="whitespace-nowrap">Thống kê</span>
         </button>
       </div>
 
@@ -476,30 +485,25 @@
       <!-- Leaflet Map Container -->
       <div id="map" class="h-full w-full z-0"></div>
 
-      <!-- TOP FLOATING SEARCH & CONTROLS BAR -->
-      <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pointer-events-none">
+      <!-- TOP FLOATING SEARCH & CONTROLS BAR (Single-Row Streamlined Layout) -->
+      <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-20 flex items-center gap-2 pointer-events-none">
         
-        <!-- Sidebar Toggle & Quick Help (Mobile / Desktop) -->
-        <div class="pointer-events-auto flex items-center gap-2">
-          <button id="btn-toggle-sidebar" class="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 active:scale-90 shrink-0 group" title="Mở/Đóng danh sách">
-            <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-lg transition-all duration-300 group-hover:scale-110"></i>
-          </button>
-          
-          <button onclick="openQuickGuideModal()" class="h-11 px-3 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 text-xs font-bold shrink-0 sm:hidden">
-            <i class="fa-regular fa-lightbulb text-amber-500 text-sm"></i>
-            <span>HD</span>
+        <!-- Sidebar Toggle (Hamburger Button) -->
+        <div class="pointer-events-auto shrink-0">
+          <button id="btn-toggle-sidebar" class="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 active:scale-90 group" title="Mở/Đóng danh sách">
+            <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-base sm:text-lg transition-all duration-200 group-hover:scale-110"></i>
           </button>
         </div>
 
         <!-- Search Bar with Nominatim Autocomplete -->
-        <div class="pointer-events-auto relative flex-1 max-w-lg">
-          <div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 px-3.5 py-2.5 focus-within:ring-2 focus-within:ring-sky-500 transition">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-base mr-2.5"></i>
-            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm (Hà Nội, Đà Nẵng, Phú Quốc...)" class="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" autocomplete="off" />
-            <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 text-sm px-1.5">
+        <div class="pointer-events-auto relative flex-1 max-w-lg min-w-0">
+          <div class="flex items-center h-11 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 px-3 sm:px-3.5 focus-within:ring-2 focus-within:ring-sky-500 transition">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm sm:text-base mr-2 shrink-0"></i>
+            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm..." class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none truncate" autocomplete="off" />
+            <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 text-sm px-1.5 shrink-0">
               <i class="fa-solid fa-circle-xmark"></i>
             </button>
-            <div id="search-spinner" class="hidden animate-spin text-sky-500 text-sm ml-2">
+            <div id="search-spinner" class="hidden animate-spin text-sky-500 text-sm ml-2 shrink-0">
               <i class="fa-solid fa-circle-notch"></i>
             </div>
           </div>
@@ -510,19 +514,19 @@
           </div>
         </div>
 
-        <!-- Quick Map Style & Action Badges -->
-        <div class="pointer-events-auto flex items-center gap-2 shrink-0 self-end sm:self-auto">
+        <!-- Quick Map Style & Desktop Action -->
+        <div class="pointer-events-auto flex items-center gap-2 shrink-0">
           
           <!-- Map Style Selector -->
           <div class="relative">
-            <button id="btn-map-layers" class="h-11 px-3.5 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm font-semibold">
+            <button id="btn-map-layers" class="h-11 px-3 sm:px-3.5 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 sm:gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
               <i class="fa-solid fa-layer-group text-sky-600"></i>
-              <span id="current-layer-name" class="hidden sm:inline">Bản đồ Sáng</span>
-              <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+              <span id="current-layer-name" class="hidden md:inline">Bản đồ Sáng</span>
+              <i class="fa-solid fa-chevron-down text-xs text-slate-400 hidden sm:inline"></i>
             </button>
 
             <!-- Map Layers Menu -->
-            <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
+            <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
               <button onclick="setMapTile('light')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
                 <i class="fa-solid fa-sun text-amber-500"></i> Carto Sáng (Mặc định)
               </button>
@@ -546,26 +550,29 @@
         </div>
       </div>
 
-      <!-- RIGHT SIDE MAP CONTROLS (Positioned above mobile bottom bar) -->
-      <div class="absolute bottom-20 lg:bottom-6 right-3 sm:right-4 z-20 flex flex-col gap-2.5 pointer-events-auto">
+      <!-- RIGHT SIDE MAP CONTROLS (Compact & Minimalist) -->
+      <div class="absolute bottom-20 lg:bottom-6 right-2.5 sm:right-4 z-20 flex flex-col gap-1.5 sm:gap-2 pointer-events-auto select-none">
         <!-- GPS Real-Time Location Button -->
-        <button id="btn-gps-location" class="relative w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 group" title="Vị trí hiện tại của tôi">
-          <div id="gps-pulse-effect" class="hidden absolute inset-0 rounded-2xl gps-pulse"></div>
-          <i class="fa-solid fa-crosshairs text-lg text-sky-600 group-hover:scale-110 transition"></i>
+        <button id="btn-gps-location" class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 group" title="Vị trí hiện tại của tôi">
+          <div id="gps-pulse-effect" class="hidden absolute inset-0 rounded-xl sm:rounded-2xl gps-pulse"></div>
+          <i class="fa-solid fa-crosshairs text-sm sm:text-base text-sky-600 group-hover:scale-110 transition"></i>
         </button>
 
-        <!-- Zoom In -->
-        <button onclick="map.zoomIn()" class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 font-bold" title="Phóng to">
-          <i class="fa-solid fa-plus"></i>
-        </button>
+        <!-- Compact Zoom Group (+ and -) -->
+        <div class="flex flex-col bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl shadow-md border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+          <!-- Zoom In -->
+          <button onclick="map.zoomIn()" class="w-9 h-9 sm:w-10 sm:h-10 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 text-xs sm:text-sm font-bold" title="Phóng to">
+            <i class="fa-solid fa-plus"></i>
+          </button>
 
-        <!-- Zoom Out -->
-        <button onclick="map.zoomOut()" class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 font-bold" title="Thu nhỏ">
-          <i class="fa-solid fa-minus"></i>
-        </button>
+          <!-- Zoom Out -->
+          <button onclick="map.zoomOut()" class="w-9 h-9 sm:w-10 sm:h-10 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 text-xs sm:text-sm font-bold" title="Thu nhỏ">
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </div>
 
         <!-- Fit Vietnam Bounds -->
-        <button onclick="fitVietnamBounds()" class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90" title="Toàn cảnh Việt Nam">
+        <button onclick="fitVietnamBounds()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 text-xs sm:text-sm" title="Toàn cảnh Việt Nam">
           <i class="fa-solid fa-earth-asia text-slate-600 dark:text-slate-300"></i>
         </button>
       </div>
@@ -647,7 +654,7 @@
       </div>
 
       <!-- ==================== MOBILE BOTTOM NAVIGATION BAR ==================== -->
-      <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 shadow-2xl flex items-center justify-around">
+      <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-1 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-around select-none">
         <!-- 1. Map View Button -->
         <button id="mobile-nav-map" onclick="handleMobileNavMap()" class="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl text-sky-600 dark:text-sky-400 transition active:scale-95">
           <div class="w-6 h-6 flex items-center justify-center text-lg">
@@ -660,16 +667,15 @@
         <button id="mobile-nav-pins" onclick="handleMobileNavTab('pins')" class="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-500 dark:text-slate-400 transition active:scale-95 relative">
           <div class="w-6 h-6 flex items-center justify-center text-lg relative">
             <i class="fa-solid fa-camera-retro"></i>
-            <span id="mobile-badge-pins" class="absolute -top-1.5 -right-2 px-1.5 py-0.2 text-[9px] rounded-full bg-sky-500 text-white font-bold">0</span>
+            <span id="mobile-badge-pins" class="hidden absolute -top-1 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[9px] font-black flex items-center justify-center leading-none shadow-sm">0</span>
           </div>
           <span class="text-[10px] font-medium mt-0.5">Kỷ niệm</span>
         </button>
 
         <!-- 3. Central Prominent Floating "+ Ghim" Button -->
-        <div class="flex-1 flex items-center justify-center -mt-5">
-          <button onclick="handleMobileQuickAdd()" class="w-13 h-13 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-xl shadow-sky-500/40 flex flex-col items-center justify-center active:scale-90 transition border-3 border-white dark:border-slate-900 group" title="Thêm kỷ niệm mới">
+        <div class="flex-1 flex items-center justify-center -mt-6">
+          <button onclick="handleMobileQuickAdd()" class="w-12 h-12 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 text-white shadow-[0_6px_20px_rgba(14,165,233,0.5)] flex items-center justify-center active:scale-90 hover:scale-105 transition-all duration-150 border-3 border-white dark:border-slate-900 group" title="Thêm kỷ niệm mới tại tâm bản đồ">
             <i class="fa-solid fa-plus text-xl group-hover:rotate-90 transition duration-200"></i>
-            <span class="text-[9px] font-black tracking-tighter">GHIM</span>
           </button>
         </div>
 
@@ -677,7 +683,7 @@
         <button id="mobile-nav-route" onclick="handleMobileNavTab('route')" class="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-500 dark:text-slate-400 transition active:scale-95 relative">
           <div class="w-6 h-6 flex items-center justify-center text-lg relative">
             <i class="fa-solid fa-route"></i>
-            <span id="mobile-badge-route" class="absolute -top-1.5 -right-2 px-1.5 py-0.2 text-[9px] rounded-full bg-indigo-500 text-white font-bold">0</span>
+            <span id="mobile-badge-route" class="hidden absolute -top-1 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-indigo-500 text-white text-[9px] font-black flex items-center justify-center leading-none shadow-sm">0</span>
           </div>
           <span class="text-[10px] font-medium mt-0.5">Lộ trình</span>
         </button>
@@ -1258,139 +1264,138 @@
     </div>
 
     <!-- ==================== ROUTE CINEMA SIMULATION & MEDIA STUDIO MODAL ==================== -->
-    <div id="route-cinema-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-      <div class="relative w-full max-w-4xl bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden my-auto flex flex-col max-h-[95vh] text-white animate-in fade-in zoom-in-95 duration-200">
+    <div id="route-cinema-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto" onclick="if(event.target === this) closeRouteCinemaModal()">
+      <div class="relative w-full h-full sm:h-auto max-w-4xl bg-slate-900 rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-slate-800 overflow-hidden my-0 sm:my-auto flex flex-col max-h-screen sm:max-h-[92vh] text-white animate-in fade-in zoom-in-95 duration-200">
         
-        <!-- Header -->
-        <div class="px-4 sm:px-5 py-2.5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-sky-500 text-white flex items-center justify-center text-base shadow-lg shrink-0">
+        <!-- 1. Header Top Bar (Title & Always Top-Right Close Button) -->
+        <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between gap-3 shrink-0">
+          <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-sky-500 text-white flex items-center justify-center text-sm sm:text-base shadow-lg shrink-0">
               <i class="fa-solid fa-film"></i>
             </div>
-            <div>
-              <h3 id="cinema-route-title" class="font-black text-sm sm:text-base text-white">Mô Phỏng Lộ Trình Kỷ Niệm</h3>
-              <p class="text-[11px] text-slate-400">Camera bám cận cảnh lộ trình dài & xuất video kỷ niệm sắc nét</p>
+            <div class="min-w-0">
+              <h3 id="cinema-route-title" class="font-black text-xs sm:text-base text-white truncate">Mô Phỏng Lộ Trình Kỷ Niệm</h3>
+              <p class="text-[10px] sm:text-[11px] text-slate-400 truncate">Camera bám cận cảnh lộ trình & xuất video kỷ niệm HD</p>
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Camera Mode Selector (Follow / Cinematic / Overview) -->
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
-              <i class="fa-solid fa-video text-xs text-indigo-400"></i>
-              <label for="cinema-cam-mode-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Góc quay:</label>
-              <select id="cinema-cam-mode-select" onchange="changeCinemaCameraMode(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
-                <option value="follow" class="bg-slate-900 text-white" selected>🎥 Bám theo xe (Cận cảnh)</option>
-                <option value="cinematic" class="bg-slate-900 text-white">🎬 Điện ảnh (Zoom & Dừng trạm)</option>
-                <option value="overview" class="bg-slate-900 text-white">🗺️ Toàn cảnh (Bao quát)</option>
-              </select>
-            </div>
+          <!-- Pinned Top-Right Close Button -->
+          <button onclick="closeRouteCinemaModal()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-800/90 hover:bg-slate-700 active:scale-90 text-slate-300 hover:text-white flex items-center justify-center transition shrink-0 border border-slate-700/60" title="Đóng modal (Esc)">
+            <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
+          </button>
+        </div>
 
-            <!-- Zoom Detail Level Selector -->
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
-              <i class="fa-solid fa-magnifying-glass-location text-xs text-emerald-400"></i>
-              <label for="cinema-zoom-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Chi tiết:</label>
-              <select id="cinema-zoom-select" onchange="changeCinemaZoomLevel(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
-                <option value="auto" class="bg-slate-900 text-white" selected>🔍 Tự động</option>
-                <option value="15" class="bg-slate-900 text-white">🏙️ Cực cận (Z15)</option>
-                <option value="13" class="bg-slate-900 text-white">🏘️ Đô thị (Z13)</option>
-                <option value="11" class="bg-slate-900 text-white">🛣️ Liên tỉnh (Z11)</option>
-              </select>
-            </div>
+        <!-- 2. Responsive Camera & Map Controls Strip -->
+        <div class="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-slate-800/80 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar shrink-0">
+          <!-- Camera Mode Selector -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
+            <i class="fa-solid fa-video text-[11px] sm:text-xs text-indigo-400 shrink-0"></i>
+            <select id="cinema-cam-mode-select" onchange="changeCinemaCameraMode(this.value)" class="bg-transparent text-[11px] sm:text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="follow" class="bg-slate-900 text-white" selected>Bám theo xe</option>
+              <option value="cinematic" class="bg-slate-900 text-white">Điện ảnh (Zoom)</option>
+              <option value="overview" class="bg-slate-900 text-white">Toàn cảnh</option>
+            </select>
+          </div>
 
-            <!-- 3D Perspective Tilt Angle Selector -->
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
-              <i class="fa-solid fa-cube text-xs text-amber-400"></i>
-              <label for="cinema-tilt-select" class="text-[11px] font-bold text-slate-300 hidden md:inline">Góc nhìn:</label>
-              <select id="cinema-tilt-select" onchange="changeCinemaTiltAngle(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
-                <option value="35" class="bg-slate-900 text-white" selected>📐 3D Nghiêng (Êm ái, không xoay)</option>
-                <option value="45" class="bg-slate-900 text-white">📐 3D Nghiêng sâu (45°)</option>
-                <option value="0" class="bg-slate-900 text-white">🗺️ 2D Nhìn thẳng (0°)</option>
-              </select>
-            </div>
+          <!-- Zoom Detail Level Selector -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
+            <i class="fa-solid fa-magnifying-glass-location text-[11px] sm:text-xs text-emerald-400 shrink-0"></i>
+            <select id="cinema-zoom-select" onchange="changeCinemaZoomLevel(this.value)" class="bg-transparent text-[11px] sm:text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="auto" class="bg-slate-900 text-white" selected>Zoom Tự động</option>
+              <option value="15" class="bg-slate-900 text-white">Cực cận (Z15)</option>
+              <option value="13" class="bg-slate-900 text-white">Đô thị (Z13)</option>
+              <option value="11" class="bg-slate-900 text-white">Liên tỉnh (Z11)</option>
+            </select>
+          </div>
 
-            <!-- Map Background Selector -->
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/40 rounded-xl px-2.5 py-1 shadow-inner">
-              <i class="fa-solid fa-layer-group text-xs text-sky-400"></i>
-              <select id="cinema-map-style-select" onchange="changeCinemaMapStyle(this.value)" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
-                <option value="voyager" class="bg-slate-900 text-white" selected>🗺️ Voyager</option>
-                <option value="satellite" class="bg-slate-900 text-white">🛰️ Vệ tinh</option>
-                <option value="dark" class="bg-slate-900 text-white">🌑 Tối</option>
-                <option value="light" class="bg-slate-900 text-white">☀️ Sáng</option>
-                <option value="osm" class="bg-slate-900 text-white">🛣️ OSM</option>
-                <option value="grid" class="bg-slate-900 text-white">🌌 Cyber</option>
-              </select>
-            </div>
+          <!-- 3D Perspective Tilt Angle Selector -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
+            <i class="fa-solid fa-cube text-[11px] sm:text-xs text-amber-400 shrink-0"></i>
+            <select id="cinema-tilt-select" onchange="changeCinemaTiltAngle(this.value)" class="bg-transparent text-[11px] sm:text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="35" class="bg-slate-900 text-white" selected>3D Nghiêng (35°)</option>
+              <option value="45" class="bg-slate-900 text-white">3D Sâu (45°)</option>
+              <option value="0" class="bg-slate-900 text-white">2D Thẳng (0°)</option>
+            </select>
+          </div>
 
-            <button onclick="closeRouteCinemaModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Đóng modal">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+          <!-- Map Background Selector -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
+            <i class="fa-solid fa-layer-group text-[11px] sm:text-xs text-sky-400 shrink-0"></i>
+            <select id="cinema-map-style-select" onchange="changeCinemaMapStyle(this.value)" class="bg-transparent text-[11px] sm:text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="voyager" class="bg-slate-900 text-white" selected>Voyager</option>
+              <option value="satellite" class="bg-slate-900 text-white">Vệ tinh</option>
+              <option value="dark" class="bg-slate-900 text-white">Tối</option>
+              <option value="light" class="bg-slate-900 text-white">Sáng</option>
+              <option value="osm" class="bg-slate-900 text-white">OSM</option>
+              <option value="grid" class="bg-slate-900 text-white">Cyber</option>
+            </select>
           </div>
         </div>
 
-        <!-- Cinema Viewport with Canvas & Overlays -->
-        <div class="relative flex-1 bg-slate-950 flex items-center justify-center min-h-[340px] sm:min-h-[460px] overflow-hidden select-none">
-          <!-- Canvas for 2D Route Journey Visualization & Video Recording Stream -->
-          <canvas id="cinema-canvas" width="1080" height="720" class="w-full h-full max-h-[480px] object-contain rounded-xl shadow-2xl bg-slate-950"></canvas>
+        <!-- 3. Cinema Viewport with Canvas & Overlays -->
+        <div class="relative flex-1 bg-slate-950 flex items-center justify-center min-h-[220px] xs:min-h-[260px] sm:min-h-[380px] max-h-[55vh] sm:max-h-[480px] overflow-hidden select-none">
+          <!-- Canvas for 2D/3D Route Journey Visualization & High-Bitrate Video Recording Stream (1080p Full HD) -->
+          <canvas id="cinema-canvas" width="1920" height="1080" class="w-full h-full max-h-[480px] object-contain rounded-xl shadow-2xl bg-slate-950"></canvas>
 
           <!-- Active Stop Hover Popover during Simulation -->
-          <div id="cinema-stop-popup" class="hidden absolute top-4 left-4 max-w-[280px] sm:max-w-xs bg-slate-900/95 backdrop-blur-md rounded-2xl p-3 border border-indigo-500/50 shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none">
+          <div id="cinema-stop-popup" class="hidden absolute top-2.5 left-2.5 sm:top-4 sm:left-4 max-w-[calc(100%-20px)] sm:max-w-xs bg-slate-900/95 backdrop-blur-md rounded-2xl p-3 border border-indigo-500/50 shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none z-10">
             <div class="flex items-center gap-2 mb-1">
-              <span id="cinema-popup-num" class="w-6 h-6 rounded-full bg-indigo-500 text-white font-black text-xs flex items-center justify-center shadow-sm">1</span>
-              <span id="cinema-popup-cat" class="text-[10px] uppercase font-bold text-sky-400">Tham quan</span>
+              <span id="cinema-popup-num" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-indigo-500 text-white font-black text-[11px] sm:text-xs flex items-center justify-center shadow-sm">1</span>
+              <span id="cinema-popup-cat" class="text-[9px] sm:text-[10px] uppercase font-bold text-sky-400">Tham quan</span>
             </div>
-            <h4 id="cinema-popup-title" class="font-bold text-sm text-white truncate">Hồ Gươm</h4>
-            <div id="cinema-popup-img-wrap" class="w-full h-28 rounded-xl overflow-hidden mt-1.5 bg-slate-800 relative hidden border border-white/10">
+            <h4 id="cinema-popup-title" class="font-bold text-xs sm:text-sm text-white truncate">Hồ Gươm</h4>
+            <div id="cinema-popup-img-wrap" class="w-full h-24 sm:h-28 rounded-xl overflow-hidden mt-1.5 bg-slate-800 relative hidden border border-white/10">
               <img id="cinema-popup-img" src="" class="w-full h-full object-cover" />
             </div>
-            <p id="cinema-popup-notes" class="text-xs text-slate-300 mt-1.5 line-clamp-2 italic font-light"></p>
+            <p id="cinema-popup-notes" class="text-[11px] sm:text-xs text-slate-300 mt-1 line-clamp-2 italic font-light"></p>
           </div>
 
           <!-- Video Recording Status Pill -->
-          <div id="cinema-rec-badge" class="hidden absolute top-4 right-4 px-3 py-1.5 rounded-full bg-rose-600/95 text-white text-xs font-black flex items-center gap-2 shadow-2xl border border-white/20">
-            <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+          <div id="cinema-rec-badge" class="hidden absolute top-2.5 right-2.5 sm:top-4 sm:right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-rose-600/95 text-white text-[10px] sm:text-xs font-black flex items-center gap-1.5 sm:gap-2 shadow-2xl border border-white/20 z-10">
+            <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white animate-ping"></span>
             <span>REC • ĐANG GHI VIDEO</span>
           </div>
 
           <!-- Progress Bar on Canvas Bottom -->
-          <div class="absolute bottom-2 left-4 right-4 bg-slate-800/80 backdrop-blur-md rounded-full h-2 overflow-hidden border border-white/10">
+          <div class="absolute bottom-2 left-3 right-3 sm:left-4 sm:right-4 bg-slate-800/80 backdrop-blur-md rounded-full h-1.5 sm:h-2 overflow-hidden border border-white/10 z-10">
             <div id="cinema-progress-fill" class="h-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 transition-all duration-100" style="width: 0%;"></div>
           </div>
         </div>
 
-        <!-- Cinema Bottom Control Bar & Media Exporter -->
-        <div class="p-3 sm:p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <!-- 4. Cinema Bottom Control Bar & Media Exporter (Responsive for Mobile & Desktop) -->
+        <div class="p-2.5 sm:p-4 bg-slate-950 border-t border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
           
           <!-- Playback Controls -->
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-            <button id="btn-cinema-play" onclick="toggleCinemaPlay()" class="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 transition active:scale-95 shadow-md shadow-indigo-600/30">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="btn-cinema-play" onclick="toggleCinemaPlay()" class="flex-1 sm:flex-initial h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-md shadow-indigo-600/30 whitespace-nowrap">
               <i id="cinema-play-icon" class="fa-solid fa-play"></i>
               <span id="cinema-play-text">Phát mô phỏng</span>
             </button>
-            <button onclick="restartCinemaSimulation()" class="h-10 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition" title="Phát lại từ đầu">
+            <button onclick="restartCinemaSimulation()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-bold flex items-center justify-center transition shrink-0" title="Phát lại từ đầu">
               <i class="fa-solid fa-rotate-left"></i>
             </button>
             
             <!-- Speed Selector -->
-            <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer">
-              <option value="1">1x (Thong thả)</option>
-              <option value="2" selected>2x (Chuẩn)</option>
-              <option value="4">4x (Nhanh)</option>
-              <option value="8">8x (Tốc độ cao)</option>
+            <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2 sm:px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer">
+              <option value="1">1x</option>
+              <option value="2" selected>2x</option>
+              <option value="4">4x</option>
+              <option value="8">8x</option>
             </select>
           </div>
 
-          <!-- Media Export Actions: Poster & Video -->
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <!-- Media Export Actions: Poster & Video (Balanced 2-col on mobile) -->
+          <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 w-full sm:w-auto">
             <!-- 1. Export Poster Image -->
-            <button onclick="exportRoutePosterCard()" class="flex-1 sm:flex-initial h-10 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-sm" title="Tải ảnh Poster Infographic Hành trình HD">
+            <button onclick="exportRoutePosterCard()" class="h-10 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition shadow-sm whitespace-nowrap" title="Tải ảnh Poster Infographic Hành trình HD">
               <i class="fa-solid fa-image"></i>
-              <span>Xuất Ảnh Poster (HD)</span>
+              <span class="truncate">Xuất Poster (HD)</span>
             </button>
 
             <!-- 2. Record & Export Video -->
-            <button id="btn-export-video" onclick="recordAndExportRouteVideo()" class="flex-1 sm:flex-initial h-10 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white text-xs font-bold shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition active:scale-95" title="Ghi và tải video chuyển động lộ trình (.webm)">
+            <button id="btn-export-video" onclick="recordAndExportRouteVideo()" class="h-10 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 hover:from-rose-600 hover:to-orange-600 active:scale-95 text-white text-xs font-bold shadow-lg shadow-rose-500/25 flex items-center justify-center gap-1.5 sm:gap-2 transition whitespace-nowrap" title="Ghi và tải video chuyển động lộ trình (.webm)">
               <i class="fa-solid fa-video"></i>
-              <span id="export-video-btn-text">Ghi & Tải Video</span>
+              <span id="export-video-btn-text" class="truncate">Ghi & Tải Video</span>
             </button>
           </div>
         </div>
@@ -1462,7 +1467,7 @@
     </div>
 
     <!-- ==================== TOAST NOTIFICATION ==================== -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-3 sm:top-5 left-3 right-3 sm:left-auto sm:right-5 z-[99999] flex flex-col items-center sm:items-end gap-2 pointer-events-none"></div>
 
   </div>
 
@@ -1592,6 +1597,16 @@
         updateRouteCalculation();
       }
       renderRouteStops();
+
+      // Close modals with Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const cinemaModal = document.getElementById('route-cinema-modal');
+          if (cinemaModal && !cinemaModal.classList.contains('hidden')) {
+            closeRouteCinemaModal();
+          }
+        }
+      });
     });
 
     // Device Fingerprint Generation for User Isolation in Firebase Firestore
@@ -2337,8 +2352,15 @@
 
       const badgePins = document.getElementById('badge-pins-count');
       if (badgePins) badgePins.textContent = pins.length;
-      const badgePinsMob = document.getElementById('badge-pins-count-mobile');
-      if (badgePinsMob) badgePinsMob.textContent = pins.length;
+      const mobBadgePins = document.getElementById('mobile-badge-pins');
+      if (mobBadgePins) {
+        mobBadgePins.textContent = pins.length;
+        if (pins.length > 0) {
+          mobBadgePins.classList.remove('hidden');
+        } else {
+          mobBadgePins.classList.add('hidden');
+        }
+      }
     }
 
     function buildPopupHtml(pin) {
@@ -2961,11 +2983,11 @@
         const btn = document.getElementById(`tab-${t}-btn`);
         const content = document.getElementById(`tab-${t}`);
         if (t === tabName) {
-          btn.className = 'flex-1 py-2 px-3 rounded-lg text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center gap-2 transition font-bold';
+          btn.className = 'flex-1 py-2 px-1.5 sm:px-3 rounded-xl text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center gap-1 sm:gap-1.5 transition font-bold whitespace-nowrap select-none text-xs sm:text-sm';
           content.classList.remove('hidden');
           content.classList.add('flex', 'flex-col');
         } else {
-          btn.className = 'flex-1 py-2 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-2 transition font-medium';
+          btn.className = 'flex-1 py-2 px-1.5 sm:px-3 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1 sm:gap-1.5 transition font-medium whitespace-nowrap select-none text-xs sm:text-sm';
           content.classList.add('hidden');
           content.classList.remove('flex', 'flex-col');
         }
@@ -4157,8 +4179,15 @@
       if (countEl) countEl.textContent = routePinIds.length;
       if (countBadge) countBadge.textContent = routePinIds.length;
       if (badgeCount) badgeCount.textContent = routePinIds.length;
-      const badgeCountMob = document.getElementById('badge-route-stops-mobile');
-      if (badgeCountMob) badgeCountMob.textContent = routePinIds.length;
+      const mobBadgeRoute = document.getElementById('mobile-badge-route');
+      if (mobBadgeRoute) {
+        mobBadgeRoute.textContent = routePinIds.length;
+        if (routePinIds.length > 0) {
+          mobBadgeRoute.classList.remove('hidden');
+        } else {
+          mobBadgeRoute.classList.add('hidden');
+        }
+      }
 
       // Update color picker selection in UI
       const routeColorPicker = document.getElementById('route-color-input') || document.getElementById('route-color-picker');
@@ -5038,6 +5067,9 @@
       return 15;
     }
 
+    let cinemaLastTimestamp = null;
+    let cinemaSmoothedHeading = null;
+
     function getDynamicCinemaViewport(pathCoords, progress, canvasW, canvasH) {
       if (!pathCoords || pathCoords.length < 2) return null;
 
@@ -5052,10 +5084,11 @@
       const wholeCenterLat = (minLat + maxLat) / 2;
       const wholeCenterLng = (minLng + maxLng) / 2;
 
-      // Find current vehicle coordinates along path
-      const currentIdxFloat = progress * (pathCoords.length - 1);
+      // Find current vehicle coordinates along path with sub-pixel interpolation
+      const totalPoints = pathCoords.length;
+      const currentIdxFloat = Math.max(0, Math.min(progress, 1.0)) * (totalPoints - 1);
       const currentIdx = Math.floor(currentIdxFloat);
-      const nextIdx = Math.min(currentIdx + 1, pathCoords.length - 1);
+      const nextIdx = Math.min(currentIdx + 1, totalPoints - 1);
       const segmentT = currentIdxFloat - currentIdx;
 
       const pt1 = pathCoords[currentIdx];
@@ -5072,14 +5105,16 @@
         camCenterLat = wholeCenterLat;
         camCenterLng = wholeCenterLng;
       } else if (cinemaCameraMode === 'cinematic') {
-        if (progress < 0.05) {
-          const easeT = progress / 0.05;
-          camCenterLat = wholeCenterLat + (carLat - wholeCenterLat) * easeT;
-          camCenterLng = wholeCenterLng + (carLng - wholeCenterLng) * easeT;
-        } else if (progress > 0.95) {
-          const easeT = (progress - 0.95) / 0.05;
-          camCenterLat = carLat + (wholeCenterLat - carLat) * easeT;
-          camCenterLng = carLng + (wholeCenterLng - carLng) * easeT;
+        if (progress < 0.06) {
+          const easeT = progress / 0.06;
+          const smoothEase = easeT * easeT * (3 - 2 * easeT);
+          camCenterLat = wholeCenterLat + (carLat - wholeCenterLat) * smoothEase;
+          camCenterLng = wholeCenterLng + (carLng - wholeCenterLng) * smoothEase;
+        } else if (progress > 0.94) {
+          const easeT = (progress - 0.94) / 0.06;
+          const smoothEase = easeT * easeT * (3 - 2 * easeT);
+          camCenterLat = carLat + (wholeCenterLat - carLat) * smoothEase;
+          camCenterLng = carLng + (wholeCenterLng - carLng) * smoothEase;
         } else {
           camCenterLat = carLat;
           camCenterLng = carLng;
@@ -5092,15 +5127,31 @@
       const centerWorld = latLngToMercatorWorld(camCenterLat, camCenterLng, currentZoom);
       const carWorld = latLngToMercatorWorld(carLat, carLng, currentZoom);
 
-      // Compute vehicle heading vector in mercator space
-      const w1 = latLngToMercatorWorld(pt1.lat, pt1.lng, currentZoom);
-      const w2 = latLngToMercatorWorld(pt2.lat, pt2.lng, currentZoom);
-      let headingAngle = 0;
-      if (Math.hypot(w2.x - w1.x, w2.y - w1.y) > 0.1) {
-        headingAngle = Math.atan2(w2.y - w1.y, w2.x - w1.x);
+      // Compute smoothed vehicle heading vector with lookahead tangent window
+      const lookaheadIdx = Math.min(currentIdx + Math.max(2, Math.floor(totalPoints / 80)), totalPoints - 1);
+      const lookPt = pathCoords[lookaheadIdx];
+      const wLook = latLngToMercatorWorld(lookPt.lat, lookPt.lng, currentZoom);
+      let targetHeading = 0;
+      if (Math.hypot(wLook.x - carWorld.x, wLook.y - carWorld.y) > 0.1) {
+        targetHeading = Math.atan2(wLook.y - carWorld.y, wLook.x - carWorld.x);
+      } else {
+        const w1 = latLngToMercatorWorld(pt1.lat, pt1.lng, currentZoom);
+        const w2 = latLngToMercatorWorld(pt2.lat, pt2.lng, currentZoom);
+        if (Math.hypot(w2.x - w1.x, w2.y - w1.y) > 0.1) {
+          targetHeading = Math.atan2(w2.y - w1.y, w2.x - w1.x);
+        }
       }
 
-      const tileRadius = cinemaTiltAngle > 0 ? 5 : 3;
+      if (cinemaSmoothedHeading === null) {
+        cinemaSmoothedHeading = targetHeading;
+      } else {
+        let diff = targetHeading - cinemaSmoothedHeading;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        cinemaSmoothedHeading += diff * 0.18; // Smooth rotational lerp
+      }
+
+      const tileRadius = cinemaTiltAngle > 0 ? 6 : 4;
       const centerTx = Math.floor(centerWorld.x / 256);
       const centerTy = Math.floor(centerWorld.y / 256);
 
@@ -5121,7 +5172,7 @@
         maxTy,
         carLat,
         carLng,
-        headingAngle,
+        headingAngle: cinemaSmoothedHeading,
         minLat,
         maxLat,
         minLng,
@@ -5138,13 +5189,13 @@
         const zoom = getEffectiveCinemaZoom(pathCoords, canvasW, canvasH);
         const tileKeySet = new Set();
 
-        const step = Math.max(1, Math.floor(pathCoords.length / 90));
+        const step = Math.max(1, Math.floor(pathCoords.length / 120));
         for (let i = 0; i < pathCoords.length; i += step) {
           const pt = pathCoords[i];
           const wPt = latLngToMercatorWorld(pt.lat, pt.lng, zoom);
           const centerTx = Math.floor(wPt.x / 256);
           const centerTy = Math.floor(wPt.y / 256);
-          const r = cinemaTiltAngle > 0 ? 3 : 2;
+          const r = cinemaTiltAngle > 0 ? 4 : 3;
           for (let dx = -r; dx <= r; dx++) {
             for (let dy = -r; dy <= r; dy++) {
               tileKeySet.add(`${centerTx + dx},${centerTy + dy}`);
@@ -5180,7 +5231,7 @@
         if (pending === 0) {
           finish();
         } else {
-          setTimeout(finish, 2600); // 2.6s safe fallback
+          setTimeout(finish, 2200); // 2.2s safe fallback
         }
       });
     }
@@ -5277,6 +5328,8 @@
       if (tiltSelect) tiltSelect.value = cinemaTiltAngle.toString();
 
       cinemaProgress = 0.0;
+      cinemaLastTimestamp = null;
+      cinemaSmoothedHeading = null;
       isCinemaPlaying = true;
       document.getElementById('cinema-play-icon').className = 'fa-solid fa-pause';
       document.getElementById('cinema-play-text').textContent = 'Tạm dừng';
@@ -5290,11 +5343,12 @@
       }
 
       requestAnimationFrame(runCinemaLoop);
-      showToast('Đang phát mô phỏng góc nghiêng 3D trên nền bản đồ...', 'info');
+      showToast('Đang phát mô phỏng mượt mà 60 FPS trên nền bản đồ...', 'info');
     }
 
     function closeRouteCinemaModal() {
       isCinemaPlaying = false;
+      cinemaLastTimestamp = null;
       if (cinemaAnimationId) {
         cancelAnimationFrame(cinemaAnimationId);
         cinemaAnimationId = null;
@@ -5319,11 +5373,16 @@
       const text = document.getElementById('cinema-play-text');
 
       if (isCinemaPlaying) {
-        if (cinemaProgress >= 1.0) cinemaProgress = 0.0;
+        if (cinemaProgress >= 1.0) {
+          cinemaProgress = 0.0;
+          cinemaSmoothedHeading = null;
+        }
+        cinemaLastTimestamp = null;
         if (icon) icon.className = 'fa-solid fa-pause';
         if (text) text.textContent = 'Tạm dừng';
         requestAnimationFrame(runCinemaLoop);
       } else {
+        cinemaLastTimestamp = null;
         if (icon) icon.className = 'fa-solid fa-play';
         if (text) text.textContent = 'Tiếp tục';
       }
@@ -5331,29 +5390,43 @@
 
     function restartCinemaSimulation() {
       cinemaProgress = 0.0;
+      cinemaLastTimestamp = null;
+      cinemaSmoothedHeading = null;
       isCinemaPlaying = true;
       document.getElementById('cinema-play-icon').className = 'fa-solid fa-pause';
       document.getElementById('cinema-play-text').textContent = 'Tạm dừng';
       requestAnimationFrame(runCinemaLoop);
     }
 
-    function runCinemaLoop() {
-      if (!isCinemaPlaying) return;
+    function runCinemaLoop(timestamp) {
+      if (!isCinemaPlaying) {
+        cinemaLastTimestamp = null;
+        return;
+      }
 
       const pathCoords = getInterpolatedRouteCoords();
       if (!pathCoords || pathCoords.length < 2) return;
 
-      const stepIncrement = (0.0012 * cinemaSpeed);
-      cinemaProgress += stepIncrement;
+      const now = timestamp || performance.now();
+      if (!cinemaLastTimestamp) {
+        cinemaLastTimestamp = now;
+      }
+      const dt = Math.min((now - cinemaLastTimestamp) / 1000, 0.05); // clamped delta time in seconds
+      cinemaLastTimestamp = now;
+
+      // Base: Complete route simulation in ~16s at 1x speed
+      const baseSpeed = 1 / 16;
+      cinemaProgress += baseSpeed * dt * cinemaSpeed;
 
       if (cinemaProgress >= 1.0) {
         cinemaProgress = 1.0;
         isCinemaPlaying = false;
+        cinemaLastTimestamp = null;
         document.getElementById('cinema-play-icon').className = 'fa-solid fa-rotate-left';
         document.getElementById('cinema-play-text').textContent = 'Phát lại';
 
         if (typeof confetti === 'function') {
-          confetti({ particleCount: 70, spread: 75, origin: { y: 0.6 } });
+          confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
         }
       }
 
@@ -5376,8 +5449,14 @@
       const w = canvas.width;
       const h = canvas.height;
 
+      // Enable High-Quality Anti-Aliasing & Image Filtering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
       const vp = getDynamicCinemaViewport(pathCoords, progress, w, h);
       if (!vp) return;
+
+      const uiScale = w / 1080; // Scale UI graphics proportionally for Full HD 1080p
 
       // Determine 3D Perspective Tilt Parameters (Steady Camera - North-Up, No Map Rotation)
       const isTilt = cinemaTiltAngle > 0 && cinemaCameraMode !== 'overview';
@@ -5420,7 +5499,7 @@
         ctx.fillStyle = '#090d16';
         ctx.fillRect(vp.minTx * 256, vp.minTy * 256, (vp.maxTx - vp.minTx + 1) * 256, (vp.maxTy - vp.minTy + 1) * 256);
         ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.5 * uiScale;
         const startX = vp.minTx * 256;
         const endX = (vp.maxTx + 1) * 256;
         const startY = vp.minTy * 256;
@@ -5448,7 +5527,7 @@
       // Inactive track (dark outline)
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.lineWidth = 14;
+      ctx.lineWidth = 14 * uiScale;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       worldRoutePoints.forEach((pt, i) => {
@@ -5459,7 +5538,7 @@
 
       ctx.beginPath();
       ctx.strokeStyle = cinemaMapStyle === 'dark' ? '#334155' : '#64748b';
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 7 * uiScale;
       worldRoutePoints.forEach((pt, i) => {
         if (i === 0) ctx.moveTo(pt.x, pt.y);
         else ctx.lineTo(pt.x, pt.y);
@@ -5479,8 +5558,8 @@
 
       // Glow line
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
-      ctx.lineWidth = 16;
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.65)';
+      ctx.lineWidth = 16 * uiScale;
       for (let i = 0; i <= currentIdx; i++) {
         if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
         else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
@@ -5491,7 +5570,7 @@
       // Sharp bright neon trail
       ctx.beginPath();
       ctx.strokeStyle = '#0ea5e9';
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 7 * uiScale;
       for (let i = 0; i <= currentIdx; i++) {
         if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
         else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
@@ -5503,7 +5582,8 @@
 
       // 4. Atmospheric Horizon Sky Effect (For 3D Tilt View)
       if (isTilt) {
-        const horizonGrad = ctx.createLinearGradient(0, 0, 0, 160);
+        const horizonH = 160 * uiScale;
+        const horizonGrad = ctx.createLinearGradient(0, 0, 0, horizonH);
         if (cinemaMapStyle === 'satellite') {
           horizonGrad.addColorStop(0, 'rgba(5, 12, 28, 0.96)');
           horizonGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.3)');
@@ -5518,14 +5598,14 @@
           horizonGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         }
         ctx.fillStyle = horizonGrad;
-        ctx.fillRect(0, 0, w, 160);
+        ctx.fillRect(0, 0, w, horizonH);
 
         // Subtle horizon line accent
         ctx.beginPath();
-        ctx.moveTo(0, 8);
-        ctx.lineTo(w, 8);
+        ctx.moveTo(0, 8 * uiScale);
+        ctx.lineTo(w, 8 * uiScale);
         ctx.strokeStyle = cinemaMapStyle === 'dark' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1 * uiScale;
         ctx.stroke();
       }
 
@@ -5549,34 +5629,34 @@
         const isPassed = (index / (activePins.length - 1)) <= (progress + 0.05);
 
         // Only draw if inside or near canvas
-        if (pt.x >= -60 && pt.x <= w + 60 && pt.y >= 20 && pt.y <= h + 60) {
+        if (pt.x >= -100 && pt.x <= w + 100 && pt.y >= 20 && pt.y <= h + 100) {
           // Glow ground pin
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, isPassed ? 14 : 10, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, (isPassed ? 15 : 11) * uiScale, 0, Math.PI * 2);
           ctx.fillStyle = isPassed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(99, 102, 241, 0.35)';
           ctx.fill();
 
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, isPassed ? 9 : 7, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, (isPassed ? 10 : 8) * uiScale, 0, Math.PI * 2);
           ctx.fillStyle = isPassed ? '#10b981' : '#6366f1';
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 2.5 * uiScale;
           ctx.fill();
           ctx.stroke();
 
           // Upright Billboard Label Pill
           const labelText = `${index + 1}. ${pin.title}`;
-          ctx.font = 'bold 12px sans-serif';
+          ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
           const textMetrics = ctx.measureText(labelText);
-          const pillW = textMetrics.width + 16;
-          const pillH = 22;
+          const pillW = textMetrics.width + (18 * uiScale);
+          const pillH = 24 * uiScale;
           const pillX = pt.x - (pillW / 2);
-          const pillY = pt.y - 32;
+          const pillY = pt.y - (36 * uiScale);
 
           ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-          ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.8)' : 'rgba(99, 102, 241, 0.8)';
-          ctx.lineWidth = 1;
-          roundRect(ctx, pillX, pillY, pillW, pillH, 6, true, true);
+          ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.85)' : 'rgba(99, 102, 241, 0.85)';
+          ctx.lineWidth = 1.2 * uiScale;
+          roundRect(ctx, pillX, pillY, pillW, pillH, 6 * uiScale, true, true);
 
           ctx.fillStyle = '#ffffff';
           ctx.textAlign = 'center';
@@ -5585,9 +5665,10 @@
         }
       });
 
-      // Show Stop Info Popup in UI when car passes by (< 60px)
+      // Show Stop Info Popup in UI when car passes by
       const popupEl = document.getElementById('cinema-stop-popup');
-      if (closestDist < 60 && closestStop) {
+      const triggerThreshold = 70 * uiScale;
+      if (closestDist < triggerThreshold && closestStop) {
         if (popupEl) {
           popupEl.classList.remove('hidden');
           const stopIdx = activePins.findIndex(p => p.id === closestStop.id);
@@ -5609,11 +5690,11 @@
             imgWrap.classList.add('hidden');
           }
         }
-      } else if (closestDist > 90 && popupEl) {
+      } else if (closestDist > (triggerThreshold * 1.5) && popupEl) {
         popupEl.classList.add('hidden');
       }
 
-      // 6. Draw Traveling Vehicle (Glowing Marker with Headlight Beams)
+      // 6. Draw Traveling Vehicle (Glowing Marker with Smooth Headlight Beams)
       const carScreenPos = worldToScreen(curCarWorldX, curCarWorldY);
 
       ctx.save();
@@ -5621,38 +5702,38 @@
       ctx.rotate(vp.headingAngle);
 
       // Forward Headlight Beam
-      const beamGrad = ctx.createLinearGradient(0, 0, 75, 0);
-      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+      const beamGrad = ctx.createLinearGradient(0, 0, 85 * uiScale, 0);
+      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
       beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
       ctx.fillStyle = beamGrad;
       ctx.beginPath();
-      ctx.moveTo(8, 0);
-      ctx.lineTo(75, -22);
-      ctx.lineTo(75, 22);
+      ctx.moveTo(9 * uiScale, 0);
+      ctx.lineTo(85 * uiScale, -25 * uiScale);
+      ctx.lineTo(85 * uiScale, 25 * uiScale);
       ctx.closePath();
       ctx.fill();
 
       // Halo pulse
       ctx.beginPath();
-      ctx.arc(0, 0, 24, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.4)';
+      ctx.arc(0, 0, 26 * uiScale, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.45)';
       ctx.fill();
 
       // Vehicle base circle
       ctx.beginPath();
-      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.arc(0, 0, 15 * uiScale, 0, Math.PI * 2);
       ctx.fillStyle = '#0284c7';
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2.8 * uiScale;
       ctx.fill();
       ctx.stroke();
 
       // Arrow indicator pointing forward
       ctx.beginPath();
-      ctx.moveTo(9, 0);
-      ctx.lineTo(-5, -7);
-      ctx.lineTo(-2, 0);
-      ctx.lineTo(-5, 7);
+      ctx.moveTo(10 * uiScale, 0);
+      ctx.lineTo(-6 * uiScale, -8 * uiScale);
+      ctx.lineTo(-3 * uiScale, 0);
+      ctx.lineTo(-6 * uiScale, 8 * uiScale);
       ctx.closePath();
       ctx.fillStyle = '#ffffff';
       ctx.fill();
@@ -5660,25 +5741,25 @@
 
       // 7. Draw Mini-Map Radar Inset in Bottom-Right Corner
       if (cinemaCameraMode !== 'overview') {
-        const radarW = 190;
-        const radarH = 130;
-        const radarX = w - radarW - 20;
-        const radarY = h - radarH - 24;
+        const radarW = 210 * uiScale;
+        const radarH = 145 * uiScale;
+        const radarX = w - radarW - (24 * uiScale);
+        const radarY = h - radarH - (28 * uiScale);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.lineWidth = 1.5;
-        roundRect(ctx, radarX, radarY, radarW, radarH, 12, true, true);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.lineWidth = 1.5 * uiScale;
+        roundRect(ctx, radarX, radarY, radarW, radarH, 12 * uiScale, true, true);
 
         ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText('📡 RADAR TOÀN TUYẾN', radarX + 10, radarY + 8);
+        ctx.fillText('📡 RADAR TOÀN TUYẾN', radarX + (12 * uiScale), radarY + (10 * uiScale));
 
-        const padR = 14;
+        const padR = 16 * uiScale;
         const availRW = radarW - padR * 2;
-        const availRH = radarH - padR * 2 - 16;
+        const availRH = radarH - padR * 2 - (18 * uiScale);
         const latSpan = Math.max(vp.maxLat - vp.minLat, 0.005);
         const lngSpan = Math.max(vp.maxLng - vp.minLng, 0.005);
 
@@ -5691,7 +5772,7 @@
 
         ctx.beginPath();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.2 * uiScale;
         pathCoords.forEach((pt, i) => {
           const rP = mapToRadar(pt.lat, pt.lng);
           if (i === 0) ctx.moveTo(rP.x, rP.y);
@@ -5701,7 +5782,7 @@
 
         ctx.beginPath();
         ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 4 * uiScale;
         for (let i = 0; i <= currentIdx; i++) {
           const rP = mapToRadar(pathCoords[i].lat, pathCoords[i].lng);
           if (i === 0) ctx.moveTo(rP.x, rP.y);
@@ -5714,43 +5795,45 @@
         activePins.forEach(pin => {
           const rPinP = mapToRadar(pin.lat, pin.lng);
           ctx.beginPath();
-          ctx.arc(rPinP.x, rPinP.y, 2.5, 0, Math.PI * 2);
+          ctx.arc(rPinP.x, rPinP.y, 3 * uiScale, 0, Math.PI * 2);
           ctx.fillStyle = '#10b981';
           ctx.fill();
         });
 
         ctx.beginPath();
-        ctx.arc(rCarP.x, rCarP.y, 5, 0, Math.PI * 2);
+        ctx.arc(rCarP.x, rCarP.y, 5.5 * uiScale, 0, Math.PI * 2);
         ctx.fillStyle = '#ef4444';
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8 * uiScale;
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
-        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.9)';
+        ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
         ctx.textAlign = 'right';
-        ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - 10, radarY + 8);
+        ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
       // 8. Watermark and Metadata Branding Box (Top-Left)
       const active = getActiveRoute();
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 1;
-      roundRect(ctx, 16, 16, 350, 54, 12, true, true);
+      const brandW = 390 * uiScale;
+      const brandH = 62 * uiScale;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
 
       ctx.fillStyle = '#38bdf8';
-      ctx.font = 'bold 13px sans-serif';
+      ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 28, 38);
+      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 45 * uiScale);
 
       const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
       const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
-      ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
-      ctx.font = '11px sans-serif';
-      ctx.fillText(active ? `${active.name} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 28, 56);
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
+      ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
+      ctx.fillText(active ? `${active.name} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 34 * uiScale, 66 * uiScale);
     }
 
     // ==========================================
@@ -5956,26 +6039,46 @@
         return;
       }
 
-      showToast('Đang tải đầy đủ mảnh bản đồ nền trước khi ghi video...', 'info');
-      document.getElementById('export-video-btn-text').textContent = 'Đang tải bản đồ...';
+      showToast('Đang chuẩn bị bản đồ Full HD 1080p trước khi xuất video...', 'info');
+      const btnText = document.getElementById('export-video-btn-text');
+      if (btnText) btnText.textContent = 'Đang tải bản đồ HD...';
 
       // 1. Ensure all map background tiles are 100% preloaded before recording
       const pathCoords = getInterpolatedRouteCoords();
       await preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height);
 
-      // Select supported mime type
-      const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
-      let selectedMime = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+      // Select supported high quality mime type
+      const mimeCandidates = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/mp4;codecs=avc1',
+        'video/webm',
+        'video/mp4'
+      ];
+      let selectedMime = mimeCandidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
 
-      const stream = canvas.captureStream(30);
+      // High frame-rate capture: 60 FPS stream
+      const stream = canvas.captureStream(60);
       try {
         recordedChunks = [];
-        mediaRecorder = selectedMime ? new MediaRecorder(stream, { mimeType: selectedMime }) : new MediaRecorder(stream);
+        const recorderOptions = {
+          videoBitsPerSecond: 10000000 // 10 Mbps for crystal clear 1080p
+        };
+        if (selectedMime) {
+          recorderOptions.mimeType = selectedMime;
+        }
+        mediaRecorder = new MediaRecorder(stream, recorderOptions);
       } catch (err) {
-        console.error('Error creating MediaRecorder:', err);
-        showToast('Lỗi khởi tạo bộ ghi video canvas!', 'error');
-        document.getElementById('export-video-btn-text').textContent = 'Ghi & Tải Video';
-        return;
+        console.warn('Fallback to standard MediaRecorder options:', err);
+        try {
+          mediaRecorder = selectedMime ? new MediaRecorder(stream, { mimeType: selectedMime }) : new MediaRecorder(stream);
+        } catch (innerErr) {
+          console.error('Error creating MediaRecorder:', innerErr);
+          showToast('Lỗi khởi tạo bộ ghi video canvas!', 'error');
+          if (btnText) btnText.textContent = 'Ghi & Tải Video';
+          return;
+        }
       }
 
       mediaRecorder.ondataavailable = function(e) {
@@ -5987,39 +6090,44 @@
       mediaRecorder.onstop = function() {
         isRecordingVideo = false;
         document.getElementById('cinema-rec-badge').classList.add('hidden');
-        document.getElementById('export-video-btn-text').textContent = 'Ghi & Tải Video';
+        if (btnText) btnText.textContent = 'Ghi & Tải Video';
 
         if (recordedChunks.length === 0) {
           showToast('Không có dữ liệu video được ghi!', 'error');
           return;
         }
 
-        const blob = new Blob(recordedChunks, { type: selectedMime || 'video/webm' });
+        const isMp4 = selectedMime.includes('mp4');
+        const blob = new Blob(recordedChunks, { type: selectedMime || (isMp4 ? 'video/mp4' : 'video/webm') });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         const safeName = active.name.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
-        a.download = `gaomaps-video-${safeName}-${Date.now()}.webm`;
+        const ext = isMp4 ? 'mp4' : 'webm';
+        a.download = `gaomaps-1080p-video-${safeName}-${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        showToast('🎉 Đã xuất và tải video hành trình có nền bản đồ thực tế thành công!', 'success');
+        showToast('🎉 Đã xuất và tải video hành trình Full HD 60fps mượt mà thành công!', 'success');
       };
 
       // Start recording
       isRecordingVideo = true;
-      mediaRecorder.start();
+      mediaRecorder.start(100); // collect in 100ms slices
 
       document.getElementById('cinema-rec-badge').classList.remove('hidden');
-      document.getElementById('export-video-btn-text').textContent = 'Đang ghi video...';
+      if (btnText) btnText.textContent = 'Đang ghi video 60 FPS...';
 
-      // Restart cinema simulation from beginning at 2x speed
+      // Restart cinema simulation from beginning at optimal recording speed (1.5x)
       cinemaProgress = 0.0;
+      cinemaLastTimestamp = null;
+      cinemaSmoothedHeading = null;
       isCinemaPlaying = true;
-      setCinemaSpeed(2);
-      document.getElementById('cinema-speed-select').value = '2';
+      setCinemaSpeed(1.5);
+      const speedSelect = document.getElementById('cinema-speed-select');
+      if (speedSelect) speedSelect.value = '1.5';
       requestAnimationFrame(runCinemaLoop);
 
       // Auto-stop recording when progress finishes
@@ -6030,11 +6138,11 @@
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
               mediaRecorder.stop();
             }
-          }, 600);
+          }, 500);
         }
-      }, 300);
+      }, 200);
 
-      showToast('Đang quay video có nền bản đồ từ đầu đến cuối...', 'info');
+      showToast('Đang quay video độ phân giải Full HD (60 FPS)...', 'info');
     }
 
     // ==========================================
