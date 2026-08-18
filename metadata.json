@@ -1,0 +1,6 @@
+{
+  "name": "MemoMap - Bản đồ Dấu chân Kỷ niệm",
+  "description": "Ứng dụng lưu giữ kỷ niệm du lịch và tính toán lộ trình đường bộ thực tế qua bản đồ tương tác.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
