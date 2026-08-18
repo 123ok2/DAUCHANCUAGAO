@@ -159,10 +159,6 @@
           </div>
         </div>
         <div class="flex items-center space-x-1.5">
-          <button onclick="openWelcomePoster(true)" title="Xem Poster Chào Mừng" class="px-2 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 flex items-center gap-1 text-xs font-bold transition">
-            <i class="fa-solid fa-image"></i>
-            <span class="hidden sm:inline">Poster</span>
-          </button>
           <button onclick="openQuickGuideModal()" title="Hướng dẫn sử dụng" class="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 flex items-center gap-1.5 text-xs font-semibold transition">
             <i class="fa-regular fa-lightbulb text-amber-300"></i>
             <span>Hướng dẫn</span>
@@ -1402,67 +1398,6 @@
       </div>
     </div>
 
-    <!-- ==================== WELCOME POSTER SPLASH SCREEN ==================== -->
-    <div id="welcome-poster-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto transition-all duration-500 ease-out">
-      <div class="relative w-full max-w-md md:max-w-lg bg-gradient-to-b from-sky-900/90 via-slate-900/95 to-slate-950 rounded-3xl shadow-[0_0_50px_rgba(14,165,233,0.35)] border border-sky-400/30 overflow-hidden my-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
-        
-        <!-- Top Control Bar (Countdown & Close) -->
-        <div class="w-full px-4 py-3 bg-white/5 backdrop-blur-md border-b border-white/10 flex items-center justify-between z-20">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span class="text-xs font-bold text-sky-200 tracking-wide">CHÀO MỪNG BẠN ĐẾN VỚI GẠO MAPS</span>
-          </div>
-
-          <!-- 3-Second Timer Pill -->
-          <div class="flex items-center gap-2">
-            <div id="welcome-countdown-pill" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold shadow-sm">
-              <i class="fa-solid fa-clock-rotate-left text-[11px] animate-spin"></i>
-              <span>Tự động vào sau <b id="welcome-countdown-number" class="text-white text-sm">3s</b></span>
-            </div>
-            <button onclick="dismissWelcomePoster()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xs transition active:scale-90" title="Bỏ qua">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Poster Graphic Area -->
-        <div class="relative w-full aspect-[3/4] max-h-[65vh] overflow-hidden bg-slate-900 group select-none">
-          <img id="welcome-poster-img" src="/gao_maps_poster.jpg" onerror="this.src='/src/assets/images/gao_maps_welcome_poster_1787071343090.jpg'" alt="Gạo Maps Poster" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" />
-          
-          <!-- Subtle Decorative Overlay Gradient -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none"></div>
-
-          <!-- Live Progress Bar at Poster Bottom -->
-          <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
-            <div id="welcome-progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 transition-all duration-100 ease-linear" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <!-- Interactive Bottom Action Area -->
-        <div class="w-full p-4 sm:p-5 bg-gradient-to-t from-slate-950 via-slate-900 to-slate-900/90 border-t border-white/10 flex flex-col items-center gap-3 z-20">
-          
-          <!-- Golden Explorer CTA Button -->
-          <button id="btn-welcome-start" onclick="dismissWelcomePoster()" class="relative group w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-base sm:text-lg shadow-[0_8px_25px_rgba(245,158,11,0.5)] hover:shadow-[0_12px_35px_rgba(245,158,11,0.75)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 border-2 border-white/80 flex items-center justify-center gap-3 cursor-pointer">
-            <span class="tracking-wider uppercase drop-shadow-xs">BẮT ĐẦU KHÁM PHÁ</span>
-            <div class="w-7 h-7 rounded-full bg-slate-950/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-              <i class="fa-solid fa-arrow-right text-base"></i>
-            </div>
-          </button>
-
-          <!-- Quick Tip -->
-          <div class="flex items-center justify-between w-full text-[11px] text-slate-400 px-1">
-            <span class="flex items-center gap-1">
-              <i class="fa-solid fa-compass text-amber-400"></i> Khám phá Việt Nam cùng Gạo
-            </span>
-            <button onclick="dismissWelcomePoster()" class="text-sky-400 hover:underline font-semibold">
-              Vào ngay (Bỏ qua) ➔
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
     <!-- ==================== PIN ROUTE PICKER MODAL (TÙY CHỌN THÊM VÀO LỘ TRÌNH) ==================== -->
     <div id="pin-route-picker-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closePinRouteSelectorModal()">
       <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
@@ -1648,7 +1583,6 @@
       updateStatistics();
       initSearchAutocomplete();
       initStarRating();
-      initWelcomePoster();
 
       // Check URL parameters for shared route link
       checkSharedRouteFromUrl();
@@ -4129,78 +4063,6 @@
       if (pinId) {
         showToast('Sau khi tạo lộ trình mới, bạn có thể tích chọn để thêm kỷ niệm vào ngay!', 'info');
       }
-    }
-
-    // ==========================================
-    // WELCOME POSTER SPLASH SCREEN CONTROLLER
-    // ==========================================
-    let welcomeCountdownTimer = null;
-    let welcomeCountdownRemaining = 3;
-    let welcomeProgressInterval = null;
-
-    function initWelcomePoster() {
-      // Show automatically on page entry
-      openWelcomePoster(false);
-    }
-
-    function openWelcomePoster(isManual = false) {
-      const modal = document.getElementById('welcome-poster-modal');
-      if (!modal) return;
-
-      modal.classList.remove('hidden');
-      modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-      modal.classList.add('opacity-100');
-
-      // Reset countdown
-      welcomeCountdownRemaining = 3;
-      const numEl = document.getElementById('welcome-countdown-number');
-      if (numEl) numEl.textContent = '3s';
-
-      const barEl = document.getElementById('welcome-progress-bar');
-      if (barEl) barEl.style.width = '0%';
-
-      startWelcomeCountdown();
-    }
-
-    function startWelcomeCountdown() {
-      clearInterval(welcomeCountdownTimer);
-      clearInterval(welcomeProgressInterval);
-
-      const startTime = Date.now();
-      const totalDuration = 3000; // 3 seconds
-
-      // Progress bar smooth update every 30ms
-      welcomeProgressInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const pct = Math.min(100, (elapsed / totalDuration) * 100);
-        const barEl = document.getElementById('welcome-progress-bar');
-        if (barEl) barEl.style.width = `${pct}%`;
-
-        const remainingSec = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
-        const numEl = document.getElementById('welcome-countdown-number');
-        if (numEl) numEl.textContent = `${remainingSec}s`;
-
-        if (elapsed >= totalDuration) {
-          clearInterval(welcomeProgressInterval);
-          dismissWelcomePoster();
-        }
-      }, 30);
-    }
-
-    function dismissWelcomePoster() {
-      clearInterval(welcomeCountdownTimer);
-      clearInterval(welcomeProgressInterval);
-
-      const modal = document.getElementById('welcome-poster-modal');
-      if (!modal) return;
-
-      // Smooth fade & slight zoom transition
-      modal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-      setTimeout(() => {
-        modal.classList.add('hidden');
-      }, 400);
-
-      showToast('Chào mừng bạn đến với Gạo Maps! Chúc bạn có những hành trình tuyệt vời.', 'info');
     }
 
     function removeStopFromRoute(pinId) {
