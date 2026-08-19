@@ -791,9 +791,9 @@
           </button>
 
           <!-- High-Contrast Floating Interactive Hint with Gentle Pulse -->
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-[11px] font-black tracking-widest uppercase shadow-[0_4px_18px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-all">
-            <i class="fa-solid fa-compass text-xs animate-spin" style="animation-duration: 6s;"></i>
-            <span>Chạm để bắt đầu</span>
+          <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-xs font-black tracking-wider uppercase shadow-[0_4px_18px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <i class="fa-solid fa-volume-high text-xs animate-bounce"></i>
+            <span>Chạm để bắt đầu & nghe lời chào</span>
           </div>
         </div>
       </div>
@@ -7320,7 +7320,7 @@
 
     function playChiGoogleVoice(force = false) {
       if (!force && hasPlayedWelcomeVoice) return;
-      
+
       playWelcomeChime();
 
       // Directly play authentic embedded Chị Google MP3 audio data
@@ -7329,11 +7329,11 @@
         : '/chi_google_welcome.mp3';
 
       try {
-        if (welcomeAudioInstance) {
-          welcomeAudioInstance.pause();
+        if (!welcomeAudioInstance) {
+          welcomeAudioInstance = new Audio(audioSource);
+        } else {
           welcomeAudioInstance.currentTime = 0;
         }
-        welcomeAudioInstance = new Audio(audioSource);
         welcomeAudioInstance.volume = 1.0;
 
         const playPromise = welcomeAudioInstance.play();
@@ -7341,26 +7341,32 @@
           playPromise.then(() => {
             hasPlayedWelcomeVoice = true;
           }).catch(err => {
-            console.log('Audio playback pending user interaction:', err);
-            // Attach one-time touch / click listener to immediately unlock & play
-            const unlockAndPlay = () => {
-              if (welcomeAudioInstance) {
-                welcomeAudioInstance.play().catch(() => {});
-              }
-              window.removeEventListener('pointerdown', unlockAndPlay);
-              window.removeEventListener('touchstart', unlockAndPlay);
-            };
-            window.addEventListener('pointerdown', unlockAndPlay, { once: true });
-            window.addEventListener('touchstart', unlockAndPlay, { once: true });
+            console.log('Autoplay restriction: Waiting for user gesture to play voice:', err);
           });
         }
       } catch (e) {
-        console.warn('Audio play error:', e);
+        console.warn('Audio playback error:', e);
       }
     }
 
     // Alias for compatibility
     const playWelcomeVoice = playChiGoogleVoice;
+
+    // Global listener: Play voice on the first user interaction anywhere if blocked by browser autoplay
+    const unlockWelcomeAudioOnFirstGesture = () => {
+      if (!hasPlayedWelcomeVoice) {
+        playChiGoogleVoice(true);
+      }
+      window.removeEventListener('pointerdown', unlockWelcomeAudioOnFirstGesture);
+      window.removeEventListener('touchstart', unlockWelcomeAudioOnFirstGesture);
+      window.removeEventListener('click', unlockWelcomeAudioOnFirstGesture);
+      window.removeEventListener('keydown', unlockWelcomeAudioOnFirstGesture);
+    };
+
+    window.addEventListener('pointerdown', unlockWelcomeAudioOnFirstGesture, { passive: true });
+    window.addEventListener('touchstart', unlockWelcomeAudioOnFirstGesture, { passive: true });
+    window.addEventListener('click', unlockWelcomeAudioOnFirstGesture, { passive: true });
+    window.addEventListener('keydown', unlockWelcomeAudioOnFirstGesture, { passive: true });
 
     // ==========================================
     // GẠO MAPS 3D WELCOME SPLASH CONTROLLER
@@ -7378,19 +7384,22 @@
         card.classList.remove('scale-95', 'translate-y-3');
         card.classList.add('scale-100', 'translate-y-0');
 
-        // Play Vietnamese voice greeting
+        // Attempt automatic playback
         setTimeout(() => {
           playWelcomeVoice();
-        }, 300);
+        }, 250);
 
-        // Auto dismiss after 3.8 seconds
+        // Auto dismiss after 5 seconds if uninterrupted
         welcomeSplashTimeout = setTimeout(() => {
           dismissWelcomeSplash();
-        }, 3800);
+        }, 5000);
       }, 150);
 
-      // Instantly dismiss on any touch / click / scroll / keydown
+      // Dismiss on user interaction and immediately ensure voice plays
       const dismissOnInteraction = () => {
+        if (!hasPlayedWelcomeVoice) {
+          playChiGoogleVoice(true);
+        }
         dismissWelcomeSplash();
         window.removeEventListener('pointerdown', dismissOnInteraction);
         window.removeEventListener('touchstart', dismissOnInteraction);
