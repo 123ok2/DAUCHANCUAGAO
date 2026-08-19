@@ -1565,81 +1565,78 @@
     </div>
 
     <!-- ==================== SHARED ROUTE TOP BANNER & EXPANDABLE SHOWCASE ==================== -->
-    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-slate-950/95 via-indigo-950/95 to-slate-950/95 text-white shadow-2xl border-b border-indigo-500/40 p-2.5 sm:p-3 sm:px-6 backdrop-blur-xl animate-in slide-in-from-top duration-300">
-      <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-2.5 sm:gap-3">
-        <!-- Left: Route Info & Metric Badges -->
-        <div class="flex items-center gap-3 w-full lg:w-auto min-w-0">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-lg shadow-lg shrink-0 border border-white/20">
+    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-slate-950/95 text-white shadow-2xl border-b border-indigo-500/30 px-3 py-2 sm:px-5 sm:py-2.5 backdrop-blur-xl animate-in slide-in-from-top duration-300">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4">
+        <!-- Left: Route Title + Badges + Quick Telemetry Strip -->
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-sm sm:text-base shadow-md shrink-0 border border-white/20">
             <i class="fa-solid fa-route"></i>
           </div>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-[10px] uppercase tracking-wider font-black px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-1">
-                <i class="fa-solid fa-lock text-[9px]"></i> <span>Chế độ Xem Người Nhận (Chỉ đọc)</span>
+          <div class="min-w-0 flex-1 space-y-0.5">
+            <!-- Row 1: Title + Read-only Tag -->
+            <div class="flex items-center gap-2 min-w-0">
+              <h4 id="shared-route-title-text" class="font-bold text-xs sm:text-sm text-white truncate max-w-[180px] xs:max-w-xs sm:max-w-sm">Lộ trình Gạo Maps</h4>
+              <span class="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0">
+                <i class="fa-solid fa-eye text-[8px]"></i> <span>Chỉ đọc</span>
               </span>
-              <h4 id="shared-route-title-text" class="font-black text-sm sm:text-base text-white truncate">Lộ trình Gạo Maps</h4>
             </div>
             
-            <!-- Quick Telemetry Row (Km, Time, Stops, Provinces, Conquered Km) -->
-            <div class="flex items-center gap-2 sm:gap-3 text-xs text-slate-300 mt-1 flex-wrap font-medium">
-              <span class="inline-flex items-center gap-1 text-sky-400 font-bold">
-                <i class="fa-solid fa-road text-[11px]"></i> <span id="shared-banner-dist">-- km</span>
+            <!-- Row 2: Telemetry Metrics Strip (Clean compact pills with no hanging bullets) -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] sm:text-[11px] font-medium text-slate-300 py-0.5">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800/80 text-sky-400 font-bold shrink-0">
+                <i class="fa-solid fa-road text-[9px]"></i> <span id="shared-banner-dist">-- km</span>
               </span>
-              <span>•</span>
-              <span class="inline-flex items-center gap-1 text-amber-400 font-bold">
-                <i class="fa-solid fa-clock text-[11px]"></i> <span id="shared-banner-time">-- phút</span>
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800/80 text-amber-400 font-bold shrink-0">
+                <i class="fa-solid fa-clock text-[9px]"></i> <span id="shared-banner-time">-- phút</span>
               </span>
-              <span>•</span>
-              <span class="inline-flex items-center gap-1 text-emerald-400 font-bold">
-                <i class="fa-solid fa-location-dot text-[11px]"></i> <span id="shared-banner-stops">-- điểm</span>
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800/80 text-emerald-400 font-bold shrink-0">
+                <i class="fa-solid fa-location-dot text-[9px]"></i> <span id="shared-banner-stops">-- điểm</span>
               </span>
-              <span>•</span>
-              <span class="inline-flex items-center gap-1 text-purple-300 font-bold">
-                <i class="fa-solid fa-map text-[11px]"></i> <span id="shared-banner-provinces">-- tỉnh</span>
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800/80 text-purple-300 font-bold shrink-0">
+                <i class="fa-solid fa-map text-[9px]"></i> <span id="shared-banner-provinces">-- tỉnh</span>
               </span>
-              <span id="shared-banner-coast-wrap" class="hidden items-center gap-1 text-cyan-300 font-bold">
-                <span>•</span>
-                <i class="fa-solid fa-route text-[11px]"></i> <span id="shared-banner-coast">-- km</span>
+              <span id="shared-banner-coast-wrap" class="hidden items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800/80 text-cyan-300 font-bold shrink-0">
+                <i class="fa-solid fa-route text-[9px]"></i> <span id="shared-banner-coast">-- km</span>
               </span>
             </div>
           </div>
         </div>
 
-        <!-- Right: Action Buttons (Merged Cinema & Video, Poster Export, Insights, Save, Close) -->
-        <div class="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto justify-start sm:justify-end shrink-0 overflow-x-auto pb-1 lg:pb-0 no-scrollbar select-none">
-          <!-- 1. Merged Cinema Simulation & Video Export -->
-          <button onclick="openSharedRouteCinema()" class="px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Xem mô phỏng 3D Cinema & Xuất Video Full HD">
-            <i class="fa-solid fa-film"></i>
+        <!-- Right: Action Buttons Group (Uniform Height & Clean Layout) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 overflow-x-auto no-scrollbar py-0.5">
+          <!-- 1. Cinema & Video -->
+          <button onclick="openSharedRouteCinema()" class="h-8 px-2.5 sm:px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap" title="Xem mô phỏng 3D Cinema & Xuất Video Full HD">
+            <i class="fa-solid fa-film text-[10px]"></i>
             <span>Cinema & Video</span>
           </button>
 
-          <!-- 2. Export Poster Card -->
-          <button onclick="exportRoutePosterCard()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Tải ảnh Poster Infographic kèm toàn bộ ảnh kỷ niệm">
-            <i class="fa-solid fa-file-image"></i>
-            <span class="hidden md:inline">Xuất Poster</span>
+          <!-- 2. Export Poster -->
+          <button onclick="exportRoutePosterCard()" class="h-8 px-2 sm:px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-slate-700 hover:border-sky-500/50 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition shrink-0 whitespace-nowrap" title="Tải ảnh Poster Infographic">
+            <i class="fa-solid fa-image text-[10px]"></i>
+            <span>Poster</span>
           </button>
 
-          <!-- 3. Full Route Insights Modal -->
-          <button onclick="openSharedRouteInsightsModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Xem phân tích toàn diện, chặng đi & thư viện ảnh">
-            <i class="fa-solid fa-chart-pie"></i>
-            <span class="hidden md:inline">Hồ sơ</span> Lộ trình
+          <!-- 3. Insights Modal -->
+          <button onclick="openSharedRouteInsightsModal()" class="h-8 px-2 sm:px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-slate-700 hover:border-indigo-500/50 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition shrink-0 whitespace-nowrap" title="Xem phân tích hồ sơ lộ trình">
+            <i class="fa-solid fa-chart-pie text-[10px]"></i>
+            <span>Hồ sơ</span>
           </button>
 
           <!-- 4. Drawer Toggle -->
-          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Bật/tắt thanh điểm dừng nổi">
-            <i class="fa-solid fa-list-check"></i>
-            <span class="hidden sm:inline">Điểm dừng</span>
+          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="h-8 px-2 sm:px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition shrink-0 whitespace-nowrap" title="Bật/tắt danh sách điểm dừng">
+            <i class="fa-solid fa-list-check text-[10px]"></i>
+            <span>Điểm dừng</span>
           </button>
-          
-          <!-- 5. Save to My Account -->
-          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 lg:flex-initial px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition shrink-0" title="Sao chép toàn bộ vào bản đồ của tôi để chỉnh sửa">
-            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+
+          <!-- 5. Save Map (Primary Action) -->
+          <button onclick="importSharedRouteToMyRoutes()" class="h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap" title="Lưu lộ trình này vào tài khoản cá nhân">
+            <i class="fa-solid fa-cloud-arrow-down text-[11px]"></i>
             <span>Lưu Bản Đồ</span>
           </button>
-          
-          <!-- 6. Close / Return to Personal Map -->
-          <button onclick="closeSharedRouteBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Về bản đồ cá nhân">
-            <i class="fa-solid fa-xmark"></i>
+
+          <!-- 6. Exit Shared Mode Button -->
+          <button onclick="closeSharedRouteBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-300 hover:text-white flex items-center justify-center transition shrink-0" title="Thoát chế độ xem chung">
+            <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </div>
       </div>
