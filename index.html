@@ -755,14 +755,14 @@
             </div>
           </div>
 
-          <!-- Card 2: 3.260 km Bờ Biển Đã Chinh Phục -->
+          <!-- Card 2: 3.260 km Đã Chinh Phục -->
           <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 text-white shadow-lg shadow-cyan-500/20 flex flex-col justify-between relative overflow-hidden group">
             <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
-              <i class="fa-solid fa-water"></i>
+              <i class="fa-solid fa-route"></i>
             </div>
             <div>
               <div class="flex items-center justify-between text-cyan-100 text-xs font-bold uppercase tracking-wider">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-water text-cyan-300"></i> Đã chinh phục bờ biển</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-cyan-300"></i> Đã chinh phục quãng đường</span>
                 <span id="stat-conquered-coastline-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
               </div>
               <div class="my-2.5">
@@ -770,7 +770,7 @@
                   <span id="stat-conquered-coastline-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 km</span>
                   <span class="text-xs sm:text-sm font-semibold text-cyan-200">/ 3.260 km</span>
                 </div>
-                <p class="text-[11px] text-cyan-100/90 mt-0.5" id="stat-conquered-coastline-sub">Đã qua <strong id="stat-visited-coastal-count" class="font-bold text-white">0</strong> / 28 tỉnh thành ven biển Việt Nam</p>
+                <p class="text-[11px] text-cyan-100/90 mt-0.5" id="stat-conquered-coastline-sub">Đã qua <strong id="stat-visited-coastal-count" class="font-bold text-white">0</strong> / 28 tỉnh thành</p>
               </div>
             </div>
 
@@ -941,15 +941,15 @@
         <div class="pointer-events-auto flex items-center gap-2 shrink-0">
           
           <!-- Top Floating Footprint & Coastline Stat Pill -->
-          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-2 h-11 px-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành & Đã chinh phục bao nhiêu km bờ biển">
+          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-2 h-11 px-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành & Đã chinh phục bao nhiêu km">
             <span class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
               <i class="fa-solid fa-flag text-amber-500"></i>
               <span id="top-stat-provinces">0/63 tỉnh</span>
             </span>
             <span class="text-slate-300 dark:text-slate-700 font-normal">•</span>
             <span class="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform">
-              <i class="fa-solid fa-water text-cyan-500"></i>
-              <span id="top-stat-coastline">0 km bờ biển</span>
+              <i class="fa-solid fa-route text-cyan-500"></i>
+              <span id="top-stat-coastline">0 km</span>
             </span>
           </button>
 
@@ -1580,7 +1580,7 @@
               <h4 id="shared-route-title-text" class="font-black text-sm sm:text-base text-white truncate">Lộ trình Gạo Maps</h4>
             </div>
             
-            <!-- Quick Telemetry Row (Km, Time, Stops, Provinces, Coastline) -->
+            <!-- Quick Telemetry Row (Km, Time, Stops, Provinces, Conquered Km) -->
             <div class="flex items-center gap-2 sm:gap-3 text-xs text-slate-300 mt-1 flex-wrap font-medium">
               <span class="inline-flex items-center gap-1 text-sky-400 font-bold">
                 <i class="fa-solid fa-road text-[11px]"></i> <span id="shared-banner-dist">-- km</span>
@@ -1599,51 +1599,45 @@
               </span>
               <span id="shared-banner-coast-wrap" class="hidden items-center gap-1 text-cyan-300 font-bold">
                 <span>•</span>
-                <i class="fa-solid fa-water text-[11px]"></i> <span id="shared-banner-coast">-- km biển</span>
+                <i class="fa-solid fa-route text-[11px]"></i> <span id="shared-banner-coast">-- km</span>
               </span>
             </div>
           </div>
         </div>
 
-        <!-- Right: Action Buttons (Cinema, Video Export, Poster Export, Insights, Save, Close) -->
-        <div class="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto justify-between lg:justify-end shrink-0 flex-wrap">
-          <!-- 1. Cinema Simulation -->
-          <button onclick="openSharedRouteCinema()" class="px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xem xe chạy mô phỏng 3D Cinema">
+        <!-- Right: Action Buttons (Merged Cinema & Video, Poster Export, Insights, Save, Close) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto justify-start sm:justify-end shrink-0 overflow-x-auto pb-1 lg:pb-0 no-scrollbar select-none">
+          <!-- 1. Merged Cinema Simulation & Video Export -->
+          <button onclick="openSharedRouteCinema()" class="px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Xem mô phỏng 3D Cinema & Xuất Video Full HD">
             <i class="fa-solid fa-film"></i>
-            <span class="hidden sm:inline">Mô phỏng</span> Cinema
+            <span>Cinema & Video</span>
           </button>
 
-          <!-- 2. Export 1080p Video Direct -->
-          <button onclick="triggerSharedRouteVideoExport()" class="px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xuất và tải video hành trình Full HD 60 FPS">
-            <i class="fa-solid fa-video"></i>
-            <span class="hidden sm:inline">Xuất</span> Video HD
-          </button>
-
-          <!-- 3. Export Poster Card -->
-          <button onclick="exportRoutePosterCard()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Tải ảnh Poster Infographic kèm toàn bộ ảnh kỷ niệm">
+          <!-- 2. Export Poster Card -->
+          <button onclick="exportRoutePosterCard()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Tải ảnh Poster Infographic kèm toàn bộ ảnh kỷ niệm">
             <i class="fa-solid fa-file-image"></i>
             <span class="hidden md:inline">Xuất Poster</span>
           </button>
 
-          <!-- 4. Full Route Insights Modal -->
-          <button onclick="openSharedRouteInsightsModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xem phân tích toàn diện, chặng đi & thư viện ảnh">
+          <!-- 3. Full Route Insights Modal -->
+          <button onclick="openSharedRouteInsightsModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Xem phân tích toàn diện, chặng đi & thư viện ảnh">
             <i class="fa-solid fa-chart-pie"></i>
             <span class="hidden md:inline">Hồ sơ</span> Lộ trình
           </button>
 
-          <!-- 5. Drawer Toggle -->
-          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Bật/tắt thanh điểm dừng nổi">
+          <!-- 4. Drawer Toggle -->
+          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0" title="Bật/tắt thanh điểm dừng nổi">
             <i class="fa-solid fa-list-check"></i>
             <span class="hidden sm:inline">Điểm dừng</span>
           </button>
           
-          <!-- 6. Save to My Account -->
-          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 lg:flex-initial px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition" title="Sao chép toàn bộ vào bản đồ của tôi để chỉnh sửa">
+          <!-- 5. Save to My Account -->
+          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 lg:flex-initial px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition shrink-0" title="Sao chép toàn bộ vào bản đồ của tôi để chỉnh sửa">
             <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
             <span>Lưu Bản Đồ</span>
           </button>
           
-          <!-- 7. Close / Return to Personal Map -->
+          <!-- 6. Close / Return to Personal Map -->
           <button onclick="closeSharedRouteBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Về bản đồ cá nhân">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -1707,13 +1701,10 @@
 
       <!-- Drawer Footer Actions -->
       <div class="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 flex-wrap">
-        <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
-          <i class="fa-solid fa-film"></i> <span>Cinema</span>
+        <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-film"></i> <span>Cinema & Video</span>
         </button>
-        <button onclick="triggerSharedRouteVideoExport()" class="flex-1 py-2 px-2.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
-          <i class="fa-solid fa-video"></i> <span>Xuất Video</span>
-        </button>
-        <button onclick="exportRoutePosterCard()" class="flex-1 py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+        <button onclick="exportRoutePosterCard()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
           <i class="fa-solid fa-file-image"></i> <span>Poster</span>
         </button>
         <button onclick="importSharedRouteToMyRoutes()" class="w-full sm:w-auto flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition">
@@ -1797,10 +1788,10 @@
           <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
             <div class="flex items-center justify-between flex-wrap gap-2">
               <h5 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-map-location text-sky-400"></i> Dấu Chân 63 Tỉnh Thành & Km Bờ Biển Lộ Trình Này:
+                <i class="fa-solid fa-map-location text-sky-400"></i> Dấu Chân 63 Tỉnh Thành & Quãng Đường Chinh Phục:
               </h5>
               <span id="insights-footprint-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-950 text-sky-300 border border-sky-500/30">
-                0 tỉnh • 0 km biển
+                0 tỉnh • 0 km
               </span>
             </div>
 
@@ -1853,11 +1844,8 @@
         <!-- Footer Actions Bar -->
         <div class="p-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2.5 shrink-0 flex-wrap">
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="closeSharedRouteInsightsModal(); openSharedRouteCinema();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
-              <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema</span>
-            </button>
-            <button onclick="closeSharedRouteInsightsModal(); triggerSharedRouteVideoExport();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
-              <i class="fa-solid fa-video"></i> <span>Xuất Video Full HD</span>
+            <button onclick="closeSharedRouteInsightsModal(); openSharedRouteCinema();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
+              <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema & Xuất Video</span>
             </button>
             <button onclick="exportRoutePosterCard()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
               <i class="fa-solid fa-file-image"></i> <span>Xuất Poster HD</span>
@@ -5175,7 +5163,7 @@
 
       if (titleEl) titleEl.textContent = sharedData.name || 'Chi tiết Lộ trình';
       if (statsEl) {
-        statsEl.textContent = `${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành (${footprint.coastalKm} km biển)`;
+        statsEl.textContent = `${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành (${footprint.coastalKm} km)`;
       }
 
       // 1. Tab 1: Stops list
@@ -5283,7 +5271,7 @@
             </div>
             ${p.isCoastal ? `
               <span class="px-2 py-0.5 rounded-md bg-sky-950 text-sky-300 border border-sky-500/30 text-[10px] font-bold shrink-0">
-                ${p.coastlineKm} km biển
+                ${p.coastlineKm} km
               </span>
             ` : `
               <span class="text-[10px] text-slate-500 shrink-0">Nội địa</span>
@@ -5298,7 +5286,7 @@
               <span class="text-sm font-black text-white">${footprint.provinces.length} Tỉnh thành</span>
             </div>
             <div class="text-right">
-              <span class="text-[10px] font-bold uppercase text-teal-400 block">Bờ biển chinh phục</span>
+              <span class="text-[10px] font-bold uppercase text-teal-400 block">Km chinh phục</span>
               <span class="text-sm font-black text-teal-300">${footprint.coastalKm} / 3.260 km</span>
             </div>
           </div>
@@ -5366,9 +5354,9 @@
         if (descWrap) descWrap.classList.add('hidden');
       }
 
-      // Fill Footprint & Coastline
+      // Fill Footprint & Conquered Km
       const badgeEl = document.getElementById('insights-footprint-badge');
-      if (badgeEl) badgeEl.textContent = `${footprint.provinces.length} tỉnh thành • ${footprint.coastalKm} km biển`;
+      if (badgeEl) badgeEl.textContent = `${footprint.provinces.length} tỉnh thành • ${footprint.coastalKm} km`;
 
       const regionPillsEl = document.getElementById('insights-regions-pills');
       if (regionPillsEl) {
@@ -5570,6 +5558,22 @@
         if (distEl) distEl.textContent = `${totalKm} km`;
         if (timeEl) timeEl.textContent = sharedData.durationStr || `${Math.round(totalKm / 45 * 60)} phút`;
         if (stopsEl) stopsEl.textContent = `${sharedData.stops.length} điểm`;
+
+        const provEl = document.getElementById('shared-banner-provinces');
+        if (provEl) provEl.textContent = `${footprint.provinces.length} tỉnh`;
+
+        const coastWrap = document.getElementById('shared-banner-coast-wrap');
+        const coastEl = document.getElementById('shared-banner-coast');
+        if (coastWrap && coastEl) {
+          if (footprint.coastalKm > 0) {
+            coastEl.textContent = `${footprint.coastalKm} km`;
+            coastWrap.classList.remove('hidden');
+            coastWrap.classList.add('inline-flex');
+          } else {
+            coastWrap.classList.add('hidden');
+            coastWrap.classList.remove('inline-flex');
+          }
+        }
       }
 
       // Render Showcase Drawer & open it automatically
@@ -8451,7 +8455,7 @@
 
       const subCoastEl = document.getElementById('stat-conquered-coastline-sub');
       if (subCoastEl) {
-        subCoastEl.innerHTML = `Đã qua <strong class="font-bold text-white">${visitedCoastalCount}</strong> / ${TOTAL_COASTAL_PROVINCES} tỉnh thành ven biển (${conqueredCoastlineKm.toLocaleString('vi-VN')} km / ${TOTAL_COASTLINE_KM} km)`;
+        subCoastEl.innerHTML = `Đã qua <strong class="font-bold text-white">${visitedCoastalCount}</strong> / ${TOTAL_COASTAL_PROVINCES} tỉnh thành (${conqueredCoastlineKm.toLocaleString('vi-VN')} km / ${TOTAL_COASTLINE_KM} km)`;
       }
 
       // 6. Update Top Bar Pill
@@ -8459,7 +8463,7 @@
       if (topProvEl) topProvEl.textContent = `${visitedCount}/${TOTAL_PROVINCES} tỉnh`;
 
       const topCoastEl = document.getElementById('top-stat-coastline');
-      if (topCoastEl) topCoastEl.textContent = `${conqueredCoastlineKm.toLocaleString('vi-VN')} km biển`;
+      if (topCoastEl) topCoastEl.textContent = `${conqueredCoastlineKm.toLocaleString('vi-VN')} km`;
 
       // 7. Update Filter tab counts
       const tabVisitedCountEl = document.getElementById('prov-visited-tab-count');
@@ -8469,7 +8473,7 @@
       if (tabUnvisitedCountEl) tabUnvisitedCountEl.textContent = TOTAL_PROVINCES - visitedCount;
 
       const filterBadgeEl = document.getElementById('stat-province-filter-badge');
-      if (filterBadgeEl) filterBadgeEl.textContent = `${visitedCount}/${TOTAL_PROVINCES} tỉnh • ${conqueredCoastlineKm} km biển`;
+      if (filterBadgeEl) filterBadgeEl.textContent = `${visitedCount}/${TOTAL_PROVINCES} tỉnh • ${conqueredCoastlineKm} km`;
 
       // 8. Render Province Explorer Grid
       renderProvinceFootprintExplorer(visitedMap);
@@ -8537,7 +8541,7 @@
                 </div>
                 <div class="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-3.5">
                   <span><i class="fa-solid fa-images text-emerald-600 dark:text-emerald-400"></i> ${memoryCount} kỷ niệm</span>
-                  ${prov.isCoastal ? `<span class="text-cyan-600 dark:text-cyan-400 font-medium">• <i class="fa-solid fa-water"></i> ${prov.coastlineKm} km bờ biển</span>` : ''}
+                  ${prov.isCoastal ? `<span class="text-cyan-600 dark:text-cyan-400 font-medium">• <i class="fa-solid fa-route"></i> ${prov.coastlineKm} km</span>` : ''}
                 </div>
               </div>
               <button onclick="focusProvinceOnMap('${prov.id}')" class="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs transition shrink-0" title="Xem trên bản đồ">
@@ -8556,7 +8560,7 @@
                 </div>
                 <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-1 pl-3.5">
                   <span>Chưa có kỷ niệm</span>
-                  ${prov.isCoastal ? `<span class="text-cyan-600/70 dark:text-cyan-400/70">• <i class="fa-solid fa-water"></i> ${prov.coastlineKm} km bờ biển</span>` : ''}
+                  ${prov.isCoastal ? `<span class="text-cyan-600/70 dark:text-cyan-400/70">• <i class="fa-solid fa-route"></i> ${prov.coastlineKm} km</span>` : ''}
                 </div>
               </div>
               <button onclick="focusProvinceOnMap('${prov.id}')" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs transition shrink-0" title="Định vị tỉnh này">
@@ -8606,7 +8610,7 @@
 
       map.flyTo([prov.lat, prov.lng], 10, { duration: 1.2 });
       
-      const coastalInfo = prov.isCoastal ? ` • 🌊 ${prov.coastlineKm} km bờ biển` : '';
+      const coastalInfo = prov.isCoastal ? ` • 📍 ${prov.coastlineKm} km` : '';
       showToast(`📍 Đang xem vị trí: ${prov.name} (${prov.regionName})${coastalInfo}`, 'info');
     }
 
