@@ -201,6 +201,23 @@
     .leaflet-routing-container {
       display: none !important; /* We render our own custom sleek UI for route stats */
     }
+    .custom-div-icon, .custom-preview-marker {
+      background: transparent !important;
+      border: none !important;
+    }
+    
+    /* Marker Wrapper & Teardrop Pin */
+    .custom-marker-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      pointer-events: auto;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+
     .custom-marker-pin {
       display: flex;
       align-items: center;
@@ -209,20 +226,142 @@
       height: 38px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      border: 2px solid #ffffff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, width 0.2s ease, height 0.2s ease;
       cursor: pointer;
+      flex-shrink: 0;
     }
-    .custom-marker-pin:hover {
+    .custom-marker-wrapper:hover .custom-marker-pin {
       transform: rotate(-45deg) scale(1.15);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.45);
       z-index: 9999 !important;
     }
     .custom-marker-icon {
       transform: rotate(45deg);
       color: #ffffff;
       font-size: 15px;
+      transition: font-size 0.2s ease;
+    }
+    .custom-marker-number {
+      transform: rotate(45deg);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+      display: inline-block;
+      transition: font-size 0.2s ease;
+    }
+
+    /* Dynamic Place Name Label attached to pin */
+    .custom-marker-label {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.88);
+      color: #f8fafc;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      padding: 2.5px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      max-width: 140px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+    .custom-marker-label-text {
+      display: inline-block;
+      max-width: 124px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .dark .custom-marker-label {
+      background: rgba(2, 6, 23, 0.92);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .custom-marker-wrapper:hover .custom-marker-label {
+      background: rgba(15, 23, 42, 0.98);
+      border-color: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      transform: translateY(1px) scale(1.05);
+      z-index: 10000;
+    }
+
+    /* Map Zoom Responsive Scaling for Pin & Place Name Labels */
+    /* Low Zoom (Overview / Country View zoom <= 7): Compact pin, hide label to prevent clutter */
+    .map-zoom-low .custom-marker-pin {
+      width: 26px;
+      height: 26px;
+      border-width: 1.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .map-zoom-low .custom-marker-icon {
+      font-size: 11px;
+    }
+    .map-zoom-low .custom-marker-number {
+      font-size: 11px;
+    }
+    .map-zoom-low .custom-marker-label {
+      display: none; /* Auto-hide at country scale to avoid clutter */
+    }
+    .map-zoom-low .custom-marker-wrapper:hover .custom-marker-label {
+      display: inline-flex; /* Show on hover even at low zoom */
+      position: absolute;
+      top: 30px;
+    }
+
+    /* Mid Zoom (Province / Regional View zoom 8 to 12): Medium pin, compact place name label */
+    .map-zoom-mid .custom-marker-pin {
+      width: 32px;
+      height: 32px;
+      border-width: 2px;
+    }
+    .map-zoom-mid .custom-marker-icon {
+      font-size: 13px;
+    }
+    .map-zoom-mid .custom-marker-number {
+      font-size: 12px;
+    }
+    .map-zoom-mid .custom-marker-label {
+      font-size: 10px;
+      padding: 1.5px 6px;
+      max-width: 110px;
+      margin-top: 4px;
+    }
+    .map-zoom-mid .custom-marker-label-text {
+      max-width: 98px;
+    }
+
+    /* High Zoom (City / Street Level zoom >= 13): Full high-detail pin and prominent place name badge */
+    .map-zoom-high .custom-marker-pin {
+      width: 40px;
+      height: 40px;
+      border-width: 2.5px;
+    }
+    .map-zoom-high .custom-marker-icon {
+      font-size: 16px;
+    }
+    .map-zoom-high .custom-marker-number {
+      font-size: 15px;
+    }
+    .map-zoom-high .custom-marker-label {
+      font-size: 11.5px;
+      padding: 3px 9px;
+      max-width: 160px;
+      margin-top: 6px;
+    }
+    .map-zoom-high .custom-marker-label-text {
+      max-width: 142px;
     }
     .leaflet-popup-content-wrapper {
       padding: 0;
@@ -453,6 +592,16 @@
 
             <!-- Route Description Note (Editable) -->
             <p id="active-route-desc" class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 italic px-0.5"></p>
+
+            <!-- Map View Filter Pill (Show all memories vs Only active route) -->
+            <div class="grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold border border-slate-200/60 dark:border-slate-700/60 mt-1">
+              <button id="btn-display-all-pins" onclick="handleFilterByRoute('all')" class="py-1 px-2 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900" title="Hiển thị toàn bộ kỷ niệm trên bản đồ">
+                <i class="fa-solid fa-globe text-[10px] text-sky-500"></i> <span>Tất cả kỷ niệm</span>
+              </button>
+              <button id="btn-display-route-pins" onclick="handleFilterByRoute(activeRouteId)" class="py-1 px-2 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900" title="Chỉ hiển thị các kỷ niệm của lộ trình này">
+                <i class="fa-solid fa-filter text-[10px] text-indigo-500"></i> <span>Chỉ lộ trình này</span>
+              </button>
+            </div>
           </div>
 
           <!-- 2. Integrated Controls Row: Mode Selector + TSP Optimization -->
@@ -736,6 +885,20 @@
             <span>Ghim Kỷ niệm</span>
           </button>
         </div>
+      </div>
+
+      <!-- ACTIVE ROUTE FILTER NOTIFICATION PILL (Shows when map is filtered to a specific route) -->
+      <div id="active-route-filter-banner" class="hidden absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md px-4 py-2 rounded-full shadow-2xl border border-sky-500/40 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-200 max-w-[92vw]">
+        <div class="w-2.5 h-2.5 rounded-full bg-sky-400 shrink-0 animate-pulse"></div>
+        <div class="text-xs font-semibold flex items-center gap-1.5 truncate">
+          <span class="text-sky-300">Đang lọc theo:</span>
+          <span id="route-filter-banner-name" class="font-bold truncate max-w-[140px] sm:max-w-[200px]">Lộ trình</span>
+          <span id="route-filter-banner-count" class="text-[11px] text-slate-300 px-1.5 py-0.2 rounded-full bg-white/10 shrink-0 font-medium">0 điểm</span>
+        </div>
+        <button onclick="clearMapRouteFilter()" class="ml-1 px-2.5 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold transition flex items-center gap-1 shrink-0" title="Hiển thị lại toàn bộ kỷ niệm trên bản đồ">
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+          <span>Hiện tất cả</span>
+        </button>
       </div>
 
       <!-- GẠO MAPS 3D LUXURY WELCOME SPLASH (High Contrast, 3D Dynamic Motion, Floating Glass Plaque, Tap to Dismiss) -->
@@ -2522,6 +2685,26 @@
 
       // GPS Location Button
       document.getElementById('btn-gps-location').addEventListener('click', handleGPSFlyTo);
+
+      // Map Zoom Responsive Styling for Place Names and Pin Sizes
+      map.on('zoomend zoom', updateMapZoomClasses);
+      updateMapZoomClasses();
+    }
+
+    function updateMapZoomClasses() {
+      if (!map) return;
+      const zoom = map.getZoom();
+      const mapEl = document.getElementById('map');
+      if (!mapEl) return;
+
+      mapEl.classList.remove('map-zoom-low', 'map-zoom-mid', 'map-zoom-high');
+      if (zoom <= 7) {
+        mapEl.classList.add('map-zoom-low');
+      } else if (zoom <= 12) {
+        mapEl.classList.add('map-zoom-mid');
+      } else {
+        mapEl.classList.add('map-zoom-high');
+      }
     }
 
     // Sovereign islands layer asserting full territorial integrity of Vietnam (Hoàng Sa & Trường Sa)
@@ -2676,32 +2859,50 @@
     }
 
     // ==========================================
-    // MARKERS & PINS MANAGEMENT
+    // MARKERS & PINS MANAGEMENT (CLASSIC TEARDROP PIN WITH PLACE NAME)
     // ==========================================
-    function createCustomMarkerIcon(pinOrCategory) {
+    function createCustomMarkerIcon(pinOrCategory, options = {}) {
       let color = '#0ea5e9';
       let icon = 'fa-camera-retro';
+      let title = '';
 
       if (typeof pinOrCategory === 'object' && pinOrCategory !== null) {
         const cat = CATEGORIES[pinOrCategory.category] || CATEGORIES.sightseeing;
         color = pinOrCategory.color || cat.color;
         icon = cat.icon;
+        title = pinOrCategory.title || '';
       } else {
         const cat = CATEGORIES[pinOrCategory] || CATEGORIES.sightseeing;
         color = cat.color;
         icon = cat.icon;
       }
 
+      const routeIndex = options.routeIndex !== undefined ? options.routeIndex : null;
+
+      let innerContent = `<i class="fa-solid ${icon} custom-marker-icon"></i>`;
+      if (routeIndex !== null) {
+        innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
+      }
+
+      const labelHtml = title ? `
+        <div class="custom-marker-label shadow-md" title="${escapeHtml(title)}">
+          <span class="custom-marker-label-text">${escapeHtml(title)}</span>
+        </div>
+      ` : '';
+
       return L.divIcon({
         className: 'custom-div-icon',
         html: `
-          <div class="custom-marker-pin" style="background-color: ${color};">
-            <i class="fa-solid ${icon} custom-marker-icon"></i>
+          <div class="custom-marker-wrapper">
+            <div class="custom-marker-pin" style="background-color: ${color};">
+              ${innerContent}
+            </div>
+            ${labelHtml}
           </div>
         `,
-        iconSize: [38, 38],
-        iconAnchor: [19, 38],
-        popupAnchor: [0, -34]
+        iconSize: [140, 68],
+        iconAnchor: [70, 36],
+        popupAnchor: [0, -38]
       });
     }
 
@@ -2743,16 +2944,40 @@
       markersMap.forEach(marker => map.removeLayer(marker));
       markersMap.clear();
 
-      // Add pins
-      pins.forEach(pin => {
+      // Filter pins if route filter is active
+      let displayPins = pins;
+      if (activeFilterRouteId === 'none') {
+        displayPins = pins.filter(p => !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id)));
+      } else if (activeFilterRouteId && activeFilterRouteId !== 'all') {
+        const targetRoute = routes.find(r => r.id === activeFilterRouteId);
+        if (targetRoute && Array.isArray(targetRoute.pinIds)) {
+          displayPins = pins.filter(p => targetRoute.pinIds.includes(p.id));
+        }
+      }
+
+      // Add pins with place name label and classic teardrop pin
+      displayPins.forEach(pin => {
+        let routeIndex = null;
+        let isFirst = false;
+        let isLast = false;
+
+        if (Array.isArray(routePinIds) && routePinIds.includes(pin.id)) {
+          const idx = routePinIds.indexOf(pin.id);
+          routeIndex = idx + 1;
+          isFirst = (idx === 0);
+          isLast = (idx === routePinIds.length - 1 && routePinIds.length > 1);
+        }
+
         const marker = L.marker([pin.lat, pin.lng], {
-          icon: createCustomMarkerIcon(pin),
+          icon: createCustomMarkerIcon(pin, { routeIndex, isFirst, isLast }),
           title: pin.title
         }).addTo(map);
 
         marker.bindPopup(buildPopupHtml(pin));
         markersMap.set(pin.id, marker);
       });
+
+      updateRouteFilterBanner();
 
       const badgePins = document.getElementById('badge-pins-count');
       if (badgePins) badgePins.textContent = pins.length;
@@ -2809,10 +3034,14 @@
       return `
         <div class="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
           ${pin.photo ? `
-            <div class="relative h-36 w-full overflow-hidden bg-slate-100">
-              <img src="${pin.photo}" alt="${escapeHtml(pin.title)}" class="w-full h-full object-cover" onerror="this.style.display='none'" />
-              <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[11px] font-bold shadow-md text-white flex items-center gap-1" style="background-color: ${currentPinColor};">
+            <div class="relative h-40 w-full overflow-hidden bg-slate-900 group cursor-pointer" onclick="openImageLightbox('${pin.photo}', '${escapeHtml(pin.title)}')">
+              <img src="${pin.photo}" alt="${escapeHtml(pin.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-60 group-hover:opacity-40 transition"></div>
+              <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md text-white flex items-center gap-1.5 backdrop-blur-xs" style="background-color: ${currentPinColor};">
                 <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+              </span>
+              <span class="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100">
+                <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
               </span>
             </div>
           ` : `
@@ -2884,14 +3113,19 @@
       const pin = pins.find(p => p.id === pinId);
       if (!pin) return;
       
+      // If active filter hides this pin from map, reset to 'all' so it is visible
+      if (!markersMap.has(pinId)) {
+        handleFilterByRoute('all');
+      }
+
       map.flyTo([pin.lat, pin.lng], 14, { duration: 1.2 });
       
-      const marker = markersMap.get(pinId);
-      if (marker) {
-        setTimeout(() => {
+      setTimeout(() => {
+        const marker = markersMap.get(pinId);
+        if (marker) {
           marker.openPopup();
-        }, 1200);
-      }
+        }
+      }, 1200);
 
       // On mobile, close sidebar so user can see map
       if (window.innerWidth < 1024) {
@@ -3518,14 +3752,68 @@
 
     function handleFilterByRoute(routeId) {
       activeFilterRouteId = routeId || 'all';
+      if (routeId && routeId !== 'all' && routeId !== 'none') {
+        activeRouteId = routeId;
+        syncActiveRouteShortcuts();
+      }
       updateRouteFilterDropdown();
+      populateRouteSelectorDropdown();
+      updateRouteFilterBanner();
+      updateRouteFilterPills();
+      renderAllPins();
       renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
       
       if (routeId !== 'all' && routeId !== 'none') {
         const r = routes.find(item => item.id === routeId);
         if (r) {
-          showToast(`Đang lọc kỷ niệm trong lộ trình: "${r.name}"`, 'info');
+          showToast(`Đang chỉ hiển thị các kỷ niệm của: "${r.name}" (${(r.pinIds && r.pinIds.length) || 0} điểm)`, 'info');
         }
+      } else if (routeId === 'all') {
+        showToast('Đang hiển thị tất cả kỷ niệm trên bản đồ', 'info');
+      }
+    }
+
+    function clearMapRouteFilter() {
+      handleFilterByRoute('all');
+    }
+
+    function updateRouteFilterBanner() {
+      const banner = document.getElementById('active-route-filter-banner');
+      if (!banner) return;
+      if (activeFilterRouteId && activeFilterRouteId !== 'all') {
+        const nameEl = document.getElementById('route-filter-banner-name');
+        const countEl = document.getElementById('route-filter-banner-count');
+        if (activeFilterRouteId === 'none') {
+          const unassignedCount = pins.filter(p => !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id))).length;
+          if (nameEl) nameEl.textContent = 'Chưa vào lộ trình';
+          if (countEl) countEl.textContent = `${unassignedCount} điểm`;
+        } else {
+          const targetRoute = routes.find(r => r.id === activeFilterRouteId);
+          if (targetRoute) {
+            const stopCount = (targetRoute.pinIds && targetRoute.pinIds.length) || 0;
+            if (nameEl) nameEl.textContent = targetRoute.name;
+            if (countEl) countEl.textContent = `${stopCount} điểm`;
+          }
+        }
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function updateRouteFilterPills() {
+      const allBtn = document.getElementById('btn-display-all-pins');
+      const routeBtn = document.getElementById('btn-display-route-pins');
+      if (!allBtn || !routeBtn) return;
+
+      if (activeFilterRouteId === 'all') {
+        allBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs flex items-center justify-center gap-1.5 transition';
+        routeBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
+      } else {
+        routeBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs flex items-center justify-center gap-1.5 transition';
+        allBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
       }
     }
 
@@ -3684,16 +3972,19 @@
       const select = document.getElementById('route-selector-dropdown') || document.getElementById('route-selector');
       if (!select) return;
 
-      if (!routes || routes.length === 0) {
-        select.innerHTML = `<option value="">Chưa có lộ trình nào</option>`;
-        return;
+      let html = `<option value="__all__" ${activeFilterRouteId === 'all' ? 'selected' : ''}>🌟 Tất cả kỷ niệm (${pins.length} điểm)</option>`;
+
+      if (routes && routes.length > 0) {
+        html += `<optgroup label="Lộ trình của bạn">`;
+        routes.forEach(r => {
+          const isSelected = (activeFilterRouteId === r.id || (activeFilterRouteId !== 'all' && r.id === activeRouteId));
+          const stopCount = (r.pinIds && r.pinIds.length) || 0;
+          html += `<option value="${r.id}" ${isSelected ? 'selected' : ''}>🚗 ${escapeHtml(r.name)} (${stopCount} điểm)</option>`;
+        });
+        html += `</optgroup>`;
       }
 
-      select.innerHTML = routes.map(r => {
-        const isSelected = r.id === activeRouteId ? 'selected' : '';
-        const stopCount = (r.pinIds && r.pinIds.length) || 0;
-        return `<option value="${r.id}" ${isSelected}>${escapeHtml(r.name)} (${stopCount} điểm)</option>`;
-      }).join('');
+      select.innerHTML = html;
 
       // Update desc and color indicator in header
       const active = getActiveRoute();
@@ -3703,21 +3994,31 @@
       }
       const colorIndicator = document.getElementById('active-route-color-indicator');
       if (colorIndicator && active) {
-        colorIndicator.style.backgroundColor = active.color || '#6366f1';
+        colorIndicator.style.backgroundColor = (activeFilterRouteId === 'all') ? '#0ea5e9' : (active.color || '#6366f1');
       }
+
+      updateRouteFilterPills();
     }
 
     function handleSelectRoute(routeId) {
-      if (!routeId || routeId === activeRouteId) return;
+      if (!routeId) return;
+      if (routeId === '__all__') {
+        handleFilterByRoute('all');
+        return;
+      }
       activeRouteId = routeId;
+      activeFilterRouteId = routeId; // Automatically filter map pins to only show this selected route
       syncActiveRouteShortcuts();
       saveRoutesToStorage();
       populateRouteSelectorDropdown();
+      updateRouteFilterDropdown();
+      updateRouteFilterBanner();
+      updateRouteFilterPills();
       renderAllPins();
       renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
-      showToast(`Đã chuyển sang lộ trình: "${getActiveRoute().name}"`, 'info');
+      showToast(`Đang hiển thị lộ trình: "${getActiveRoute().name}" (${(getActiveRoute().pinIds && getActiveRoute().pinIds.length) || 0} điểm)`, 'info');
     }
 
     function openManageRoutesModal() {
@@ -4436,40 +4737,34 @@
               const stopInfo = sharedData.stops[i];
               const num = i + 1;
               const isFirst = (i === 0);
-              const isLast = (i === sharedData.stops.length - 1);
-              const bgClass = isFirst ? 'bg-emerald-500' : (isLast ? 'bg-rose-500' : 'bg-indigo-600');
-              const iconHtml = `
-                <div class="relative group cursor-pointer">
-                  <div class="w-8 h-8 rounded-full ${bgClass} text-white font-black text-xs flex items-center justify-center shadow-xl border-2 border-white transform transition hover:scale-125">
-                    ${num}
-                  </div>
-                </div>
-              `;
-              const markerIcon = L.divIcon({
-                className: 'custom-preview-marker',
-                html: iconHtml,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
+              const isLast = (i === sharedData.stops.length - 1 && sharedData.stops.length > 1);
+              
+              const marker = L.marker(wp.latLng, {
+                icon: createCustomMarkerIcon(stopInfo || { category: 'sightseeing', title: `Điểm #${num}` }, {
+                  routeIndex: num,
+                  isFirst: isFirst,
+                  isLast: isLast
+                }),
+                title: stopInfo ? stopInfo.title : `Điểm #${num}`
               });
-              const marker = L.marker(wp.latLng, { icon: markerIcon });
               
               if (stopInfo) {
                 const cat = CATEGORIES[stopInfo.category] || CATEGORIES.sightseeing;
                 const popupHtml = `
                   <div class="p-2.5 max-w-[260px] space-y-2">
                     ${stopInfo.photo ? `
-                      <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100">
-                        <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
+                      <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+                        <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
                       </div>
                     ` : ''}
                     <div>
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400">
                         <i class="fa-solid ${cat.icon}"></i> ${cat.name}
                         ${stopInfo.rating ? `<span class="text-amber-500 ml-auto font-bold">${'★'.repeat(stopInfo.rating)}</span>` : ''}
                       </div>
-                      <h4 class="font-bold text-sm text-slate-900 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
-                      ${stopInfo.locationName ? `<p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
-                      ${stopInfo.notes ? `<p class="text-xs text-slate-700 italic mt-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
+                      <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
+                      ${stopInfo.locationName ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
+                      ${stopInfo.notes ? `<p class="text-xs text-slate-700 dark:text-slate-300 italic mt-1.5 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
                     </div>
                   </div>
                 `;
