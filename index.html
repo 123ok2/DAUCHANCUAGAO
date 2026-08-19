@@ -255,20 +255,20 @@
 
     /* Dynamic Place Name Label attached to pin */
     .custom-marker-label {
-      margin-top: 4px;
+      margin-top: 8px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(15, 23, 42, 0.92);
+      background-color: rgba(15, 23, 42, 0.92);
       color: #ffffff;
       font-weight: 700;
       font-size: 11px;
       letter-spacing: -0.01em;
       line-height: 1.25;
-      padding: 2px 7.5px;
+      padding: 2px 8px;
       border-radius: 9999px;
       border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       max-width: 140px;
@@ -276,7 +276,7 @@
       text-overflow: ellipsis;
       overflow: hidden;
       pointer-events: none;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
     .custom-marker-label-text {
       display: inline-block;
@@ -284,16 +284,9 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    }
-    .dark .custom-marker-label {
-      background: rgba(2, 6, 23, 0.94);
-      border-color: rgba(255, 255, 255, 0.25);
     }
     .custom-marker-wrapper:hover .custom-marker-label {
-      background: rgba(15, 23, 42, 0.98);
-      border-color: rgba(56, 189, 248, 0.9);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
       transform: translateY(1px) scale(1.05);
       z-index: 10000;
     }
@@ -318,10 +311,8 @@
       font-weight: 700;
       padding: 1.5px 6.5px;
       max-width: 110px;
-      margin-top: 3px;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      margin-top: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
     .map-zoom-low .custom-marker-label-text {
       max-width: 96px;
@@ -346,9 +337,7 @@
       font-weight: 700;
       padding: 2px 8px;
       max-width: 135px;
-      margin-top: 4px;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      margin-top: 7px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
     }
     .map-zoom-mid .custom-marker-label-text {
@@ -374,10 +363,8 @@
       font-weight: 700;
       padding: 3px 10px;
       max-width: 160px;
-      margin-top: 6px;
-      background: rgba(15, 23, 42, 0.94);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      margin-top: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.38);
     }
     .map-zoom-high .custom-marker-label-text {
       max-width: 142px;
@@ -1378,7 +1365,7 @@
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Tên địa điểm / Tiêu đề <span class="text-rose-500">*</span>
             </label>
-            <input type="text" id="form-name" required placeholder="Ví dụ: Đỉnh Fansipan, Cà phê Giảng, Bãi Sao..." class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 dark:text-slate-100 text-base sm:text-sm outline-none transition" />
+            <input type="text" id="form-name" required oninput="updateFormPinPreview()" placeholder="Ví dụ: Đỉnh Fansipan, Cà phê Giảng, Bãi Sao..." class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 dark:text-slate-100 text-base sm:text-sm outline-none transition" />
           </div>
 
           <!-- Category Quick Selection Chips (Touch-Friendly) -->
@@ -1411,29 +1398,112 @@
             <input type="hidden" id="form-category" value="sightseeing" />
           </div>
 
-          <!-- Custom Pin Color Selector -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                <i class="fa-solid fa-palette text-sky-500"></i> Màu sắc Ghim
-              </label>
-              <label for="form-pin-color-picker" class="text-xs text-slate-500 cursor-pointer font-medium hover:text-sky-600 flex items-center gap-1.5">
-                <span>Tùy chỉnh:</span>
-                <input type="color" id="form-pin-color-picker" value="#0ea5e9" onchange="selectFormPinColor(this.value)" class="w-6 h-6 rounded-lg cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" />
-              </label>
+          <!-- ==================== PIN & LABEL COLOR CUSTOMIZER WITH LIVE PREVIEW ==================== -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-3.5">
+            <!-- Header & Live Preview Row -->
+            <div class="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-200 dark:border-slate-700/60">
+              <div>
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                  <i class="fa-solid fa-palette text-sky-500"></i> Màu sắc Ghim & Nhãn tên
+                </span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Tùy biến hiển thị nổi bật trên bản đồ</span>
+              </div>
+              
+              <!-- Real-time Live Marker Preview -->
+              <div class="px-3 py-1.5 rounded-xl bg-slate-200/70 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700/80 flex flex-col items-center justify-center shrink-0 min-w-[110px]" title="Xem trước ghim & nhãn thực tế">
+                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tight mb-1">Xem trước</div>
+                <div id="preview-marker-wrapper" class="flex flex-col items-center">
+                  <div id="preview-pin-shape" class="w-7 h-7 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white text-[11px] transition-all" style="border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background-color: #0ea5e9;">
+                    <i id="preview-pin-icon" class="fa-solid fa-camera-retro" style="transform: rotate(45deg);"></i>
+                  </div>
+                  <div id="preview-pin-label" class="mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm transition-all whitespace-nowrap max-w-[100px] truncate" style="background-color: #0f172a; color: #ffffff; border: 1px solid rgba(255,255,255,0.35);">
+                    <span id="preview-pin-label-text">Tên địa điểm</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div class="grid grid-cols-8 gap-2" id="pin-color-swatches">
-              <button type="button" onclick="selectFormPinColor('#0ea5e9')" data-color="#0ea5e9" class="pin-color-btn w-full aspect-square rounded-xl bg-sky-500 shadow-sm ring-4 ring-sky-400 ring-offset-1 transition hover:scale-105" title="Xanh Da Trời"></button>
-              <button type="button" onclick="selectFormPinColor('#f97316')" data-color="#f97316" class="pin-color-btn w-full aspect-square rounded-xl bg-orange-500 shadow-sm transition hover:scale-105" title="Cam Ấm"></button>
-              <button type="button" onclick="selectFormPinColor('#d97706')" data-color="#d97706" class="pin-color-btn w-full aspect-square rounded-xl bg-amber-600 shadow-sm transition hover:scale-105" title="Hổ Phách"></button>
-              <button type="button" onclick="selectFormPinColor('#6366f1')" data-color="#6366f1" class="pin-color-btn w-full aspect-square rounded-xl bg-indigo-500 shadow-sm transition hover:scale-105" title="Chàm"></button>
-              <button type="button" onclick="selectFormPinColor('#10b981')" data-color="#10b981" class="pin-color-btn w-full aspect-square rounded-xl bg-emerald-500 shadow-sm transition hover:scale-105" title="Xanh Lục"></button>
-              <button type="button" onclick="selectFormPinColor('#f43f5e')" data-color="#f43f5e" class="pin-color-btn w-full aspect-square rounded-xl bg-rose-500 shadow-sm transition hover:scale-105" title="Hồng Đỏ"></button>
-              <button type="button" onclick="selectFormPinColor('#8b5cf6')" data-color="#8b5cf6" class="pin-color-btn w-full aspect-square rounded-xl bg-purple-500 shadow-sm transition hover:scale-105" title="Tím"></button>
-              <button type="button" onclick="selectFormPinColor('#1e293b')" data-color="#1e293b" class="pin-color-btn w-full aspect-square rounded-xl bg-slate-800 shadow-sm transition hover:scale-105" title="Xám Đen"></button>
+
+            <!-- 1. Pin Head Color -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span> 1. Màu biểu tượng Ghim:
+                </label>
+                <label for="form-pin-color-picker" class="text-[11px] text-slate-500 cursor-pointer font-medium hover:text-sky-600 flex items-center gap-1">
+                  <span>Màu khác:</span>
+                  <input type="color" id="form-pin-color-picker" value="#0ea5e9" onchange="selectFormPinColor(this.value)" class="w-5 h-5 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent p-0" />
+                </label>
+              </div>
+              <div class="grid grid-cols-8 gap-1.5" id="pin-color-swatches">
+                <button type="button" onclick="selectFormPinColor('#0ea5e9')" data-color="#0ea5e9" class="pin-color-btn w-full aspect-square rounded-xl bg-sky-500 shadow-sm ring-4 ring-sky-400 ring-offset-1 transition hover:scale-105" title="Xanh Da Trời"></button>
+                <button type="button" onclick="selectFormPinColor('#f97316')" data-color="#f97316" class="pin-color-btn w-full aspect-square rounded-xl bg-orange-500 shadow-sm transition hover:scale-105" title="Cam Ấm"></button>
+                <button type="button" onclick="selectFormPinColor('#d97706')" data-color="#d97706" class="pin-color-btn w-full aspect-square rounded-xl bg-amber-600 shadow-sm transition hover:scale-105" title="Hổ Phách"></button>
+                <button type="button" onclick="selectFormPinColor('#6366f1')" data-color="#6366f1" class="pin-color-btn w-full aspect-square rounded-xl bg-indigo-500 shadow-sm transition hover:scale-105" title="Chàm"></button>
+                <button type="button" onclick="selectFormPinColor('#10b981')" data-color="#10b981" class="pin-color-btn w-full aspect-square rounded-xl bg-emerald-500 shadow-sm transition hover:scale-105" title="Xanh Lục"></button>
+                <button type="button" onclick="selectFormPinColor('#f43f5e')" data-color="#f43f5e" class="pin-color-btn w-full aspect-square rounded-xl bg-rose-500 shadow-sm transition hover:scale-105" title="Hồng Đỏ"></button>
+                <button type="button" onclick="selectFormPinColor('#8b5cf6')" data-color="#8b5cf6" class="pin-color-btn w-full aspect-square rounded-xl bg-purple-500 shadow-sm transition hover:scale-105" title="Tím"></button>
+                <button type="button" onclick="selectFormPinColor('#1e293b')" data-color="#1e293b" class="pin-color-btn w-full aspect-square rounded-xl bg-slate-800 shadow-sm transition hover:scale-105" title="Xám Đen"></button>
+              </div>
+              <input type="hidden" id="form-pin-color" value="#0ea5e9" />
             </div>
-            <input type="hidden" id="form-pin-color" value="#0ea5e9" />
+
+            <!-- 2. Label Background Color -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-white/50 inline-block"></span> 2. Màu nền thẻ tên địa điểm:
+                </label>
+                <label for="form-label-bg-picker" class="text-[11px] text-slate-500 cursor-pointer font-medium hover:text-sky-600 flex items-center gap-1">
+                  <span>Màu khác:</span>
+                  <input type="color" id="form-label-bg-picker" value="#0f172a" onchange="selectFormLabelBgColor(this.value)" class="w-5 h-5 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent p-0" />
+                </label>
+              </div>
+              <div class="grid grid-cols-8 gap-1.5" id="label-bg-swatches">
+                <button type="button" onclick="selectFormLabelBgColor('#0f172a')" data-bg="#0f172a" class="label-bg-btn w-full aspect-square rounded-xl bg-slate-900 shadow-sm ring-4 ring-sky-400 ring-offset-1 border border-slate-700 transition hover:scale-105" title="Đen Sẫm (Mặc định)"></button>
+                <button type="button" onclick="selectFormLabelBgColor('#000000')" data-bg="#000000" class="label-bg-btn w-full aspect-square rounded-xl bg-black shadow-sm border border-slate-800 transition hover:scale-105" title="Đen Tuyền"></button>
+                <button type="button" onclick="selectFormLabelBgColor('match_pin')" data-bg="match_pin" class="label-bg-btn w-full aspect-square rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm transition hover:scale-105" title="Cùng màu với Ghim">Ghim</button>
+                <button type="button" onclick="selectFormLabelBgColor('#ffffff')" data-bg="#ffffff" class="label-bg-btn w-full aspect-square rounded-xl bg-white border border-slate-300 shadow-sm transition hover:scale-105" title="Trắng Sáng"></button>
+                <button type="button" onclick="selectFormLabelBgColor('#1e3a8a')" data-bg="#1e3a8a" class="label-bg-btn w-full aspect-square rounded-xl bg-blue-900 shadow-sm transition hover:scale-105" title="Xanh Navy"></button>
+                <button type="button" onclick="selectFormLabelBgColor('#064e3b')" data-bg="#064e3b" class="label-bg-btn w-full aspect-square rounded-xl bg-emerald-900 shadow-sm transition hover:scale-105" title="Xanh Rừng Sâu"></button>
+                <button type="button" onclick="selectFormLabelBgColor('#881337')" data-bg="#881337" class="label-bg-btn w-full aspect-square rounded-xl bg-rose-950 shadow-sm transition hover:scale-105" title="Đỏ Mận / Ruby"></button>
+                <button type="button" onclick="selectFormLabelBgColor('#581c87')" data-bg="#581c87" class="label-bg-btn w-full aspect-square rounded-xl bg-purple-950 shadow-sm transition hover:scale-105" title="Tím Hoàng Gia"></button>
+              </div>
+              <input type="hidden" id="form-label-bg-color" value="#0f172a" />
+            </div>
+
+            <!-- 3. Label Text Color -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-400 inline-block"></span> 3. Màu chữ của tên địa điểm:
+                </label>
+                <label for="form-label-text-picker" class="text-[11px] text-slate-500 cursor-pointer font-medium hover:text-sky-600 flex items-center gap-1">
+                  <span>Màu khác:</span>
+                  <input type="color" id="form-label-text-picker" value="#ffffff" onchange="selectFormLabelTextColor(this.value)" class="w-5 h-5 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent p-0" />
+                </label>
+              </div>
+              <div class="grid grid-cols-6 gap-1.5" id="label-text-swatches">
+                <button type="button" onclick="selectFormLabelTextColor('#ffffff')" data-text="#ffffff" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-900 border border-slate-600 text-white font-bold text-[11px] ring-4 ring-sky-400 ring-offset-1 transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Trắng">
+                  <span class="w-2 h-2 rounded-full bg-white"></span> <span>Trắng</span>
+                </button>
+                <button type="button" onclick="selectFormLabelTextColor('#fde047')" data-text="#fde047" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-900 border border-slate-700 text-yellow-300 font-bold text-[11px] transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Vàng">
+                  <span class="w-2 h-2 rounded-full bg-yellow-300"></span> <span>Vàng</span>
+                </button>
+                <button type="button" onclick="selectFormLabelTextColor('#38bdf8')" data-text="#38bdf8" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-900 border border-slate-700 text-sky-400 font-bold text-[11px] transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Xanh Lơ">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span> <span>Xanh</span>
+                </button>
+                <button type="button" onclick="selectFormLabelTextColor('#4ade80')" data-text="#4ade80" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-[11px] transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Xanh Lá">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> <span>Lá</span>
+                </button>
+                <button type="button" onclick="selectFormLabelTextColor('#f472b6')" data-text="#f472b6" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-900 border border-slate-700 text-pink-400 font-bold text-[11px] transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Hồng">
+                  <span class="w-2 h-2 rounded-full bg-pink-400"></span> <span>Hồng</span>
+                </button>
+                <button type="button" onclick="selectFormLabelTextColor('#0f172a')" data-text="#0f172a" class="label-text-btn py-1 px-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 border border-slate-400 text-slate-900 dark:text-slate-100 font-bold text-[11px] transition hover:scale-105 flex items-center justify-center gap-1" title="Chữ Đen (Khi nền sáng)">
+                  <span class="w-2 h-2 rounded-full bg-slate-900"></span> <span>Đen</span>
+                </button>
+              </div>
+              <input type="hidden" id="form-label-text-color" value="#ffffff" />
+            </div>
           </div>
 
           <!-- Date Visited & Rating Row -->
@@ -3327,12 +3397,22 @@
       let color = '#0ea5e9';
       let icon = 'fa-camera-retro';
       let title = '';
+      let labelBgColor = '#0f172a';
+      let labelTextColor = '#ffffff';
 
       if (typeof pinOrCategory === 'object' && pinOrCategory !== null) {
         const cat = CATEGORIES[pinOrCategory.category] || CATEGORIES.sightseeing;
         color = pinOrCategory.color || cat.color;
         icon = cat.icon;
         title = pinOrCategory.title || '';
+        
+        // Handle match_pin or custom colors
+        if (pinOrCategory.labelBgColor === 'match_pin') {
+          labelBgColor = color;
+        } else {
+          labelBgColor = pinOrCategory.labelBgColor || '#0f172a';
+        }
+        labelTextColor = pinOrCategory.labelTextColor || '#ffffff';
       } else {
         const cat = CATEGORIES[pinOrCategory] || CATEGORIES.sightseeing;
         color = cat.color;
@@ -3346,9 +3426,15 @@
         innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
       }
 
+      // Border style based on text/bg color
+      let borderStyle = 'border: 1px solid rgba(255, 255, 255, 0.35);';
+      if (labelBgColor === '#ffffff' || labelBgColor.toLowerCase() === '#fff') {
+        borderStyle = 'border: 1px solid rgba(0, 0, 0, 0.2);';
+      }
+
       const labelHtml = title ? `
-        <div class="custom-marker-label shadow-md" title="${escapeHtml(title)}">
-          <span class="custom-marker-label-text">${escapeHtml(title)}</span>
+        <div class="custom-marker-label shadow-md" style="background-color: ${labelBgColor}; color: ${labelTextColor}; ${borderStyle}" title="${escapeHtml(title)}">
+          <span class="custom-marker-label-text" style="color: ${labelTextColor};">${escapeHtml(title)}</span>
         </div>
       ` : '';
 
@@ -3369,9 +3455,10 @@
     }
 
     function selectFormPinColor(colorHex) {
-      document.getElementById('form-pin-color').value = colorHex;
-      const picker = document.getElementById('form-pin-color-picker');
-      if (picker) picker.value = colorHex;
+      const pinColorInput = document.getElementById('form-pin-color');
+      const pinColorPicker = document.getElementById('form-pin-color-picker');
+      if (pinColorInput) pinColorInput.value = colorHex;
+      if (pinColorPicker) pinColorPicker.value = colorHex;
 
       // Update swatch active outline ring
       document.querySelectorAll('.pin-color-btn').forEach(btn => {
@@ -3381,6 +3468,72 @@
           btn.classList.remove('ring-4', 'ring-sky-400', 'ring-offset-1');
         }
       });
+      updateFormPinPreview();
+    }
+
+    function selectFormLabelBgColor(bgVal) {
+      const bgInput = document.getElementById('form-label-bg-color');
+      const bgPicker = document.getElementById('form-label-bg-picker');
+      if (bgInput) bgInput.value = bgVal;
+      if (bgPicker && bgVal !== 'match_pin') bgPicker.value = bgVal;
+
+      document.querySelectorAll('.label-bg-btn').forEach(btn => {
+        if (btn.getAttribute('data-bg') === bgVal) {
+          btn.classList.add('ring-4', 'ring-sky-400', 'ring-offset-1');
+        } else {
+          btn.classList.remove('ring-4', 'ring-sky-400', 'ring-offset-1');
+        }
+      });
+      updateFormPinPreview();
+    }
+
+    function selectFormLabelTextColor(textVal) {
+      const textInput = document.getElementById('form-label-text-color');
+      const textPicker = document.getElementById('form-label-text-picker');
+      if (textInput) textInput.value = textVal;
+      if (textPicker) textPicker.value = textVal;
+
+      document.querySelectorAll('.label-text-btn').forEach(btn => {
+        if (btn.getAttribute('data-text') === textVal) {
+          btn.classList.add('ring-4', 'ring-sky-400', 'ring-offset-1');
+        } else {
+          btn.classList.remove('ring-4', 'ring-sky-400', 'ring-offset-1');
+        }
+      });
+      updateFormPinPreview();
+    }
+
+    function updateFormPinPreview() {
+      const pinColor = document.getElementById('form-pin-color')?.value || '#0ea5e9';
+      let labelBg = document.getElementById('form-label-bg-color')?.value || '#0f172a';
+      if (labelBg === 'match_pin') {
+        labelBg = pinColor;
+      }
+      const labelText = document.getElementById('form-label-text-color')?.value || '#ffffff';
+      const name = (document.getElementById('form-name')?.value || '').trim() || 'Tên địa điểm';
+      const catKey = document.getElementById('form-category')?.value || 'sightseeing';
+      const cat = CATEGORIES[catKey] || CATEGORIES.sightseeing;
+
+      const previewShape = document.getElementById('preview-pin-shape');
+      const previewIcon = document.getElementById('preview-pin-icon');
+      const previewLabel = document.getElementById('preview-pin-label');
+      const previewLabelText = document.getElementById('preview-pin-label-text');
+
+      if (previewShape) previewShape.style.backgroundColor = pinColor;
+      if (previewIcon) previewIcon.className = `fa-solid ${cat.icon}`;
+      if (previewLabel) {
+        previewLabel.style.backgroundColor = labelBg;
+        previewLabel.style.color = labelText;
+        if (labelBg === '#ffffff' || labelBg.toLowerCase() === '#fff') {
+          previewLabel.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+        } else {
+          previewLabel.style.border = '1px solid rgba(255, 255, 255, 0.35)';
+        }
+      }
+      if (previewLabelText) {
+        previewLabelText.textContent = name;
+        previewLabelText.style.color = labelText;
+      }
     }
 
     function changePinColorDirectly(pinId, colorHex) {
@@ -3656,6 +3809,9 @@
       document.getElementById('form-category').value = 'sightseeing';
       selectFormCategory('sightseeing');
       selectFormPinColor('#0ea5e9');
+      selectFormLabelBgColor('#0f172a');
+      selectFormLabelTextColor('#ffffff');
+      updateFormPinPreview();
       
       // Hide modal delete button for new pins
       const deleteModalBtn = document.getElementById('btn-modal-delete-pin');
@@ -3688,6 +3844,7 @@
           const nameProposal = data.name || (data.address && (data.address.tourism || data.address.amenity || data.address.road || data.address.suburb || data.address.city)) || '';
           if (nameProposal && !document.getElementById('form-name').value) {
             document.getElementById('form-name').value = nameProposal;
+            updateFormPinPreview();
           }
         }
       } catch (e) {
@@ -3721,6 +3878,9 @@
 
       const pinColor = pin.color || (CATEGORIES[pin.category] ? CATEGORIES[pin.category].color : '#0ea5e9');
       selectFormPinColor(pinColor);
+      selectFormLabelBgColor(pin.labelBgColor || '#0f172a');
+      selectFormLabelTextColor(pin.labelTextColor || '#ffffff');
+      updateFormPinPreview();
 
       document.getElementById('form-date').value = pin.date || '';
       
@@ -3861,21 +4021,7 @@
           chip.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-slate-50', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'font-medium');
         }
       });
-    }
-
-    function selectFormPinColor(colorHex) {
-      const pinColorInput = document.getElementById('form-pin-color');
-      const pinColorPicker = document.getElementById('form-pin-color-picker');
-      if (pinColorInput) pinColorInput.value = colorHex;
-      if (pinColorPicker) pinColorPicker.value = colorHex;
-
-      document.querySelectorAll('.pin-color-btn').forEach(btn => {
-        if (btn.getAttribute('data-color') === colorHex) {
-          btn.classList.add('ring-4', 'ring-sky-400', 'ring-offset-1');
-        } else {
-          btn.classList.remove('ring-4', 'ring-sky-400', 'ring-offset-1');
-        }
-      });
+      updateFormPinPreview();
     }
 
     // Quick Guide Modal Handlers
@@ -3898,6 +4044,8 @@
       const title = (document.getElementById('form-name')?.value || '').trim();
       const category = document.getElementById('form-category')?.value || 'sightseeing';
       const color = document.getElementById('form-pin-color')?.value || (CATEGORIES[category] ? CATEGORIES[category].color : '#0ea5e9');
+      const labelBgColor = document.getElementById('form-label-bg-color')?.value || '#0f172a';
+      const labelTextColor = document.getElementById('form-label-text-color')?.value || '#ffffff';
       const date = document.getElementById('form-date')?.value || new Date().toISOString().split('T')[0];
       const rating = parseInt(document.getElementById('form-rating')?.value || '5', 10) || 5;
       const notes = (document.getElementById('form-notes')?.value || '').trim();
@@ -3918,6 +4066,8 @@
             title,
             category,
             color,
+            labelBgColor,
+            labelTextColor,
             date,
             rating,
             notes,
@@ -3934,6 +4084,8 @@
           title,
           category,
           color,
+          labelBgColor,
+          labelTextColor,
           date,
           rating,
           photo,
@@ -6224,20 +6376,8 @@
           fitSelectedRoutes: false,
           show: false,
           createMarker: function(i, wp, n) {
-            // If it is an intermediate dragged point (not the main pinned stops)
-            const isMainStop = (i === 0 || i === n - 1) && !customRouteWaypoints;
-            if (isMainStop) return null; // Custom pin markers handle endpoints
-
-            // Create a draggable dot for intermediate waypoints
-            return L.marker(wp.latLng, {
-              draggable: true,
-              icon: L.divIcon({
-                className: 'route-drag-handle',
-                html: `<div class="w-4 h-4 rounded-full border-2 border-white shadow-md cursor-grab active:cursor-grabbing" style="background-color: ${primaryColor};"></div>`,
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
-              })
-            }).bindTooltip('Kéo để đổi hướng đường đi', { direction: 'top', offset: [0, -8] });
+            // All route stops and their labels are already rendered by renderAllPins
+            return null;
           }
         }).addTo(map);
 
