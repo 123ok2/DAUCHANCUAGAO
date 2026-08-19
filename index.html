@@ -769,9 +769,17 @@
       </div>
 
       <!-- Sidebar Footer -->
-      <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-        <span>© Gạo Maps • Bản đồ Kỷ niệm</span>
-        <span class="text-sky-600 dark:text-sky-400 font-medium">OSRM + Leaflet</span>
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-1.5 truncate">
+          <span>© Gạo Maps</span>
+          <span class="text-slate-300 dark:text-slate-600">•</span>
+          <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
+            Thiết kế bởi <strong class="font-bold text-sky-600 dark:text-sky-400">Duy Hạnh</strong>
+          </span>
+        </div>
+        <button onclick="openQuickGuideModal()" class="text-slate-400 hover:text-sky-500 transition p-1" title="Xem thông tin tác giả & hướng dẫn">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
       </div>
     </aside>
 
@@ -953,6 +961,12 @@
           <button type="button" onclick="handleWelcomeStart(event)" class="inline-flex items-center justify-center px-7 py-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-xs font-black tracking-widest uppercase shadow-[0_4px_22px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
             <span>Chạm để bắt đầu</span>
           </button>
+
+          <!-- Author Copyright Badge on 3D Splash -->
+          <div class="mt-3.5 pt-2.5 border-t border-amber-400/20 w-full flex items-center justify-center gap-1.5 text-[11px] sm:text-xs text-amber-200/90 font-medium select-none">
+            <i class="fa-solid fa-certificate text-amber-400 text-xs"></i>
+            <span>Bản quyền thiết kế bởi tác giả <strong class="text-amber-300 font-bold tracking-wide">Duy Hạnh</strong></span>
+          </div>
         </div>
       </div>
 
@@ -1535,10 +1549,16 @@
       </div>
     </div>
 
-    <!-- ==================== VIETNAM SOVEREIGNTY FOOTER WATERMARK ==================== -->
-    <div class="absolute bottom-16 lg:bottom-1 left-2 sm:left-4 z-10 pointer-events-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5 shadow-sm">
-      <span class="text-red-500 font-bold">🇻🇳</span>
-      <span>Khẳng định chủ quyền <b>Hoàng Sa</b> & <b>Trường Sa</b> thuộc về <b>Việt Nam</b></span>
+    <!-- ==================== VIETNAM SOVEREIGNTY & AUTHOR COPYRIGHT WATERMARK ==================== -->
+    <div class="absolute bottom-16 lg:bottom-1 left-2 sm:left-4 z-10 pointer-events-auto flex flex-wrap items-center gap-1.5">
+      <div class="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5 shadow-sm">
+        <span class="text-red-500 font-bold">🇻🇳</span>
+        <span>Khẳng định chủ quyền <b>Hoàng Sa</b> & <b>Trường Sa</b> thuộc về <b>Việt Nam</b></span>
+      </div>
+      <div class="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-code text-sky-500 text-[10px]"></i>
+        <span>Thiết kế bởi: <strong class="text-slate-800 dark:text-slate-100 font-bold">Duy Hạnh</strong></span>
+      </div>
     </div>
 
     <!-- ==================== UPGRADED SHARE ROUTE MODAL ==================== -->
@@ -1980,6 +2000,99 @@
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ==================== QUICK GUIDE & AUTHOR COPYRIGHT MODAL ==================== -->
+    <div id="quick-guide-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closeQuickGuideModal()">
+      <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="p-4 sm:p-5 bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-inner">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div>
+              <h3 class="font-black text-base">Gạo Maps • Thông Tin & Bản Quyền</h3>
+              <p class="text-xs text-sky-100">Ứng dụng Bản đồ Kỷ niệm & Lộ trình Du lịch</p>
+            </div>
+          </div>
+          <button onclick="closeQuickGuideModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition" title="Đóng">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Modal Body -->
+        <div class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar text-slate-700 dark:text-slate-200 text-xs sm:text-sm leading-relaxed">
+          
+          <!-- Author Copyright Card -->
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-sky-500/10 border-2 border-indigo-500/30 dark:border-indigo-500/40 space-y-2.5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                <i class="fa-solid fa-crown text-amber-300"></i>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400">Bản Quyền Tác Giả</span>
+                <h4 class="font-black text-sm sm:text-base text-slate-900 dark:text-white">Thiết kế bởi: Duy Hạnh</h4>
+              </div>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300">
+              Ứng dụng được thiết kế và phát triển độc quyền bởi tác giả <strong class="text-indigo-600 dark:text-indigo-400">Duy Hạnh</strong> với các công nghệ bản đồ số thời gian thực, mô phỏng 3D Cinema và đồng bộ hóa đám mây.
+            </p>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold">
+                ✓ Bản quyền chính thức
+              </span>
+              <span class="px-2.5 py-1 rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 text-[11px] font-bold">
+                🇻🇳 Việt Nam
+              </span>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
+                Phiên bản 2.5 Pro
+              </span>
+            </div>
+          </div>
+
+          <!-- Feature Quick Guide -->
+          <div class="space-y-3">
+            <h5 class="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Hướng Dẫn Nhanh:</h5>
+            
+            <div class="space-y-2.5">
+              <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <span class="w-6 h-6 rounded-lg bg-sky-500 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <div>
+                  <strong class="font-bold text-slate-900 dark:text-white">Ghim kỷ niệm & Thêm ảnh:</strong>
+                  <p class="text-slate-500 dark:text-slate-400 text-xs">Nhấp chuột trực tiếp lên bản đồ hoặc tìm kiếm địa điểm để ghim vị trí, viết ghi chú và tải ảnh kỷ niệm.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <span class="w-6 h-6 rounded-lg bg-indigo-500 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <div>
+                  <strong class="font-bold text-slate-900 dark:text-white">Lập & Tùy chọn lộ trình:</strong>
+                  <p class="text-slate-500 dark:text-slate-400 text-xs">Chọn chuyến đi cụ thể ở thanh trên để chỉ xem kỷ niệm của lộ trình đó, hoặc chọn "Tất cả" để xem toàn bộ bản đồ.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <span class="w-6 h-6 rounded-lg bg-purple-500 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <div>
+                  <strong class="font-bold text-slate-900 dark:text-white">Mô phỏng Cinema & Xuất Video:</strong>
+                  <p class="text-slate-500 dark:text-slate-400 text-xs">Chạy mô phỏng 3D hành trình góc nhìn điện ảnh, xuất video chuyển động và poster infographic HD sắc nét.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+          <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Tác giả: Duy Hạnh</span>
+          <button onclick="closeQuickGuideModal()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-600/25">
+            Đã hiểu
+          </button>
+        </div>
       </div>
     </div>
 
@@ -7097,7 +7210,7 @@
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '14px sans-serif';
-      ctx.fillText('Được thiết kế và xuất tự động từ Gạo Maps • Ứng dụng Bản đồ Kỷ niệm Du lịch', 600, footerY + 30);
+      ctx.fillText('Gạo Maps • Bản quyền thiết kế bởi tác giả Duy Hạnh', 600, footerY + 30);
 
       // Convert to blob and download
       canvas.toBlob((blob) => {
@@ -8288,6 +8401,20 @@
             splash.classList.add('hidden');
           }
         }, 550);
+      }
+    }
+
+    function openQuickGuideModal() {
+      const modal = document.getElementById('quick-guide-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeQuickGuideModal() {
+      const modal = document.getElementById('quick-guide-modal');
+      if (modal) {
+        modal.classList.add('hidden');
       }
     }
   </script>
