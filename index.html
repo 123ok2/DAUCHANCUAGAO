@@ -719,7 +719,76 @@
       <!-- Tab Content 3: Analytics & Statistics (Tối giản & Trực quan) -->
       <div id="tab-stats" class="hidden flex-1 flex-col overflow-y-auto p-4 space-y-4 w-full">
         
-        <!-- 1. Hero Card: Tổng quãng đường -->
+        <!-- 1. DẤU CHÂN VIỆT NAM & BỜ BIỂN (2 THÀNH TỰU ĐẶC BIỆT) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- Card 1: 63 Tỉnh Thành Đã Đi Qua -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div>
+              <div class="flex items-center justify-between text-amber-100 text-xs font-bold uppercase tracking-wider">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-flag text-amber-300"></i> Đã đi qua tỉnh thành</span>
+                <span id="stat-visited-provinces-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
+              </div>
+              <div class="my-2.5">
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-visited-provinces-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 / 63</span>
+                  <span class="text-xs sm:text-sm font-semibold text-amber-200">tỉnh thành</span>
+                </div>
+                <p class="text-[11px] text-amber-100/90 mt-0.5" id="stat-visited-provinces-sub">Tự động nhận diện từ các kỷ niệm & lộ trình</p>
+              </div>
+            </div>
+
+            <!-- Progress Bar 63 Provinces -->
+            <div class="space-y-2 pt-2 border-t border-white/20">
+              <div class="w-full h-2 rounded-full bg-black/25 overflow-hidden p-0.5">
+                <div id="stat-visited-provinces-bar" class="h-full rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 transition-all duration-700 ease-out" style="width: 0%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-amber-100/90 font-medium">
+                <span id="stat-reg-bac">Bắc: 0/25</span>
+                <span id="stat-reg-trung">Trung: 0/19</span>
+                <span id="stat-reg-taynguyen">T.Nguyên: 0/5</span>
+                <span id="stat-reg-dongnam">ĐNB: 0/6</span>
+                <span id="stat-reg-mientay">ĐBSCL: 0/13</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: 3.260 km Bờ Biển Đã Chinh Phục -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 text-white shadow-lg shadow-cyan-500/20 flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div>
+              <div class="flex items-center justify-between text-cyan-100 text-xs font-bold uppercase tracking-wider">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-water text-cyan-300"></i> Đã chinh phục bờ biển</span>
+                <span id="stat-conquered-coastline-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
+              </div>
+              <div class="my-2.5">
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-conquered-coastline-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 km</span>
+                  <span class="text-xs sm:text-sm font-semibold text-cyan-200">/ 3.260 km</span>
+                </div>
+                <p class="text-[11px] text-cyan-100/90 mt-0.5" id="stat-conquered-coastline-sub">Đã qua <strong id="stat-visited-coastal-count" class="font-bold text-white">0</strong> / 28 tỉnh thành ven biển Việt Nam</p>
+              </div>
+            </div>
+
+            <!-- Progress Bar Coastline -->
+            <div class="space-y-2 pt-2 border-t border-white/20">
+              <div class="w-full h-2 rounded-full bg-black/25 overflow-hidden p-0.5">
+                <div id="stat-conquered-coastline-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-200 via-teal-200 to-white transition-all duration-700 ease-out" style="width: 0%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-cyan-100/90 font-medium">
+                <span>Móng Cái (Quảng Ninh)</span>
+                <span class="font-bold text-white"><i class="fa-solid fa-compass mr-1"></i>3.260 km</span>
+                <span>Hà Tiên (Kiên Giang)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Hero Card: Tổng quãng đường tất cả lộ trình -->
         <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white shadow-lg shadow-indigo-500/20 flex flex-col justify-between">
           <div class="flex items-center justify-between text-indigo-100 text-xs font-semibold uppercase tracking-wider">
             <span>Tổng quãng đường tất cả lộ trình</span>
@@ -735,7 +804,44 @@
           </div>
         </div>
 
-        <!-- 2. Quãng đường từng lộ trình -->
+        <!-- 3. INTERACTIVE PROVINCE FOOTPRINT EXPLORER (BẢN ĐỒ DẤU CHÂN 63 TỈNH THÀNH) -->
+        <div class="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-4 space-y-3.5 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-700/60">
+            <div>
+              <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot text-amber-500"></i>
+                <span>Danh Sách 63 Tỉnh Thành & 28 Tỉnh Ven Biển</span>
+              </h4>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Nhấp vào tỉnh thành để xem kỷ niệm hoặc định vị trên bản đồ</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="stat-province-filter-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">0/63 tỉnh</span>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls for Provinces -->
+          <div class="space-y-2">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="province-search-input" oninput="handleProvinceFilterSearch(this.value)" placeholder="Tìm kiếm tỉnh thành (Hà Nội, Đà Nẵng, Khánh Hòa...)" class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" />
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+              <button onclick="setProvinceFilterTab('all')" id="tab-prov-all" class="prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[11px] shrink-0">Tất cả (63)</button>
+              <button onclick="setProvinceFilterTab('visited')" id="tab-prov-visited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">✅ Đã đi qua (<span id="prov-visited-tab-count">0</span>)</button>
+              <button onclick="setProvinceFilterTab('unvisited')" id="tab-prov-unvisited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">⏳ Chưa đi qua (<span id="prov-unvisited-tab-count">63</span>)</button>
+              <button onclick="setProvinceFilterTab('coastal')" id="tab-prov-coastal" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">🌊 28 Tỉnh Ven Biển</button>
+            </div>
+          </div>
+
+          <!-- Province Chips Grid Container -->
+          <div id="provinces-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+            <!-- Dynamic province cards rendered here -->
+          </div>
+        </div>
+
+        <!-- 4. Quãng đường từng lộ trình -->
         <div class="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-4 space-y-3 shadow-xs">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700/60">
             <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -751,7 +857,7 @@
           </div>
         </div>
 
-        <!-- 3. Liên kết tiện ích đơn giản (1 dòng tinh tế) -->
+        <!-- 5. Liên kết tiện ích đơn giản (1 dòng tinh tế) -->
         <div class="pt-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <button onclick="exportDataJson()" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition font-medium">Xuất JSON</button>
@@ -834,6 +940,19 @@
         <!-- Quick Map Style & Desktop Action -->
         <div class="pointer-events-auto flex items-center gap-2 shrink-0">
           
+          <!-- Top Floating Footprint & Coastline Stat Pill -->
+          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-2 h-11 px-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành & Đã chinh phục bao nhiêu km bờ biển">
+            <span class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-flag text-amber-500"></i>
+              <span id="top-stat-provinces">0/63 tỉnh</span>
+            </span>
+            <span class="text-slate-300 dark:text-slate-700 font-normal">•</span>
+            <span class="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-water text-cyan-500"></i>
+              <span id="top-stat-coastline">0 km bờ biển</span>
+            </span>
+          </button>
+
           <!-- Map Style Selector -->
           <div class="relative">
             <button id="btn-map-layers" class="h-11 px-3 sm:px-3.5 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 sm:gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
@@ -1446,20 +1565,22 @@
     </div>
 
     <!-- ==================== SHARED ROUTE TOP BANNER & EXPANDABLE SHOWCASE ==================== -->
-    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-slate-950/95 via-indigo-950/95 to-slate-950/95 text-white shadow-2xl border-b border-indigo-500/40 p-3 sm:px-6 backdrop-blur-xl animate-in slide-in-from-top duration-300">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-slate-950/95 via-indigo-950/95 to-slate-950/95 text-white shadow-2xl border-b border-indigo-500/40 p-2.5 sm:p-3 sm:px-6 backdrop-blur-xl animate-in slide-in-from-top duration-300">
+      <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-2.5 sm:gap-3">
         <!-- Left: Route Info & Metric Badges -->
-        <div class="flex items-center gap-3 w-full md:w-auto min-w-0">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-lg shrink-0 border border-white/20">
+        <div class="flex items-center gap-3 w-full lg:w-auto min-w-0">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-lg shadow-lg shrink-0 border border-white/20">
             <i class="fa-solid fa-route"></i>
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-[10px] uppercase tracking-wider font-black px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-500/40">Lộ trình được chia sẻ</span>
+              <span class="text-[10px] uppercase tracking-wider font-black px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-1">
+                <i class="fa-solid fa-lock text-[9px]"></i> <span>Chế độ Xem Người Nhận (Chỉ đọc)</span>
+              </span>
               <h4 id="shared-route-title-text" class="font-black text-sm sm:text-base text-white truncate">Lộ trình Gạo Maps</h4>
             </div>
             
-            <!-- Quick Telemetry Row (Km, Time, Stops) -->
+            <!-- Quick Telemetry Row (Km, Time, Stops, Provinces, Coastline) -->
             <div class="flex items-center gap-2 sm:gap-3 text-xs text-slate-300 mt-1 flex-wrap font-medium">
               <span class="inline-flex items-center gap-1 text-sky-400 font-bold">
                 <i class="fa-solid fa-road text-[11px]"></i> <span id="shared-banner-dist">-- km</span>
@@ -1472,22 +1593,57 @@
               <span class="inline-flex items-center gap-1 text-emerald-400 font-bold">
                 <i class="fa-solid fa-location-dot text-[11px]"></i> <span id="shared-banner-stops">-- điểm</span>
               </span>
+              <span>•</span>
+              <span class="inline-flex items-center gap-1 text-purple-300 font-bold">
+                <i class="fa-solid fa-map text-[11px]"></i> <span id="shared-banner-provinces">-- tỉnh</span>
+              </span>
+              <span id="shared-banner-coast-wrap" class="hidden items-center gap-1 text-cyan-300 font-bold">
+                <span>•</span>
+                <i class="fa-solid fa-water text-[11px]"></i> <span id="shared-banner-coast">-- km biển</span>
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- Right: Action Buttons (Save, Toggle Drawer, Cinema, Close) -->
-        <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end shrink-0">
-          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm">
-            <i class="fa-solid fa-images"></i>
-            <span id="btn-shared-drawer-text">Xem Ảnh & Điểm dừng</span>
+        <!-- Right: Action Buttons (Cinema, Video Export, Poster Export, Insights, Save, Close) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto justify-between lg:justify-end shrink-0 flex-wrap">
+          <!-- 1. Cinema Simulation -->
+          <button onclick="openSharedRouteCinema()" class="px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xem xe chạy mô phỏng 3D Cinema">
+            <i class="fa-solid fa-film"></i>
+            <span class="hidden sm:inline">Mô phỏng</span> Cinema
+          </button>
+
+          <!-- 2. Export 1080p Video Direct -->
+          <button onclick="triggerSharedRouteVideoExport()" class="px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xuất và tải video hành trình Full HD 60 FPS">
+            <i class="fa-solid fa-video"></i>
+            <span class="hidden sm:inline">Xuất</span> Video HD
+          </button>
+
+          <!-- 3. Export Poster Card -->
+          <button onclick="exportRoutePosterCard()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Tải ảnh Poster Infographic kèm toàn bộ ảnh kỷ niệm">
+            <i class="fa-solid fa-file-image"></i>
+            <span class="hidden md:inline">Xuất Poster</span>
+          </button>
+
+          <!-- 4. Full Route Insights Modal -->
+          <button onclick="openSharedRouteInsightsModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Xem phân tích toàn diện, chặng đi & thư viện ảnh">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span class="hidden md:inline">Hồ sơ</span> Lộ trình
+          </button>
+
+          <!-- 5. Drawer Toggle -->
+          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm" title="Bật/tắt thanh điểm dừng nổi">
+            <i class="fa-solid fa-list-check"></i>
+            <span class="hidden sm:inline">Điểm dừng</span>
           </button>
           
-          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 md:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition">
+          <!-- 6. Save to My Account -->
+          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 lg:flex-initial px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition" title="Sao chép toàn bộ vào bản đồ của tôi để chỉnh sửa">
             <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-            <span>Lưu vào Bản đồ của tôi</span>
+            <span>Lưu Bản Đồ</span>
           </button>
           
+          <!-- 7. Close / Return to Personal Map -->
           <button onclick="closeSharedRouteBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Về bản đồ cá nhân">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -1496,9 +1652,9 @@
     </div>
 
     <!-- ==================== SHARED ROUTE FLOATING SHOWCASE DRAWER ==================== -->
-    <div id="shared-route-showcase-panel" class="hidden fixed bottom-16 lg:bottom-6 left-3 sm:left-6 right-3 sm:right-auto sm:w-96 md:w-[420px] max-h-[70vh] z-40 bg-slate-900/95 text-white rounded-3xl shadow-2xl border border-indigo-500/40 backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+    <div id="shared-route-showcase-panel" class="hidden fixed bottom-16 lg:bottom-6 left-3 sm:left-6 right-3 sm:right-auto sm:w-[420px] md:w-[460px] max-h-[72vh] z-40 bg-slate-900/95 text-white rounded-3xl shadow-2xl border border-indigo-500/40 backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
       <!-- Drawer Header -->
-      <div class="p-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between shrink-0">
+      <div class="p-3.5 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-8 h-8 rounded-xl bg-indigo-600/30 text-indigo-400 border border-indigo-500/40 flex items-center justify-center text-sm">
             <i class="fa-solid fa-photo-film"></i>
@@ -1508,24 +1664,213 @@
             <p class="text-[11px] text-slate-400 truncate" id="shared-drawer-stats">Ảnh & thông tin địa điểm</p>
           </div>
         </div>
-        <button onclick="toggleSharedStopsShowcase()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
-          <i class="fa-solid fa-chevron-down text-xs"></i>
+        <div class="flex items-center gap-1.5">
+          <button onclick="openSharedRouteInsightsModal()" class="px-2 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-[11px] font-bold transition flex items-center gap-1">
+            <i class="fa-solid fa-expand"></i> <span>Mở rộng</span>
+          </button>
+          <button onclick="toggleSharedStopsShowcase()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Drawer Tabs: Stops, Segments, Provinces -->
+      <div class="flex border-b border-slate-800 bg-slate-950/60 p-1.5 gap-1 text-xs shrink-0">
+        <button id="btn-shared-tab-stops" onclick="switchSharedDrawerTab('stops')" class="flex-1 py-1.5 px-2 rounded-xl font-bold bg-indigo-600 text-white text-[11px] transition text-center">
+          <i class="fa-solid fa-location-dot mr-1"></i> Điểm dừng & Ảnh
+        </button>
+        <button id="btn-shared-tab-segments" onclick="switchSharedDrawerTab('segments')" class="flex-1 py-1.5 px-2 rounded-xl font-medium text-slate-400 hover:text-white text-[11px] transition text-center">
+          <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Chặng đường
+        </button>
+        <button id="btn-shared-tab-provinces" onclick="switchSharedDrawerTab('provinces')" class="flex-1 py-1.5 px-2 rounded-xl font-medium text-slate-400 hover:text-white text-[11px] transition text-center">
+          <i class="fa-solid fa-map mr-1"></i> Tỉnh thành
         </button>
       </div>
 
-      <!-- Stops List with Photos, Location Names, Notes & Ratings -->
-      <div id="shared-drawer-stops-list" class="flex-1 overflow-y-auto p-3.5 space-y-3 custom-scrollbar">
-        <!-- Dynamically injected stops cards -->
+      <!-- Scrollable Tab Contents Container -->
+      <div class="flex-1 overflow-y-auto p-3.5 space-y-3 custom-scrollbar">
+        <!-- 1. Stops List Tab -->
+        <div id="shared-tab-content-stops" class="space-y-3">
+          <!-- Dynamically injected stops cards -->
+        </div>
+
+        <!-- 2. Segments Tab -->
+        <div id="shared-tab-content-segments" class="hidden space-y-2.5">
+          <!-- Dynamically injected segment cards -->
+        </div>
+
+        <!-- 3. Provinces Tab -->
+        <div id="shared-tab-content-provinces" class="hidden space-y-2.5">
+          <!-- Dynamically injected provinces footprint -->
+        </div>
       </div>
 
       <!-- Drawer Footer Actions -->
-      <div class="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
-        <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
-          <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema</span>
+      <div class="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 flex-wrap">
+        <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-film"></i> <span>Cinema</span>
         </button>
-        <button onclick="importSharedRouteToMyRoutes()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition">
-          <i class="fa-solid fa-bookmark"></i> <span>Lưu Lộ trình này</span>
+        <button onclick="triggerSharedRouteVideoExport()" class="flex-1 py-2 px-2.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-video"></i> <span>Xuất Video</span>
         </button>
+        <button onclick="exportRoutePosterCard()" class="flex-1 py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-file-image"></i> <span>Poster</span>
+        </button>
+        <button onclick="importSharedRouteToMyRoutes()" class="w-full sm:w-auto flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition">
+          <i class="fa-solid fa-bookmark"></i> <span>Lưu Bản Đồ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== SHARED ROUTE FULL INSIGHTS & EXPLORER MODAL ==================== -->
+    <div id="shared-route-insights-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto" onclick="if(event.target === this) closeSharedRouteInsightsModal()">
+      <div class="relative w-full max-w-4xl bg-slate-900 text-white rounded-3xl shadow-2xl border border-indigo-500/40 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 border-b border-indigo-500/30 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-xl shadow-lg border border-white/20 shrink-0">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] uppercase tracking-wider font-black px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-500/40">
+                  <i class="fa-solid fa-lock text-[9px] mr-1"></i>Chế độ Xem (Chỉ đọc)
+                </span>
+                <span id="insights-modal-date" class="text-xs text-slate-400"></span>
+              </div>
+              <h3 id="insights-modal-title" class="font-black text-base sm:text-xl text-white truncate mt-0.5">Hồ Sơ Toàn Tuyến Lộ Trình</h3>
+            </div>
+          </div>
+          <button onclick="closeSharedRouteInsightsModal()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white flex items-center justify-center transition shrink-0" title="Đóng modal">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Modal Content -->
+        <div class="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+          
+          <!-- 1. Telemetry 4-Pillar Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-1">
+              <span class="text-[11px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-road text-sky-400"></i> Tổng cự ly
+              </span>
+              <span id="insights-stat-distance" class="text-xl sm:text-2xl font-black text-sky-400">0.0 km</span>
+              <span id="insights-stat-mode" class="text-[11px] text-slate-400 mt-auto font-medium">🚗 Ô tô / Xe máy</span>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-1">
+              <span class="text-[11px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-clock text-amber-400"></i> Thời gian dự tính
+              </span>
+              <span id="insights-stat-duration" class="text-xl sm:text-2xl font-black text-amber-400">0 phút</span>
+              <span class="text-[11px] text-slate-400 mt-auto font-medium">Ước tính theo tốc độ chuẩn</span>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-1">
+              <span class="text-[11px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-location-dot text-emerald-400"></i> Điểm dừng & Ảnh
+              </span>
+              <span id="insights-stat-stops" class="text-xl sm:text-2xl font-black text-emerald-400">0 điểm</span>
+              <span id="insights-stat-photos" class="text-[11px] text-slate-400 mt-auto font-medium">0 ảnh kỷ niệm</span>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-1">
+              <span class="text-[11px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-star text-amber-400"></i> Đánh giá trung bình
+              </span>
+              <span id="insights-stat-rating" class="text-xl sm:text-2xl font-black text-amber-300">5.0 ★</span>
+              <span class="text-[11px] text-slate-400 mt-auto font-medium">Trải nghiệm du lịch</span>
+            </div>
+          </div>
+
+          <!-- 2. Author Story / Description (If any) -->
+          <div id="insights-desc-container" class="hidden p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 to-slate-950 border border-indigo-500/30">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-quote-left text-indigo-400"></i> Lời nhắn & Cảm nhận từ Tác giả:
+            </h5>
+            <p id="insights-desc-text" class="text-sm text-slate-200 italic leading-relaxed"></p>
+          </div>
+
+          <!-- 3. Vietnam Geographic Footprint of this Route -->
+          <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h5 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-map-location text-sky-400"></i> Dấu Chân 63 Tỉnh Thành & Km Bờ Biển Lộ Trình Này:
+              </h5>
+              <span id="insights-footprint-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-950 text-sky-300 border border-sky-500/30">
+                0 tỉnh • 0 km biển
+              </span>
+            </div>
+
+            <!-- Region Breakdown Pills -->
+            <div id="insights-regions-pills" class="flex flex-wrap gap-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Traversed Provinces List -->
+            <div id="insights-provinces-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2 border-t border-slate-800">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 4. Segments Breakdown (Turn-by-Turn Leg distances) -->
+          <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-split-up-and-left text-amber-400"></i> Chi Tiết Từng Chặng Đường (Lịch trình):
+            </h5>
+            <div id="insights-segments-list" class="space-y-2.5">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 5. Route Photo Gallery Grid -->
+          <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h5 class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-camera-retro text-purple-400"></i> Thư Viện Hình Ảnh Chuyến Đi:
+              </h5>
+              <span id="insights-gallery-count" class="text-xs text-slate-400">0 ảnh</span>
+            </div>
+            <div id="insights-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 6. Detailed Stop Cards Timeline -->
+          <div class="space-y-3">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-signs-post text-indigo-400"></i> Hồ Sơ Chi Tiết Toàn Bộ Điểm Dừng:
+            </h5>
+            <div id="insights-stops-timeline" class="space-y-3">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Actions Bar -->
+        <div class="p-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2.5 shrink-0 flex-wrap">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="closeSharedRouteInsightsModal(); openSharedRouteCinema();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
+              <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema</span>
+            </button>
+            <button onclick="closeSharedRouteInsightsModal(); triggerSharedRouteVideoExport();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
+              <i class="fa-solid fa-video"></i> <span>Xuất Video Full HD</span>
+            </button>
+            <button onclick="exportRoutePosterCard()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+              <i class="fa-solid fa-file-image"></i> <span>Xuất Poster HD</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="importSharedRouteToMyRoutes(); closeSharedRouteInsightsModal();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center gap-1.5 transition active:scale-95">
+              <i class="fa-solid fa-cloud-arrow-down text-sm"></i> <span>Lưu vào Bản đồ của tôi</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -3184,38 +3529,44 @@
               </p>
             ` : ''}
 
-            <!-- Quick Color Changer in Popup -->
-            <div class="pt-1 flex items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
-              <span class="font-semibold text-[10px] uppercase">Màu ghim:</span>
-              <div class="flex items-center gap-1">
-                ${colorDotsHtml}
+            ${isSharedViewMode ? `
+              <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
+                <span class="text-[11px] text-indigo-500 dark:text-indigo-400 font-medium"><i class="fa-solid fa-eye mr-1"></i>Chế độ xem chỉ đọc</span>
               </div>
-            </div>
+            ` : `
+              <!-- Quick Color Changer in Popup -->
+              <div class="pt-1 flex items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                <span class="font-semibold text-[10px] uppercase">Màu ghim:</span>
+                <div class="flex items-center gap-1">
+                  ${colorDotsHtml}
+                </div>
+              </div>
 
-            <!-- Route selection inside popup -->
-            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px] flex items-center gap-1">
-                  <i class="fa-solid fa-route text-indigo-500"></i> Lộ trình tham gia:
-                </span>
-                <button type="button" onclick="openCreateRouteModal()" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-0.5">
-                  <i class="fa-solid fa-plus"></i> Tạo lộ trình
+              <!-- Route selection inside popup -->
+              <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px] flex items-center gap-1">
+                    <i class="fa-solid fa-route text-indigo-500"></i> Lộ trình tham gia:
+                  </span>
+                  <button type="button" onclick="openCreateRouteModal()" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-0.5">
+                    <i class="fa-solid fa-plus"></i> Tạo lộ trình
+                  </button>
+                </div>
+                <div class="space-y-1 max-h-28 overflow-y-auto pr-0.5">
+                  ${routeListHtml}
+                </div>
+              </div>
+
+              <!-- Popup Actions -->
+              <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
+                <button onclick="openEditMemoryModal('${pin.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5" title="Chỉnh sửa chi tiết">
+                  <i class="fa-solid fa-pen-to-square text-sky-500"></i> <span>Chỉnh sửa</span>
+                </button>
+                <button onclick="openDeletePinConfirmModal('${pin.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs transition" title="Xóa kỷ niệm">
+                  <i class="fa-solid fa-trash-can"></i>
                 </button>
               </div>
-              <div class="space-y-1 max-h-28 overflow-y-auto pr-0.5">
-                ${routeListHtml}
-              </div>
-            </div>
-
-            <!-- Popup Actions -->
-            <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
-              <button onclick="openEditMemoryModal('${pin.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5" title="Chỉnh sửa chi tiết">
-                <i class="fa-solid fa-pen-to-square text-sky-500"></i> <span>Chỉnh sửa</span>
-              </button>
-              <button onclick="openDeletePinConfirmModal('${pin.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs transition" title="Xóa kỷ niệm">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            </div>
+            `}
           </div>
         </div>
       `;
@@ -3287,6 +3638,10 @@
     }
 
     async function openAddMemoryModal(lat, lng) {
+      if (isSharedViewMode) {
+        showToast('Bạn đang xem lộ trình được chia sẻ (Chỉ đọc). Vui lòng nhấn "Lưu Lộ Trình" trên thanh thông báo phía trên để lưu về tài khoản và tự do thêm bớt điểm!', 'info');
+        return;
+      }
       document.getElementById('modal-title').textContent = 'Ghim Kỷ niệm Mới';
       document.getElementById('modal-subtitle').textContent = 'Lưu lại khoảnh khắc đáng nhớ của bạn';
       document.getElementById('form-pin-id').value = '';
@@ -3337,6 +3692,10 @@
     }
 
     function openEditMemoryModal(pinId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể chỉnh sửa kỷ niệm của lộ trình chia sẻ.', 'info');
+        return;
+      }
       const pin = pins.find(p => p.id === pinId);
       if (!pin) return;
 
@@ -3621,6 +3980,10 @@
     let pendingDeletePinId = null;
 
     function openDeletePinConfirmModal(pinId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể xóa điểm trong lộ trình chia sẻ.', 'info');
+        return;
+      }
       if (!pinId) return;
       const pin = pins.find(p => p.id === pinId);
       const title = pin ? pin.title : 'kỷ niệm này';
@@ -4189,6 +4552,10 @@
     }
 
     function openCreateRouteModal() {
+      if (isSharedViewMode) {
+        showToast('Vui lòng nhấn "Lưu Lộ Trình" hoặc quay về trang chính để tạo lộ trình mới.', 'info');
+        return;
+      }
       closeManageRoutesModal();
       const modal = document.getElementById('create-edit-route-modal');
       const title = document.getElementById('create-edit-route-modal-title');
@@ -4217,6 +4584,10 @@
     }
 
     function openEditRouteModal(routeId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể chỉnh sửa thông tin lộ trình chia sẻ.', 'info');
+        return;
+      }
       closeManageRoutesModal();
       const target = routes.find(r => r.id === routeId) || getActiveRoute();
       const modal = document.getElementById('create-edit-route-modal');
@@ -4358,6 +4729,10 @@
     let pendingDeleteRouteId = null;
 
     function openDeleteRouteConfirmModal(routeId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể xóa lộ trình chia sẻ.', 'info');
+        return;
+      }
       if (!routeId) routeId = activeRouteId;
       const target = routes.find(r => r.id === routeId);
       const name = target ? target.name : 'lộ trình này';
@@ -4644,6 +5019,116 @@
       if (modal) modal.classList.add('hidden');
     }
 
+    // Fast Haversine Distance Calculator (km)
+    function haversineDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // Comprehensive Geographic Footprint Calculator (Provinces Visited, Coastline, Segments)
+    function calculateRouteGeographicFootprint(stops) {
+      if (!Array.isArray(stops) || stops.length === 0) {
+        return {
+          provinces: [],
+          coastalProvinces: [],
+          coastalKm: 0,
+          regions: {
+            bac: { name: 'Miền Bắc', count: 0, provinces: [] },
+            trung: { name: 'Miền Trung', count: 0, provinces: [] },
+            taynguyen: { name: 'Tây Nguyên', count: 0, provinces: [] },
+            dongnambo: { name: 'Đông Nam Bộ', count: 0, provinces: [] },
+            mientay: { name: 'ĐBSCL / Miền Tây', count: 0, provinces: [] }
+          },
+          segments: [],
+          totalEstimatedKm: 0,
+          totalPhotos: 0,
+          avgRating: '5.0'
+        };
+      }
+
+      const provMap = new Map();
+      let totalRating = 0;
+      let photoCount = 0;
+
+      stops.forEach((s) => {
+        if (s.photo) photoCount++;
+        totalRating += (s.rating || 5);
+        const prov = detectProvinceForPin(s);
+        if (prov) {
+          if (!provMap.has(prov.id)) {
+            provMap.set(prov.id, { prov, stops: [s] });
+          } else {
+            provMap.get(prov.id).stops.push(s);
+          }
+        }
+      });
+
+      const provinces = Array.from(provMap.values()).map(item => item.prov);
+      const coastalProvinces = provinces.filter(p => p.isCoastal);
+      const coastalKm = coastalProvinces.reduce((sum, p) => sum + (p.coastlineKm || 0), 0);
+
+      const regions = {
+        bac: { name: 'Miền Bắc', count: 0, provinces: [] },
+        trung: { name: 'Miền Trung', count: 0, provinces: [] },
+        taynguyen: { name: 'Tây Nguyên', count: 0, provinces: [] },
+        dongnambo: { name: 'Đông Nam Bộ', count: 0, provinces: [] },
+        mientay: { name: 'ĐBSCL / Miền Tây', count: 0, provinces: [] }
+      };
+
+      provinces.forEach(p => {
+        if (regions[p.region]) {
+          regions[p.region].count++;
+          regions[p.region].provinces.push(p);
+        }
+      });
+
+      // Calculate segments between stops
+      const segments = [];
+      let totalEstimatedKm = 0;
+      for (let i = 0; i < stops.length - 1; i++) {
+        const s1 = stops[i];
+        const s2 = stops[i + 1];
+        const distDirect = haversineDistanceKm(s1.lat, s1.lng, s2.lat, s2.lng);
+        const distRoad = Math.round(distDirect * 1.3 * 10) / 10;
+        totalEstimatedKm += distRoad;
+        
+        const minutes = Math.max(5, Math.round((distRoad / 45) * 60));
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const durationStr = hours > 0 ? `${hours}h ${mins > 0 ? `${mins}p` : ''}` : `${minutes} phút`;
+
+        const prov1 = detectProvinceForPin(s1);
+        const prov2 = detectProvinceForPin(s2);
+
+        segments.push({
+          legIndex: i + 1,
+          fromStop: s1,
+          toStop: s2,
+          distanceKm: distRoad,
+          durationStr,
+          fromProv: prov1 ? prov1.name : '',
+          toProv: prov2 ? prov2.name : ''
+        });
+      }
+
+      return {
+        provinces,
+        coastalProvinces,
+        coastalKm,
+        regions,
+        segments,
+        totalEstimatedKm: Math.round(totalEstimatedKm * 10) / 10,
+        totalPhotos: photoCount,
+        avgRating: (totalRating / stops.length).toFixed(1)
+      };
+    }
+
     // Toggle Shared Route Showcase Drawer
     function toggleSharedStopsShowcase() {
       const panel = document.getElementById('shared-route-showcase-panel');
@@ -4655,20 +5140,49 @@
       }
     }
 
+    // Switch Tab in Shared Route Drawer
+    function switchSharedDrawerTab(tab) {
+      const tabs = ['stops', 'segments', 'provinces'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`btn-shared-tab-${t}`);
+        const content = document.getElementById(`shared-tab-content-${t}`);
+        if (t === tab) {
+          if (btn) {
+            btn.className = 'flex-1 py-1.5 px-2 rounded-xl font-bold bg-indigo-600 text-white text-[11px] transition text-center shadow-sm';
+          }
+          if (content) content.classList.remove('hidden');
+        } else {
+          if (btn) {
+            btn.className = 'flex-1 py-1.5 px-2 rounded-xl font-medium text-slate-400 hover:text-white text-[11px] transition text-center';
+          }
+          if (content) content.classList.add('hidden');
+        }
+      });
+    }
+
     // Render Shared Stops List in Drawer
     function renderSharedStopsDrawer(sharedData) {
-      const listEl = document.getElementById('shared-drawer-stops-list');
-      const titleEl = document.getElementById('shared-drawer-title');
-      const statsEl = document.getElementById('shared-drawer-stats');
-
       if (!sharedData || !Array.isArray(sharedData.stops)) return;
 
-      if (titleEl) titleEl.textContent = sharedData.name || 'Chi tiết Lộ trình';
-      if (statsEl) statsEl.textContent = `${sharedData.stops.length} điểm dừng • ${sharedData.distKm ? `${sharedData.distKm} km` : ''} ${sharedData.durationStr ? `• ${sharedData.durationStr}` : ''}`;
+      const titleEl = document.getElementById('shared-drawer-title');
+      const statsEl = document.getElementById('shared-drawer-stats');
+      const stopsContainer = document.getElementById('shared-tab-content-stops');
+      const segmentsContainer = document.getElementById('shared-tab-content-segments');
+      const provincesContainer = document.getElementById('shared-tab-content-provinces');
 
-      if (listEl) {
-        listEl.innerHTML = sharedData.stops.map((s, idx) => {
+      const footprint = calculateRouteGeographicFootprint(sharedData.stops);
+      const totalKm = sharedData.distKm || footprint.totalEstimatedKm;
+
+      if (titleEl) titleEl.textContent = sharedData.name || 'Chi tiết Lộ trình';
+      if (statsEl) {
+        statsEl.textContent = `${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành (${footprint.coastalKm} km biển)`;
+      }
+
+      // 1. Tab 1: Stops list
+      if (stopsContainer) {
+        stopsContainer.innerHTML = sharedData.stops.map((s, idx) => {
           const cat = CATEGORIES[s.category] || CATEGORIES.sightseeing;
+          const prov = detectProvinceForPin(s);
           return `
             <div class="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-md flex gap-3 items-start group hover:border-indigo-500/50 transition">
               <!-- Stop Photo Thumbnail or Category Icon -->
@@ -4704,8 +5218,9 @@
                   </p>
                 ` : ''}
 
-                <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-1">
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-1 flex-wrap">
                   <span class="${cat.textClass} font-semibold">${cat.name}</span>
+                  ${prov ? `<span class="px-1.5 py-0.2 rounded bg-sky-950/80 text-sky-300 border border-sky-600/30">📍 ${prov.name}</span>` : ''}
                   ${s.date ? `<span>•</span><span>${s.date}</span>` : ''}
                 </div>
 
@@ -4723,6 +5238,75 @@
           `;
         }).join('');
       }
+
+      // 2. Tab 2: Segments list
+      if (segmentsContainer) {
+        if (footprint.segments.length === 0) {
+          segmentsContainer.innerHTML = `<div class="text-center p-4 text-xs text-slate-400">Lộ trình có 1 điểm dừng. Cần 2 điểm trở lên để tạo chặng đường.</div>`;
+        } else {
+          segmentsContainer.innerHTML = footprint.segments.map(seg => `
+            <div class="p-3 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center justify-center shrink-0">
+                  ${seg.legIndex}
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+                    <span class="truncate">${escapeHtml(seg.fromStop.title || 'Điểm đi')}</span>
+                    <i class="fa-solid fa-arrow-right text-[10px] text-slate-400 shrink-0"></i>
+                    <span class="truncate">${escapeHtml(seg.toStop.title || 'Điểm đến')}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 truncate mt-0.5">
+                    ${seg.fromProv ? seg.fromProv : ''} ${seg.fromProv && seg.toProv && seg.fromProv !== seg.toProv ? ' ➔ ' + seg.toProv : ''}
+                  </p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-xs font-black text-amber-400 block">${seg.distanceKm} km</span>
+                <span class="text-[10px] text-slate-400 block">~${seg.durationStr}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 3. Tab 3: Provinces Footprint list
+      if (provincesContainer) {
+        const provsHtml = footprint.provinces.length > 0 ? footprint.provinces.map(p => `
+          <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-base">${p.isCoastal ? '🌊' : '🏞️'}</span>
+              <div class="min-w-0">
+                <span class="font-bold text-white block truncate">${p.name}</span>
+                <span class="text-[10px] text-slate-400">${p.regionName}</span>
+              </div>
+            </div>
+            ${p.isCoastal ? `
+              <span class="px-2 py-0.5 rounded-md bg-sky-950 text-sky-300 border border-sky-500/30 text-[10px] font-bold shrink-0">
+                ${p.coastlineKm} km biển
+              </span>
+            ` : `
+              <span class="text-[10px] text-slate-500 shrink-0">Nội địa</span>
+            `}
+          </div>
+        `).join('') : `<div class="text-center p-4 text-xs text-slate-400">Chưa có thông tin tỉnh thành.</div>`;
+
+        provincesContainer.innerHTML = `
+          <div class="p-3 rounded-2xl bg-gradient-to-r from-sky-950/40 to-indigo-950/40 border border-sky-500/30 text-xs flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-sky-400 block">Dấu chân Lộ trình</span>
+              <span class="text-sm font-black text-white">${footprint.provinces.length} Tỉnh thành</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold uppercase text-teal-400 block">Bờ biển chinh phục</span>
+              <span class="text-sm font-black text-teal-300">${footprint.coastalKm} / 3.260 km</span>
+            </div>
+          </div>
+          <div class="space-y-2 mt-2">
+            ${provsHtml}
+          </div>
+        `;
+      }
     }
 
     function focusSharedStop(lat, lng, title) {
@@ -4732,6 +5316,181 @@
         .setLatLng([lat, lng])
         .setContent(`<div class="font-bold text-xs p-1">${title}</div>`)
         .openOn(map);
+    }
+
+    // Open Full Route Insights & Explorer Modal
+    function openSharedRouteInsightsModal() {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const data = isShared ? sharedRoutePayload : getActiveRoute();
+      if (!data) return;
+
+      const stops = isShared
+        ? sharedRoutePayload.stops
+        : (data.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+      const footprint = calculateRouteGeographicFootprint(stops);
+      const totalKm = data.distKm || (data.distanceKm || footprint.totalEstimatedKm);
+      const travelMode = data.travelMode || (data.mode || 'driving');
+      const travelModeLabel = travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
+      const timeStr = data.durationStr || (data.distanceKm ? formatTravelTime(data.distanceKm * 1000 / (travelMode === 'walking' ? 1.2 : 12)) : `${Math.max(10, Math.round(totalKm / 45 * 60))} phút`);
+
+      // Fill Header
+      const titleEl = document.getElementById('insights-modal-title');
+      const dateEl = document.getElementById('insights-modal-date');
+      if (titleEl) titleEl.textContent = data.name || 'Hồ Sơ Toàn Tuyến Lộ Trình';
+      if (dateEl) dateEl.textContent = `Tạo ngày: ${data.createdAt ? new Date(data.createdAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN')}`;
+
+      // Fill Telemetry
+      const distEl = document.getElementById('insights-stat-distance');
+      const modeEl = document.getElementById('insights-stat-mode');
+      const durEl = document.getElementById('insights-stat-duration');
+      const stopsEl = document.getElementById('insights-stat-stops');
+      const photosEl = document.getElementById('insights-stat-photos');
+      const ratingEl = document.getElementById('insights-stat-rating');
+
+      if (distEl) distEl.textContent = `${totalKm} km`;
+      if (modeEl) modeEl.textContent = travelModeLabel;
+      if (durEl) durEl.textContent = timeStr;
+      if (stopsEl) stopsEl.textContent = `${stops.length} điểm`;
+      if (photosEl) photosEl.textContent = `${footprint.totalPhotos} ảnh kỷ niệm`;
+      if (ratingEl) ratingEl.textContent = `${footprint.avgRating} ★`;
+
+      // Fill Story / Description
+      const descWrap = document.getElementById('insights-desc-container');
+      const descText = document.getElementById('insights-desc-text');
+      const description = data.desc || data.description;
+      if (description) {
+        if (descText) descText.textContent = description;
+        if (descWrap) descWrap.classList.remove('hidden');
+      } else {
+        if (descWrap) descWrap.classList.add('hidden');
+      }
+
+      // Fill Footprint & Coastline
+      const badgeEl = document.getElementById('insights-footprint-badge');
+      if (badgeEl) badgeEl.textContent = `${footprint.provinces.length} tỉnh thành • ${footprint.coastalKm} km biển`;
+
+      const regionPillsEl = document.getElementById('insights-regions-pills');
+      if (regionPillsEl) {
+        regionPillsEl.innerHTML = Object.keys(footprint.regions).map(k => {
+          const reg = footprint.regions[k];
+          if (reg.count === 0) return '';
+          return `
+            <span class="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-200 border border-slate-700 font-medium flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+              <span>${reg.name}:</span>
+              <strong class="text-white">${reg.count} tỉnh</strong>
+            </span>
+          `;
+        }).filter(Boolean).join('') || `<span class="text-xs text-slate-400 italic">Chưa xác định vùng miền</span>`;
+      }
+
+      const provListEl = document.getElementById('insights-provinces-list');
+      if (provListEl) {
+        provListEl.innerHTML = footprint.provinces.length > 0 ? footprint.provinces.map(p => `
+          <div class="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between text-xs">
+            <span class="font-bold text-white truncate">${p.isCoastal ? '🌊' : '🏞️'} ${p.name}</span>
+            ${p.isCoastal ? `<span class="text-[10px] text-sky-400 font-bold shrink-0 ml-1">${p.coastlineKm}km</span>` : ''}
+          </div>
+        `).join('') : `<div class="col-span-4 text-center text-xs text-slate-400 py-2">Chưa có thông tin tỉnh thành.</div>`;
+      }
+
+      // Fill Segments List
+      const segListEl = document.getElementById('insights-segments-list');
+      if (segListEl) {
+        if (footprint.segments.length === 0) {
+          segListEl.innerHTML = `<div class="text-center p-3 text-xs text-slate-400">Lộ trình có 1 điểm dừng đơn lẻ.</div>`;
+        } else {
+          segListEl.innerHTML = footprint.segments.map(seg => `
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 font-black text-xs flex items-center justify-center shrink-0">
+                  ${seg.legIndex}
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+                    <span class="truncate">${escapeHtml(seg.fromStop.title || 'Điểm đi')}</span>
+                    <i class="fa-solid fa-arrow-right text-[10px] text-slate-400 shrink-0"></i>
+                    <span class="truncate">${escapeHtml(seg.toStop.title || 'Điểm đến')}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                    ${seg.fromProv ? seg.fromProv : ''} ${seg.fromProv && seg.toProv && seg.fromProv !== seg.toProv ? ' ➔ ' + seg.toProv : ''}
+                  </p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-sm font-black text-amber-400 block">${seg.distanceKm} km</span>
+                <span class="text-[11px] text-slate-400 block">~${seg.durationStr}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Fill Photo Gallery Grid
+      const photoGridEl = document.getElementById('insights-photos-grid');
+      const galleryCountEl = document.getElementById('insights-gallery-count');
+      const stopsWithPhotos = stops.filter(s => s.photo);
+      if (galleryCountEl) galleryCountEl.textContent = `${stopsWithPhotos.length} hình ảnh`;
+
+      if (photoGridEl) {
+        if (stopsWithPhotos.length === 0) {
+          photoGridEl.innerHTML = `
+            <div class="col-span-2 sm:col-span-4 text-center py-6 text-slate-400 text-xs italic bg-slate-900/50 rounded-2xl border border-slate-800">
+              <i class="fa-solid fa-image text-2xl block mb-2 opacity-50"></i>
+              Chưa có hình ảnh nào được đính kèm trong các điểm dừng của lộ trình này.
+            </div>
+          `;
+        } else {
+          photoGridEl.innerHTML = stopsWithPhotos.map(s => `
+            <div class="relative h-28 sm:h-32 rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/80 group cursor-pointer" onclick="openImageLightbox('${s.photo}', '${escapeHtml(s.title)}')">
+              <img src="${s.photo}" alt="${escapeHtml(s.title)}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-60 transition"></div>
+              <div class="absolute bottom-2 left-2 right-2 truncate">
+                <span class="text-[10px] font-bold text-white block truncate">${escapeHtml(s.title)}</span>
+                <span class="text-[9px] text-slate-300 block truncate">${s.locationName || s.date || ''}</span>
+              </div>
+              <div class="absolute top-2 right-2 w-6 h-6 rounded-lg bg-black/50 backdrop-blur-xs text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      const modal = document.getElementById('shared-route-insights-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeSharedRouteInsightsModal() {
+      const modal = document.getElementById('shared-route-insights-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Trigger Cinema Simulation for Shared Route
+    function openSharedRouteCinema() {
+      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops) || sharedRoutePayload.stops.length < 2) {
+        showToast('Lộ trình cần ít nhất 2 điểm dừng để chạy mô phỏng Cinema!', 'error');
+        return;
+      }
+      openRouteCinemaModal();
+    }
+
+    // Trigger Video Export directly for Shared Route
+    function triggerSharedRouteVideoExport() {
+      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops) || sharedRoutePayload.stops.length < 2) {
+        showToast('Lộ trình cần ít nhất 2 điểm dừng để quay và xuất video!', 'error');
+        return;
+      }
+      openRouteCinemaModal();
+      setTimeout(() => {
+        recordAndExportRouteVideo();
+      }, 700);
+    }
+
+    // Trigger Poster Export for Shared Route
+    function exportSharedRoutePoster() {
+      exportRoutePosterCard();
     }
 
     // Preview Receiver Mode for the creator
@@ -4794,6 +5553,10 @@
       isSharedViewMode = true;
       sharedRoutePayload = sharedData;
 
+      // Calculate footprint for banner stats
+      const footprint = calculateRouteGeographicFootprint(sharedData.stops);
+      const totalKm = sharedData.distKm || footprint.totalEstimatedKm;
+
       // Show Shared Banner & fill telemetry
       const banner = document.getElementById('shared-route-view-banner');
       const titleEl = document.getElementById('shared-route-title-text');
@@ -4804,8 +5567,8 @@
       if (banner) {
         banner.classList.remove('hidden');
         if (titleEl) titleEl.textContent = sharedData.name || 'Lộ trình được chia sẻ';
-        if (distEl) distEl.textContent = sharedData.distKm ? `${sharedData.distKm} km` : `${sharedData.stops.length * 15} km`;
-        if (timeEl) timeEl.textContent = sharedData.durationStr || `${sharedData.stops.length * 30} phút`;
+        if (distEl) distEl.textContent = `${totalKm} km`;
+        if (timeEl) timeEl.textContent = sharedData.durationStr || `${Math.round(totalKm / 45 * 60)} phút`;
         if (stopsEl) stopsEl.textContent = `${sharedData.stops.length} điểm`;
       }
 
@@ -4886,18 +5649,20 @@
               return marker;
             }
           }).addTo(map);
+
+          // Populate currentRouteCoordinates for cinema simulation & video export
+          routingControl.on('routesfound', function(e) {
+            const foundRoutes = e.routes;
+            if (foundRoutes && foundRoutes.length > 0) {
+              if (foundRoutes[0].coordinates && foundRoutes[0].coordinates.length > 0) {
+                currentRouteCoordinates = foundRoutes[0].coordinates;
+              }
+            }
+          });
         } else if (sharedData.stops.length === 1) {
           map.setView([sharedData.stops[0].lat, sharedData.stops[0].lng], 15);
         }
       }, 400);
-    }
-
-    function openSharedRouteCinema() {
-      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops)) {
-        showToast('Không có dữ liệu để chạy Cinema!', 'error');
-        return;
-      }
-      openCinemaModal();
     }
 
     function closeSharedRouteBanner() {
@@ -5103,6 +5868,10 @@
     let activePickerPinId = null;
 
     function openPinRouteSelectorModal(pinId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Vui lòng lưu lộ trình về tài khoản để chỉnh sửa.', 'info');
+        return;
+      }
       const pin = pins.find(p => p.id === pinId);
       if (!pin) return;
 
@@ -5200,6 +5969,10 @@
     }
 
     function removeStopFromRoute(pinId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể xóa điểm dừng của lộ trình chia sẻ.', 'info');
+        return;
+      }
       routePinIds = routePinIds.filter(id => id !== pinId);
       customRouteWaypoints = null;
       saveRoutesToStorage();
@@ -5212,6 +5985,10 @@
     }
 
     function moveStop(index, direction) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể sắp xếp lại thứ tự điểm dừng của lộ trình chia sẻ.', 'info');
+        return;
+      }
       const targetIndex = index + direction;
       if (targetIndex < 0 || targetIndex >= routePinIds.length) return;
 
@@ -5226,6 +6003,10 @@
     }
 
     function clearCurrentRoute() {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể xóa dữ liệu của lộ trình chia sẻ.', 'info');
+        return;
+      }
       if (routePinIds.length === 0) return;
       routePinIds = [];
       customRouteWaypoints = null;
@@ -5246,6 +6027,10 @@
 
     // TSP Nearest-Neighbor heuristic to optimize stop order
     function optimizeRouteOrder() {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể tối ưu hóa thứ tự của lộ trình chia sẻ.', 'info');
+        return;
+      }
       if (routePinIds.length < 3) {
         showToast('Cần ít nhất 3 điểm để tối ưu hóa lộ trình!', 'info');
         return;
@@ -6047,14 +6832,18 @@
       }
 
       // Fallback: interpolate between route stop pins
-      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const activePins = isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
       if (activePins.length < 2) return [];
 
       const points = [];
       for (let i = 0; i < activePins.length - 1; i++) {
         const p1 = activePins[i];
         const p2 = activePins[i + 1];
-        const steps = 25;
+        const steps = 30;
         for (let s = 0; s <= steps; s++) {
           const t = s / steps;
           points.push({
@@ -6411,19 +7200,22 @@
     }
 
     function openRouteCinemaModal() {
-      if (routePinIds.length < 2) {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const active = isShared ? sharedRoutePayload : getActiveRoute();
+      const activePins = isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+      if (!active || activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để phát mô phỏng và xuất video!', 'error');
         return;
       }
-
-      const active = getActiveRoute();
-      if (!active) return;
 
       const modal = document.getElementById('route-cinema-modal');
       if (modal) modal.classList.remove('hidden');
 
       const titleEl = document.getElementById('cinema-route-title');
-      if (titleEl) titleEl.textContent = `Mô Phỏng: ${active.name}`;
+      if (titleEl) titleEl.textContent = `Mô Phỏng: ${active.name || 'Lộ trình'}`;
 
       const savedTile = localStorage.getItem(LS_TILE_KEY) || 'voyager';
       cinemaMapStyle = ['voyager', 'satellite', 'dark', 'light', 'osm'].includes(savedTile) ? savedTile : 'voyager';
@@ -6722,7 +7514,10 @@
       }
 
       // 5. Draw Billboarded Stop Badges (Upright, High-Contrast)
-      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const activePins = isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
       let closestStop = null;
       let closestDist = 9999;
 
@@ -6927,7 +7722,8 @@
       }
 
       // 8. Watermark and Metadata Branding Box (Top-Left)
-      const active = getActiveRoute();
+      const isSharedRoute = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const active = isSharedRoute ? sharedRoutePayload : getActiveRoute();
       const brandW = 390 * uiScale;
       const brandH = 62 * uiScale;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
@@ -6945,7 +7741,7 @@
       const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
       ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
       ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-      ctx.fillText(active ? `${active.name} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 34 * uiScale, 66 * uiScale);
+      ctx.fillText(active ? `${active.name || 'Lộ trình'} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 34 * uiScale, 66 * uiScale);
     }
 
     // ==========================================
@@ -6999,14 +7795,16 @@
     }
 
     async function exportRoutePosterCard() {
-      const active = getActiveRoute();
-      if (!active || routePinIds.length < 2) {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const active = isShared ? sharedRoutePayload : getActiveRoute();
+      const activePins = isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+      if (!active || activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Poster!', 'error');
         return;
       }
-
-      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
-      if (activePins.length === 0) return;
 
       showToast('Đang tạo thiết kế Poster Hành trình HD kèm hình ảnh...', 'info');
 
@@ -7218,7 +8016,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const safeName = active.name.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
         a.download = `gaomaps-poster-${safeName}-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
@@ -7257,8 +8055,13 @@
         return;
       }
 
-      const active = getActiveRoute();
-      if (!active || routePinIds.length < 2) {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const active = isShared ? sharedRoutePayload : getActiveRoute();
+      const activePins = isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+      if (!active || activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để quay video!', 'error');
         return;
       }
@@ -7326,7 +8129,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const safeName = active.name.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
         const ext = isMp4 ? 'mp4' : 'webm';
         a.download = `gaomaps-1080p-video-${safeName}-${Date.now()}.${ext}`;
         document.body.appendChild(a);
@@ -7367,6 +8170,444 @@
       }, 200);
 
       showToast('Đang quay video độ phân giải Full HD (60 FPS)...', 'info');
+    }
+
+    // ==========================================
+    // 63 TỈNH THÀNH & 3.260 KM BỜ BIỂN VIỆT NAM DATABASE & DETECTION
+    // ==========================================
+    const VIETNAM_PROVINCES = [
+      // MIỀN BẮC (25 tỉnh/thành)
+      { id: 'hanoi', name: 'Hà Nội', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.0285, lng: 105.8542, aliases: ['hà nội', 'ha noi', 'hanoi', 'hoàn kiếm', 'ba đình', 'đống đa', 'hai bà trưng', 'cầu giấy', 'tây hồ', 'thanh xuân', 'hoàng mai', 'long biên', 'nam từ liêm', 'bắc từ liêm', 'hà đông', 'sơn tây', 'ba vì', 'chương mỹ', 'phúc thọ', 'đan phượng', 'đông anh', 'gia lâm', 'hoài đức', 'mê linh', 'mỹ đức', 'phú xuyên', 'quốc oai', 'sóc sơn', 'thạch thất', 'thanh oai', 'thanh trì', 'thường tín', 'ứng hòa', 'hồ gươm', 'hồ tây', 'phố cổ hà nội'] },
+      { id: 'haiphong', name: 'Hải Phòng', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 125, lat: 20.8449, lng: 106.6881, aliases: ['hải phòng', 'hai phong', 'haiphong', 'đồ sơn', 'cát bà', 'vịnh lan hạ', 'bạch long vĩ', 'thủy nguyên', 'an dương', 'kiến an', 'hồng bàng', 'ngô quyền', 'lê chân', 'hải an', 'đảo cát bà'] },
+      { id: 'quangninh', name: 'Quảng Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 250, lat: 21.2500, lng: 107.2000, aliases: ['quảng ninh', 'quang ninh', 'hạ long', 'vịnh hạ long', 'cẩm phả', 'móng cái', 'uông bí', 'đông triều', 'quảng yên', 'cô tô', 'vân đồn', 'ba chẽ', 'bình liêu', 'đầm hà', 'hải hà', 'tiên yên', 'đảo cô tô', 'yên tử', 'núi yên tử', 'chùa ba vàng', 'trà cổ', 'bình liêu'] },
+      { id: 'thaibinh', name: 'Thái Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 52, lat: 20.4500, lng: 106.3400, aliases: ['thái bình', 'thai binh', 'quỳnh phụ', 'hưng hà', 'đông hưng', 'thái thụy', 'tiền hải', 'kiến xương', 'vũ thư', 'chùa keo', 'biển đồng châu', 'cồn đen', 'cồn vành'] },
+      { id: 'namdinh', name: 'Nam Định', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 72, lat: 20.4200, lng: 106.1600, aliases: ['nam định', 'nam dinh', 'mỹ lộc', 'vụ bản', 'ý yên', 'nghĩa hưng', 'nam trực', 'trực ninh', 'xuân trường', 'giao thủy', 'hải hậu', 'đền trần', 'nhà thờ đổ hải lý', 'vườn quốc gia xuân thủy', 'quất lâm'] },
+      { id: 'ninhbinh', name: 'Ninh Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 18, lat: 20.2500, lng: 105.9700, aliases: ['ninh bình', 'ninh binh', 'tam điệp', 'hoa lư', 'gia viễn', 'nho quan', 'yên khánh', 'yên mô', 'kim sơn', 'tràng an', 'bái đính', 'tam cốc', 'bích động', 'hang múa', 'tuyệt tình cốc', 'cố đô hoa lư', 'vườn quốc gia cúc phương'] },
+      { id: 'bacgiang', name: 'Bắc Giang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.2700, lng: 106.1900, aliases: ['bắc giang', 'bac giang', 'việt yên', 'hiệp hòa', 'lục ngạn', 'lục nam', 'yên dũng', 'tân yên', 'lạng giang', 'sơn động', 'yên thế', 'chùa vĩnh nghiêm', 'suối mỡ'] },
+      { id: 'backan', name: 'Bắc Kạn', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.1400, lng: 105.8300, aliases: ['bắc kạn', 'bắc cạn', 'bac kan', 'ba bể', 'hồ ba bể', 'chợ đồn', 'ngân sơn', 'bạch thông', 'chợ mới', 'na rì', 'pác nặm'] },
+      { id: 'bacninh', name: 'Bắc Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.1800, lng: 106.0700, aliases: ['bắc ninh', 'bac ninh', 'từ sơn', 'thuận thành', 'quế võ', 'tiên du', 'yên phong', 'gia bình', 'lương tài', 'chùa dâu', 'đền đô', 'chùa phật tích'] },
+      { id: 'caobang', name: 'Cao Bằng', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.6600, lng: 106.2500, aliases: ['cao bằng', 'cao bang', 'thác bản giốc', 'pác bó', 'trùng khánh', 'hà quảng', 'bảo lạc', 'bảo lâm', 'hạ lang', 'hòa an', 'nguyên bình', 'thạch an', 'động ngườm ngao', 'hồ thang hen'] },
+      { id: 'dienbien', name: 'Điện Biên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3800, lng: 103.0100, aliases: ['điện biên', 'dien bien', 'điện biên phủ', 'mường thanh', 'mường nhé', 'mường chà', 'tủa chùa', 'tuần giáo', 'điện biên đông', 'nậm pồ', 'a pa chải', 'đèo pha đin'] },
+      { id: 'hagiang', name: 'Hà Giang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.8200, lng: 104.9800, aliases: ['hà giang', 'ha giang', 'đồng văn', 'mèo vạc', 'yên minh', 'quản bạ', 'vị xuyên', 'bắc mê', 'hoàng su phì', 'xín mần', 'bắc quang', 'quang bình', 'cột cờ lũng cú', 'mã pí lèng', 'sông nho quế', 'núi đôi quản bạ'] },
+      { id: 'hanam', name: 'Hà Nam', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.5400, lng: 105.9100, aliases: ['hà nam', 'ha nam', 'phủ lý', 'duy tiên', 'kim bảng', 'thanh liêm', 'bình lục', 'lý nhân', 'chùa tam chúc'] },
+      { id: 'haiduong', name: 'Hải Dương', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.9300, lng: 106.3100, aliases: ['hải dương', 'hai duong', 'chí linh', 'kinh môn', 'bình giang', 'cẩm giàng', 'gia lộc', 'kim thành', 'nam sách', 'ninh giang', 'thanh hà', 'thanh miện', 'tứ kỳ', 'côn sơn kiếp bạc'] },
+      { id: 'hoabinh', name: 'Hòa Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.8100, lng: 105.3300, aliases: ['hòa bình', 'hoa binh', 'mai châu', 'lương sơn', 'cao phong', 'đà bắc', 'kim bôi', 'lạc sơn', 'lạc thủy', 'tân lạc', 'yên thủy', 'thung nai', 'thủy điện hòa bình'] },
+      { id: 'hungyen', name: 'Hưng Yên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.6500, lng: 106.0500, aliases: ['hưng yên', 'hung yen', 'mỹ hào', 'ân thi', 'khoái châu', 'kim động', 'phù cừ', 'tiên lữ', 'văn giang', 'văn lâm', 'yên mỹ', 'phố hiến', 'ecopark'] },
+      { id: 'laichau', name: 'Lai Châu', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.3900, lng: 103.4700, aliases: ['lai châu', 'lai chau', 'mường tè', 'sìn hồ', 'nậm nhùn', 'tam đường', 'phong thổ', 'tân uyên', 'than uyên', 'đèo ô quy hồ', 'ô quy hồ'] },
+      { id: 'langson', name: 'Lạng Sơn', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.8500, lng: 106.7600, aliases: ['lạng sơn', 'lang son', 'hữu lũng', 'chi lăng', 'cao lộc', 'lộc bình', 'đình lập', 'văn lãng', 'tràng định', 'văn quan', 'bình gia', 'bắc sơn', 'mẫu sơn', 'tân thanh', 'chợ đông kinh'] },
+      { id: 'laocai', name: 'Lào Cai', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.4800, lng: 103.9700, aliases: ['lào cai', 'lao cai', 'sa pa', 'sapa', 'bát xát', 'mường khương', 'si ma cai', 'bắc hà', 'bảo thắng', 'bảo yên', 'văn bàn', 'fansipan', 'phan xi păng', 'thung lũng mường hoa', 'y tý', 'y ty'] },
+      { id: 'phutho', name: 'Phú Thọ', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3200, lng: 105.2200, aliases: ['phú thọ', 'phu tho', 'việt trì', 'đoan hùng', 'hạ hòa', 'thanh ba', 'phù ninh', 'lâm thao', 'tam nông', 'thanh thủy', 'cẩm khê', 'yên lập', 'thanh sơn', 'tân sơn', 'đền hùng', 'đồi chè long cốc', 'vườn quốc gia xuân sơn'] },
+      { id: 'sonla', name: 'Sơn La', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3200, lng: 103.9100, aliases: ['sơn la', 'son la', 'mộc châu', 'quỳnh nhai', 'mường la', 'thuận châu', 'phù yên', 'bắc yên', 'mai sơn', 'sông mã', 'yên châu', 'sốp cộp', 'vân hồ', 'đồi chè mộc châu', 'tà xùa', 'thác dải yếm'] },
+      { id: 'thainguyen', name: 'Thái Nguyên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.5900, lng: 105.8400, aliases: ['thái nguyên', 'thai nguyen', 'sông công', 'phổ yên', 'định hóa', 'phú lương', 'đồng hỷ', 'võ nhai', 'đại từ', 'phú bình', 'hồ núi cốc', 'đồi chè tân cương'] },
+      { id: 'tuyenquang', name: 'Tuyên Quang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.8200, lng: 105.2100, aliases: ['tuyên quang', 'tuyen quang', 'chiêm hóa', 'hàm yên', 'lâm bình', 'na hang', 'sơn dương', 'yên sơn', 'hồ na hang', 'tân trào'] },
+      { id: 'vinhphuc', name: 'Vĩnh Phúc', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3100, lng: 105.6000, aliases: ['vĩnh phúc', 'vinh phuc', 'vĩnh yên', 'phúc yên', 'bình xuyên', 'lập thạch', 'sông lô', 'tam dương', 'tam đảo', 'vĩnh tường', 'yên lạc', 'tam dao', 'tây thiên', 'hồ đại lải'] },
+      { id: 'yenbai', name: 'Yên Bái', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.7200, lng: 104.9100, aliases: ['yên bái', 'yen bai', 'nghĩa lộ', 'mù cang chải', 'lục yên', 'trạm tấu', 'trấn yên', 'văn chấn', 'văn yên', 'yên bình', 'mù căng chải', 'ruộng bậc thang mù cang chải', 'đèo khau phạ', 'hồ thác bà'] },
+
+      // MIỀN TRUNG (19 tỉnh/thành: Bắc Trung Bộ & Duyên hải Nam Trung Bộ)
+      { id: 'thanhhoa', name: 'Thanh Hóa', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 102, lat: 19.8000, lng: 105.7700, aliases: ['thanh hóa', 'thanh hoa', 'sầm sơn', 'bỉm sơn', 'nghi sơn', 'hà trung', 'hậu lộc', 'nga sơn', 'hoằng hóa', 'thọ xuân', 'triệu sơn', 'thiệu hóa', 'yên định', 'vĩnh lộc', 'thường xuân', 'như xuân', 'như thanh', 'bá thước', 'cẩm thủy', 'thạch thành', 'ngọc lặc', 'lang chánh', 'quan hóa', 'quan sơn', 'mường lát', 'thành nhà hồ', 'pù luông', 'suối cá thần cẩm lương', 'hải tiến'] },
+      { id: 'nghean', name: 'Nghệ An', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 82, lat: 19.3300, lng: 104.9100, aliases: ['nghệ an', 'nghe an', 'vinh', 'cửa lò', 'thái hòa', 'hoàng mai', 'quỳnh lưu', 'diễn châu', 'nghi lộc', 'hưng nguyên', 'nam đàn', 'thanh chương', 'đô lương', 'tân kỳ', 'quỳ hợp', 'quỳ châu', 'quế phong', 'con cuông', 'tương dương', 'kỳ sơn', 'anh sơn', 'quê bác', 'làng sen', 'đảo chè thanh chương'] },
+      { id: 'hatinh', name: 'Hà Tĩnh', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 137, lat: 18.3400, lng: 105.9000, aliases: ['hà tĩnh', 'ha tinh', 'hồng lĩnh', 'kỳ anh', 'nghi xuân', 'đức thọ', 'hương sơn', 'hương khê', 'vũ quang', 'can lộc', 'lộc hà', 'thạch hà', 'cẩm xuyên', 'ngã ba đồng lộc', 'biển thiên cầm', 'núi hồng lĩnh'] },
+      { id: 'quangbinh', name: 'Quảng Bình', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 116, lat: 17.4700, lng: 106.6000, aliases: ['quảng bình', 'quang binh', 'đồng hới', 'ba đồn', 'minh hóa', 'tuyên hóa', 'quảng trạch', 'bố trạch', 'lệ thủy', 'phong nha', 'phong nha kẻ bàng', 'động thiên đường', 'hang sơn đoòng', 'hang én', 'suối nước moọc', 'bãi đá nhảy', 'vũng chùa đảo yến', 'sơn đoòng'] },
+      { id: 'quangtri', name: 'Quảng Trị', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 75, lat: 16.7500, lng: 107.1800, aliases: ['quảng trị', 'quang tri', 'đông hà', 'vĩnh linh', 'gio linh', 'cam lộ', 'triệu phong', 'hải lăng', 'hướng hóa', 'đakrông', 'cồn cỏ', 'thành cổ quảng trị', 'địa đạo vịnh mốc', 'cầu hiền lương', 'sông bến hải', 'la vang'] },
+      { id: 'thuathienhue', name: 'Thừa Thiên Huế', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 128, lat: 16.4637, lng: 107.5909, aliases: ['thừa thiên huế', 'thua thien hue', 'huế', 'hue', 'hương thủy', 'hương trà', 'a lưới', 'nam đông', 'phong điền', 'phú lộc', 'phú vang', 'quảng điền', 'đại nội huế', 'sông hương', 'chùa thiên mụ', 'lăng khải định', 'lăng tự đức', 'vịnh lăng cô', 'lăng cô', 'đèo hải vân', 'phá tam giang'] },
+      { id: 'danang', name: 'Đà Nẵng', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 92, lat: 16.0544, lng: 108.2022, aliases: ['đà nẵng', 'da nang', 'danang', 'hải châu', 'thanh khê', 'sơn trà', 'ngũ hành sơn', 'liên chiểu', 'cẩm lệ', 'hòa vang', 'hoàng sa', 'cầu rồng', 'bà nà', 'bà nà hills', 'cầu vàng', 'bán đảo sơn trà', 'mỹ khê', 'biển mỹ khê'] },
+      { id: 'quangnam', name: 'Quảng Nam', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 125, lat: 15.5600, lng: 108.0000, aliases: ['quảng nam', 'quang nam', 'tam kỳ', 'hội an', 'hoi an', 'điện bàn', 'đại lộc', 'duy xuyên', 'quế sơn', 'nam giang', 'phước sơn', 'hiệp đức', 'thăng bình', 'tiên phước', 'bắc trà my', 'nam trà my', 'núi thành', 'phố cổ hội an', 'thánh địa mỹ sơn', 'mỹ sơn', 'cù lao chàm', 'rừng dừa bảy mẫu'] },
+      { id: 'quangngai', name: 'Quảng Ngãi', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 130, lat: 15.1200, lng: 108.7900, aliases: ['quảng ngãi', 'quang ngai', 'lý sơn', 'đảo lý sơn', 'bình sơn', 'trà bồng', 'sơn tịnh', 'tư nghĩa', 'sơn hà', 'sơn tây', 'minh long', 'nghĩa hành', 'mộ đức', 'đức phổ', 'ba tơ', 'biển mỹ khê quảng ngãi', 'núi thiên ấn'] },
+      { id: 'binhdinh', name: 'Bình Định', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 134, lat: 13.7800, lng: 109.2200, aliases: ['bình định', 'binh dinh', 'quy nhơn', 'quynhon', 'kỳ co', 'eo gió', 'an nhơn', 'hoài nhơn', 'tây sơn', 'phù mỹ', 'phù cát', 'tuy phước', 'vân canh', 'vĩnh thạnh', 'hoài ân', 'ghềnh ráng', 'cù lao xanh', 'hòn khô'] },
+      { id: 'phuyen', name: 'Phú Yên', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 189, lat: 13.0800, lng: 109.0900, aliases: ['phú yên', 'phu yen', 'tuy hòa', 'tuy hoa', 'sông cầu', 'đông hòa', 'đồng xuân', 'sông hinh', 'tây hòa', 'tuy an', 'phú hòa', 'ghềnh đá đĩa', 'ghenh da dia', 'mũi điện', 'mũi đại lãnh', 'vũng rô', 'tháp nghinh phong', 'bãi xép', 'đầm ô loan'] },
+      { id: 'khanhhoa', name: 'Khánh Hòa', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 385, lat: 12.2400, lng: 109.1900, aliases: ['khánh hòa', 'khanh hoa', 'nha trang', 'nhatrang', 'cam ranh', 'ninh hòa', 'vạn ninh', 'diên khánh', 'khánh vĩnh', 'khánh sơn', 'cam lâm', 'trường sa', 'vịnh nha trang', 'vịnh vân phong', 'vịnh cam ranh', 'hòn tằm', 'hòn mun', 'bình ba', 'bình hưng', 'điệp sơn', 'tháp bà ponagar'] },
+      { id: 'ninhthuan', name: 'Ninh Thuận', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 105, lat: 11.5600, lng: 108.9900, aliases: ['ninh thuận', 'ninh thuan', 'phan rang', 'tháp chàm', 'bác ái', 'ninh hải', 'ninh phước', 'ninh sơn', 'thuận bắc', 'thuận nam', 'vịnh vĩnh hy', 'vĩnh hy', 'đồng cừu an hòa', 'mũi dinh', 'đồi cát nam cương', 'núi chúa', 'vườn quốc gia núi chúa'] },
+      { id: 'binhthuan', name: 'Bình Thuận', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 192, lat: 10.9300, lng: 108.1000, aliases: ['bình thuận', 'binh thuan', 'phan thiết', 'phanthiet', 'mũi né', 'muine', 'la gi', 'tuy phong', 'bắc bình', 'hàm thuận bắc', 'hàm thuận nam', 'hàm tân', 'tánh linh', 'đức linh', 'phú quý', 'đảo phú quý', 'mũi kê gà', 'bàu trắng', 'đồi cát bay'] },
+
+      // TÂY NGUYÊN (5 tỉnh)
+      { id: 'daklak', name: 'Đắk Lắk', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 12.6600, lng: 108.0300, aliases: ['đắk lắk', 'đắc lắc', 'dak lak', 'buôn ma thuột', 'bmt', 'buôn đôn', 'hồ lắk', 'cư mgar', 'ea hleo', 'krông buk', 'krông ana', 'krông năng', 'krông pắc', 'ea kar', 'ea súp', 'm drắk', 'lắk', 'bảo tàng cà phê'] },
+      { id: 'daknong', name: 'Đắk Nông', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 12.0000, lng: 107.6800, aliases: ['đắk nông', 'đắc nông', 'dak nong', 'gia nghĩa', 'đắk mil', 'đắk r lấp', 'đắk song', 'đắk glong', 'krông nô', 'cư jút', 'tuy đức', 'hồ tà đùng', 'tà đùng', 'vịnh hạ long tây nguyên'] },
+      { id: 'gialai', name: 'Gia Lai', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 13.9800, lng: 108.0000, aliases: ['gia lai', 'gialai', 'pleiku', 'an khê', 'ayar pa', 'chư păh', 'chư prông', 'chư sê', 'đắk doa', 'đắk pơ', 'đức cơ', 'ia grai', 'ia pa', 'kbang', 'kông chro', 'krông pa', 'mang yang', 'phú thiện', 'biển hồ tơ nưng', 'biển hồ pleiku', 'núi lửa chư đăng ya'] },
+      { id: 'kontum', name: 'Kon Tum', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 14.3500, lng: 108.0000, aliases: ['kon tum', 'kontum', 'măng đen', 'mang den', 'ngọc hồi', 'đắk hà', 'đắk tô', 'sa thầy', 'kon plông', 'đắk glei', 'tu mơ rông', 'ia h drai', 'ngã ba đông dương', 'nhà thờ gỗ kon tum', 'cầu treo kon klor'] },
+      { id: 'lamdong', name: 'Lâm Đồng', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 11.9400, lng: 108.4500, aliases: ['lâm đồng', 'lam dong', 'đà lạt', 'da lat', 'dalat', 'bảo lộc', 'đức trọng', 'di linh', 'đơn dương', 'lạc dương', 'đạ huoai', 'đạ tẻh', 'cát tiên', 'lâm hà', 'đam rông', 'hồ xuân hương', 'thung lũng tình yêu', 'langbiang', 'thác datanla', 'đồi chè cầu đất'] },
+
+      // ĐÔNG NAM BỘ (6 tỉnh/thành)
+      { id: 'tphcm', name: 'TP. Hồ Chí Minh', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: true, coastlineKm: 20, lat: 10.7769, lng: 106.7009, aliases: ['tp. hồ chí minh', 'hồ chí minh', 'tphcm', 'tp hcm', 'sài gòn', 'saigon', 'ho chi minh', 'quận 1', 'quận 3', 'quận 4', 'quận 5', 'quận 6', 'quận 7', 'quận 8', 'quận 10', 'quận 11', 'quận 12', 'bình thạnh', 'phú nhuận', 'gò vấp', 'tân bình', 'tân phú', 'bình tân', 'thủ đức', 'củ chi', 'hóc môn', 'bình chánh', 'nhà bè', 'cần giờ', 'chợ bến thành', 'nhà thờ đức bà', 'dinh độc lập', 'nguyễn huệ', 'đảo khỉ cần giờ', 'biển cần giờ'] },
+      { id: 'bariavungtau', name: 'Bà Rịa - Vũng Tàu', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: true, coastlineKm: 305, lat: 10.4900, lng: 107.1700, aliases: ['bà rịa', 'vũng tàu', 'ba ria', 'vung tau', 'vungtau', 'côn đảo', 'con dao', 'long hải', 'hồ tràm', 'xuyên mộc', 'phú mỹ', 'đất đỏ', 'châu đức', 'hồ cốc', 'bãi sau', 'bãi trước', 'ngọn hải đăng vũng tàu', 'tượng chúa kito'] },
+      { id: 'binhduong', name: 'Bình Dương', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.1300, lng: 106.6600, aliases: ['bình dương', 'binh duong', 'thủ dầu một', 'dĩ an', 'thuận an', 'bến cát', 'tân uyên', 'bắc tân uyên', 'bàu bàng', 'dầu tiếng', 'phú giáo', 'đại nam', 'lạc cảnh đại nam'] },
+      { id: 'binhphuoc', name: 'Bình Phước', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.7500, lng: 106.9000, aliases: ['bình phước', 'binh phuoc', 'đồng xoài', 'phước long', 'bình long', 'chơn thành', 'đồng phú', 'bù đăng', 'bù đốp', 'bù gia mập', 'lộc ninh', 'hớn quản', 'núi bà rá', 'trảng cỏ bù lạch'] },
+      { id: 'dongnai', name: 'Đồng Nai', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 10.9500, lng: 106.8100, aliases: ['đồng nai', 'dong nai', 'biên hòa', 'long khánh', 'long thành', 'nhơn trạch', 'trảng bom', 'thống nhất', 'vĩnh cửu', 'cẩm mỹ', 'xuân lộc', 'định quán', 'tân phú', 'thác giang điền', 'vườn quốc gia cát tiên', 'hồ trị an'] },
+      { id: 'tayninh', name: 'Tây Ninh', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.3100, lng: 106.1000, aliases: ['tây ninh', 'tay ninh', 'trảng bàng', 'hòa thành', 'tân biên', 'tân châu', 'dương minh châu', 'châu thành', 'bến cầu', 'gò dầu', 'núi bà đen', 'tòa thánh tây ninh', 'hồ dầu tiếng', 'ma thiên lãnh'] },
+
+      // ĐỒNG BẰNG SÔNG CỬU LONG / MIỀN TÂY (13 tỉnh/thành)
+      { id: 'cantho', name: 'Cần Thơ', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.0300, lng: 105.7800, aliases: ['cần thơ', 'can tho', 'cantho', 'ninh kiều', 'bến ninh kiều', 'chợ nổi cái răng', 'bình thủy', 'cái răng', 'ô môn', 'thốt nốt', 'phong điền', 'cờ đỏ', 'thới lai', 'vĩnh thạnh'] },
+      { id: 'angiang', name: 'An Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.5300, lng: 105.1500, aliases: ['an giang', 'angiang', 'long xuyên', 'châu đốc', 'núi sam', 'miếu bà chúa xứ', 'tri tôn', 'tịnh biên', 'thất sơn', 'núi cấm', 'rừng tràm trà sư', 'chợ nổi long xuyên'] },
+      { id: 'dongthap', name: 'Đồng Tháp', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.4500, lng: 105.6300, aliases: ['đồng tháp', 'dong thap', 'cao lãnh', 'sa đéc', 'hồng ngự', 'tân hồng', 'tam nông', 'tháp mười', 'thanh bình', 'lấp vò', 'lai vung', 'châu thành', 'tràm chim', 'làng hoa sa đéc', 'vườn quốc gia tràm chim', 'khu di tích xẻo quýt'] },
+      { id: 'longan', name: 'Long An', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.5300, lng: 106.4100, aliases: ['long an', 'longan', 'tân an', 'kiến tường', 'bến lức', 'cần đước', 'cần giuộc', 'châu thành', 'đức hòa', 'đức huệ', 'mộc hóa', 'tân hưng', 'tân thạnh', 'tân trụ', 'thạnh hóa', 'thủ thừa', 'vĩnh hưng', 'làng nổi tân lập'] },
+      { id: 'tiengiang', name: 'Tiền Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 32, lat: 10.3500, lng: 106.3600, aliases: ['tiền giang', 'tien giang', 'mỹ tho', 'my tho', 'gò công', 'cai lậy', 'tân phước', 'châu thành', 'chợ gạo', 'gò công tây', 'gò công đông', 'tân phú đông', 'chùa vĩnh tràng', 'cù lao thới sơn', 'biển tân thành'] },
+      { id: 'bentre', name: 'Bến Tre', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 65, lat: 10.2400, lng: 106.3700, aliases: ['bến tre', 'ben tre', 'bentre', 'châu thành', 'chợ lách', 'mỏ cày', 'giồng trôm', 'bình đại', 'ba tri', 'thạnh phú', 'xứ dừa', 'cồn phụng', 'cồn quy', 'cồn ốc'] },
+      { id: 'vinhlong', name: 'Vĩnh Long', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.2500, lng: 105.9700, aliases: ['vĩnh long', 'vinh long', 'bình minh', 'long hồ', 'mang thít', 'vũng liêm', 'tam bình', 'trà ôn', 'bình tân', 'cù lao an bình', 'cầu mỹ thuận'] },
+      { id: 'haugiang', name: 'Hậu Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 9.7800, lng: 105.4700, aliases: ['hậu giang', 'hau giang', 'vị thanh', 'ngã bảy', 'long mỹ', 'phụng hiệp', 'châu thành', 'châu thành a', 'vị thủy', 'chợ nổi ngã bảy'] },
+      { id: 'travinh', name: 'Trà Vinh', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 65, lat: 9.9300, lng: 106.3400, aliases: ['trà vinh', 'tra vinh', 'duyên hải', 'càng long', 'cầu kè', 'tiểu cần', 'châu thành', 'cầu ngang', 'trà cú', 'ba động', 'chùa hang', 'ao bà om', 'chùa âng'] },
+      { id: 'soctrang', name: 'Sóc Trăng', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 72, lat: 9.6000, lng: 105.9700, aliases: ['sóc trăng', 'soc trang', 'ngã năm', 'vĩnh châu', 'châu thành', 'kế sách', 'mỹ tú', 'cù lao dung', 'long phú', 'mỹ xuyên', 'thạnh trị', 'trần đề', 'chùa dơi', 'chùa chén kiểu', 'chùa som rong', 'chợ nổi ngã năm'] },
+      { id: 'baclieu', name: 'Bạc Liêu', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 56, lat: 9.2900, lng: 105.7200, aliases: ['bạc liêu', 'bac lieu', 'giá rai', 'hồng dân', 'phước long', 'vĩnh lợi', 'đông hải', 'hòa bình', 'công tử bạc liêu', 'điện gió bạc liêu', 'nhà thờ tắc sậy', 'cha diệp'] },
+      { id: 'camau', name: 'Cà Mau', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 254, lat: 9.1700, lng: 105.1500, aliases: ['cà mau', 'ca mau', 'đất mũi', 'mũi cà mau', 'u minh', 'thới bình', 'trần văn thời', 'cái nước', 'đầm dơi', 'năm căn', 'phú tân', 'ngọc hiển', 'hòn khoai', 'rừng u minh hạ', 'hòn đá bạc', 'cột mốc gps 0001'] },
+      { id: 'kiengiang', name: 'Kiên Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 200, lat: 10.0100, lng: 105.0800, aliases: ['kiên giang', 'kien giang', 'phú quốc', 'phu quoc', 'phuquoc', 'rạch giá', 'hà tiên', 'kiên lương', 'hòn đất', 'tân hiệp', 'châu thành', 'giồng riềng', 'gò quao', 'an biên', 'an minh', 'vĩnh thuận', 'u minh thượng', 'kiên hải', 'nam du', 'hòn sơn', 'đảo phú quốc', 'thổ chu', 'quần đảo bà lụa'] }
+    ];
+
+    // State for province footprint filtering
+    let currentProvinceFilterTab = 'all';
+    let currentProvinceSearchQuery = '';
+
+    /**
+     * Remove accents/diacritics for flexible text matching
+     */
+    function removeVietnameseTones(str) {
+      if (!str) return '';
+      str = str.toLowerCase();
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      return str.trim();
+    }
+
+    /**
+     * Automatic Province Detection for a Pin based on Location Text & Coordinates
+     */
+    function detectProvinceForPin(pin) {
+      if (!pin) return null;
+
+      // 1. Check textual fields (title, locationName, address, notes)
+      const textToSearch = [
+        pin.title || '',
+        pin.locationName || '',
+        pin.address || '',
+        pin.notes || ''
+      ].join(' ').toLowerCase();
+
+      const normalizedText = removeVietnameseTones(textToSearch);
+
+      // Try exact or alias match first
+      for (const prov of VIETNAM_PROVINCES) {
+        // Direct name check
+        if (textToSearch.includes(prov.name.toLowerCase()) || normalizedText.includes(removeVietnameseTones(prov.name))) {
+          return prov;
+        }
+
+        // Aliases check
+        if (Array.isArray(prov.aliases)) {
+          for (const alias of prov.aliases) {
+            if (alias.length >= 3 && (textToSearch.includes(alias) || normalizedText.includes(removeVietnameseTones(alias)))) {
+              return prov;
+            }
+          }
+        }
+      }
+
+      // 2. Spatial proximity fallback if coordinates exist and are inside/near Vietnam
+      const lat = parseFloat(pin.lat);
+      const lng = parseFloat(pin.lng);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= 8.0 && lat <= 23.6 && lng >= 102.0 && lng <= 110.5) {
+        let closestProv = null;
+        let minDistanceSq = Infinity;
+
+        for (const prov of VIETNAM_PROVINCES) {
+          const dLat = lat - prov.lat;
+          const dLng = lng - prov.lng;
+          const distSq = dLat * dLat + dLng * dLng;
+          if (distSq < minDistanceSq) {
+            minDistanceSq = distSq;
+            closestProv = prov;
+          }
+        }
+        return closestProv;
+      }
+
+      return null;
+    }
+
+    /**
+     * Calculate Complete Vietnam 63 Provinces Footprint & 3,260 km Coastline
+     */
+    function calculateVietnamFootprint() {
+      const visitedMap = new Map(); // provId -> { prov, pins: [] }
+
+      // Initialize all provinces in map
+      VIETNAM_PROVINCES.forEach(p => {
+        visitedMap.set(p.id, { prov: p, pins: [], visited: false });
+      });
+
+      // 1. Scan all Pins
+      if (Array.isArray(pins)) {
+        pins.forEach(pin => {
+          const matched = detectProvinceForPin(pin);
+          if (matched && visitedMap.has(matched.id)) {
+            const entry = visitedMap.get(matched.id);
+            entry.visited = true;
+            entry.pins.push(pin);
+          }
+        });
+      }
+
+      // 2. Scan all Routes waypoints/stops if pins weren't in pins array
+      if (Array.isArray(routes)) {
+        routes.forEach(r => {
+          if (Array.isArray(r.pinIds)) {
+            r.pinIds.forEach(pId => {
+              const p = pins.find(x => x.id === pId);
+              if (p) {
+                const matched = detectProvinceForPin(p);
+                if (matched && visitedMap.has(matched.id)) {
+                  const entry = visitedMap.get(matched.id);
+                  entry.visited = true;
+                  if (!entry.pins.some(x => x.id === p.id)) {
+                    entry.pins.push(p);
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // 3. Compute Aggregated Metrics
+      let visitedCount = 0;
+      let visitedCoastalCount = 0;
+      let conqueredCoastlineKm = 0;
+
+      let bacVisited = 0;
+      let trungVisited = 0;
+      let tayNguyenVisited = 0;
+      let dongNamBoVisited = 0;
+      let mienTayVisited = 0;
+
+      visitedMap.forEach(entry => {
+        if (entry.visited) {
+          visitedCount++;
+          if (entry.prov.isCoastal) {
+            visitedCoastalCount++;
+            conqueredCoastlineKm += (entry.prov.coastlineKm || 0);
+          }
+
+          if (entry.prov.region === 'bac') bacVisited++;
+          else if (entry.prov.region === 'trung') trungVisited++;
+          else if (entry.prov.region === 'taynguyen') tayNguyenVisited++;
+          else if (entry.prov.region === 'dongnambo') dongNamBoVisited++;
+          else if (entry.prov.region === 'mientay') mienTayVisited++;
+        }
+      });
+
+      const TOTAL_PROVINCES = 63;
+      const TOTAL_COASTAL_PROVINCES = 28;
+      const TOTAL_COASTLINE_KM = 3260;
+
+      const provincePct = ((visitedCount / TOTAL_PROVINCES) * 100).toFixed(1);
+      const coastlinePct = Math.min(100, (conqueredCoastlineKm / TOTAL_COASTLINE_KM) * 100).toFixed(1);
+
+      // 4. Update UI Elements for 63 Provinces
+      const valProvEl = document.getElementById('stat-visited-provinces-val');
+      if (valProvEl) valProvEl.textContent = `${visitedCount} / ${TOTAL_PROVINCES}`;
+
+      const pctProvBadge = document.getElementById('stat-visited-provinces-pct-badge');
+      if (pctProvBadge) pctProvBadge.textContent = `${provincePct}%`;
+
+      const barProvEl = document.getElementById('stat-visited-provinces-bar');
+      if (barProvEl) barProvEl.style.width = `${Math.max(visitedCount > 0 ? 5 : 0, parseFloat(provincePct))}%`;
+
+      const subProvEl = document.getElementById('stat-visited-provinces-sub');
+      if (subProvEl) {
+        subProvEl.innerHTML = visitedCount > 0
+          ? `Bạn đã đặt dấu chân đến <strong class="text-white font-bold">${visitedCount}</strong> tỉnh thành trên cả nước`
+          : `Tự động nhận diện từ các kỷ niệm & lộ trình của bạn`;
+      }
+
+      // Regional break down
+      const regBacEl = document.getElementById('stat-reg-bac');
+      if (regBacEl) regBacEl.textContent = `Bắc: ${bacVisited}/25`;
+
+      const regTrungEl = document.getElementById('stat-reg-trung');
+      if (regTrungEl) regTrungEl.textContent = `Trung: ${trungVisited}/19`;
+
+      const regTayNguyenEl = document.getElementById('stat-reg-taynguyen');
+      if (regTayNguyenEl) regTayNguyenEl.textContent = `T.Nguyên: ${tayNguyenVisited}/5`;
+
+      const regDongNamEl = document.getElementById('stat-reg-dongnam');
+      if (regDongNamEl) regDongNamEl.textContent = `ĐNB: ${dongNamBoVisited}/6`;
+
+      const regMienTayEl = document.getElementById('stat-reg-mientay');
+      if (regMienTayEl) regMienTayEl.textContent = `ĐBSCL: ${mienTayVisited}/13`;
+
+      // 5. Update UI Elements for Coastline
+      const valCoastlineEl = document.getElementById('stat-conquered-coastline-val');
+      if (valCoastlineEl) valCoastlineEl.textContent = `${conqueredCoastlineKm.toLocaleString('vi-VN')} km`;
+
+      const pctCoastBadge = document.getElementById('stat-conquered-coastline-pct-badge');
+      if (pctCoastBadge) pctCoastBadge.textContent = `${coastlinePct}%`;
+
+      const barCoastEl = document.getElementById('stat-conquered-coastline-bar');
+      if (barCoastEl) barCoastEl.style.width = `${Math.max(conqueredCoastlineKm > 0 ? 5 : 0, parseFloat(coastlinePct))}%`;
+
+      const coastalCountEl = document.getElementById('stat-visited-coastal-count');
+      if (coastalCountEl) coastalCountEl.textContent = visitedCoastalCount;
+
+      const subCoastEl = document.getElementById('stat-conquered-coastline-sub');
+      if (subCoastEl) {
+        subCoastEl.innerHTML = `Đã qua <strong class="font-bold text-white">${visitedCoastalCount}</strong> / ${TOTAL_COASTAL_PROVINCES} tỉnh thành ven biển (${conqueredCoastlineKm.toLocaleString('vi-VN')} km / ${TOTAL_COASTLINE_KM} km)`;
+      }
+
+      // 6. Update Top Bar Pill
+      const topProvEl = document.getElementById('top-stat-provinces');
+      if (topProvEl) topProvEl.textContent = `${visitedCount}/${TOTAL_PROVINCES} tỉnh`;
+
+      const topCoastEl = document.getElementById('top-stat-coastline');
+      if (topCoastEl) topCoastEl.textContent = `${conqueredCoastlineKm.toLocaleString('vi-VN')} km biển`;
+
+      // 7. Update Filter tab counts
+      const tabVisitedCountEl = document.getElementById('prov-visited-tab-count');
+      if (tabVisitedCountEl) tabVisitedCountEl.textContent = visitedCount;
+
+      const tabUnvisitedCountEl = document.getElementById('prov-unvisited-tab-count');
+      if (tabUnvisitedCountEl) tabUnvisitedCountEl.textContent = TOTAL_PROVINCES - visitedCount;
+
+      const filterBadgeEl = document.getElementById('stat-province-filter-badge');
+      if (filterBadgeEl) filterBadgeEl.textContent = `${visitedCount}/${TOTAL_PROVINCES} tỉnh • ${conqueredCoastlineKm} km biển`;
+
+      // 8. Render Province Explorer Grid
+      renderProvinceFootprintExplorer(visitedMap);
+    }
+
+    /**
+     * Render Province Explorer Grid
+     */
+    function renderProvinceFootprintExplorer(visitedMap) {
+      const container = document.getElementById('provinces-grid-container');
+      if (!container) return;
+
+      if (!visitedMap) {
+        calculateVietnamFootprint();
+        return;
+      }
+
+      const q = removeVietnameseTones(currentProvinceSearchQuery || '').toLowerCase();
+
+      let list = Array.from(visitedMap.values());
+
+      // Filter by tab
+      if (currentProvinceFilterTab === 'visited') {
+        list = list.filter(item => item.visited);
+      } else if (currentProvinceFilterTab === 'unvisited') {
+        list = list.filter(item => !item.visited);
+      } else if (currentProvinceFilterTab === 'coastal') {
+        list = list.filter(item => item.prov.isCoastal);
+      }
+
+      // Filter by search query
+      if (q) {
+        list = list.filter(item => {
+          const nameMatch = removeVietnameseTones(item.prov.name).includes(q);
+          const regionMatch = removeVietnameseTones(item.prov.regionName).includes(q);
+          const aliasMatch = item.prov.aliases && item.prov.aliases.some(a => removeVietnameseTones(a).includes(q));
+          return nameMatch || regionMatch || aliasMatch;
+        });
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+            <i class="fa-solid fa-map-location-dot text-2xl mb-1.5 opacity-40"></i>
+            <div>Không tìm thấy tỉnh thành nào phù hợp với bộ lọc.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+        const { prov, pins: provPins, visited } = item;
+        const memoryCount = provPins.length;
+
+        if (visited) {
+          return `
+            <div class="p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/30 flex items-center justify-between gap-2 hover:shadow-xs transition group">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                  <span class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(prov.name)}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-100 dark:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 shrink-0">
+                    <i class="fa-solid fa-check mr-0.5"></i>Đã đến
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-3.5">
+                  <span><i class="fa-solid fa-images text-emerald-600 dark:text-emerald-400"></i> ${memoryCount} kỷ niệm</span>
+                  ${prov.isCoastal ? `<span class="text-cyan-600 dark:text-cyan-400 font-medium">• <i class="fa-solid fa-water"></i> ${prov.coastlineKm} km bờ biển</span>` : ''}
+                </div>
+              </div>
+              <button onclick="focusProvinceOnMap('${prov.id}')" class="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs transition shrink-0" title="Xem trên bản đồ">
+                <i class="fa-solid fa-location-crosshairs"></i>
+              </button>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/40 flex items-center justify-between gap-2 opacity-80 hover:opacity-100 transition group">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
+                  <span class="font-medium text-xs text-slate-700 dark:text-slate-300 truncate">${escapeHtml(prov.name)}</span>
+                  <span class="text-[10px] text-slate-400">(${prov.regionName})</span>
+                </div>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-1 pl-3.5">
+                  <span>Chưa có kỷ niệm</span>
+                  ${prov.isCoastal ? `<span class="text-cyan-600/70 dark:text-cyan-400/70">• <i class="fa-solid fa-water"></i> ${prov.coastlineKm} km bờ biển</span>` : ''}
+                </div>
+              </div>
+              <button onclick="focusProvinceOnMap('${prov.id}')" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs transition shrink-0" title="Định vị tỉnh này">
+                <i class="fa-solid fa-location-arrow"></i>
+              </button>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    /**
+     * Switch Province Explorer Filter Tab
+     */
+    function setProvinceFilterTab(tab) {
+      currentProvinceFilterTab = tab;
+      
+      const tabIds = ['all', 'visited', 'unvisited', 'coastal'];
+      tabIds.forEach(t => {
+        const btn = document.getElementById(`tab-prov-${t}`);
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[11px] shrink-0';
+          } else {
+            btn.className = 'prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0';
+          }
+        }
+      });
+
+      calculateVietnamFootprint();
+    }
+
+    /**
+     * Handle Search in Province Explorer
+     */
+    function handleProvinceFilterSearch(val) {
+      currentProvinceSearchQuery = val;
+      calculateVietnamFootprint();
+    }
+
+    /**
+     * Focus and fly to Province Center on Leaflet Map
+     */
+    function focusProvinceOnMap(provId) {
+      const prov = VIETNAM_PROVINCES.find(p => p.id === provId);
+      if (!prov || !map) return;
+
+      map.flyTo([prov.lat, prov.lng], 10, { duration: 1.2 });
+      
+      const coastalInfo = prov.isCoastal ? ` • 🌊 ${prov.coastlineKm} km bờ biển` : '';
+      showToast(`📍 Đang xem vị trí: ${prov.name} (${prov.regionName})${coastalInfo}`, 'info');
     }
 
     // ==========================================
@@ -7421,7 +8662,10 @@
         routesBadgeCountEl.textContent = `${routes.length} lộ trình`;
       }
 
-      // 4. Render Breakdown List of EACH Route with individual km
+      // 4. Calculate 63 Provinces & 3,260 km Coastline
+      calculateVietnamFootprint();
+
+      // 5. Render Breakdown List of EACH Route with individual km
       const breakdownListContainer = document.getElementById('stat-routes-breakdown-list');
       if (breakdownListContainer) {
         if (!routes || routes.length === 0) {
