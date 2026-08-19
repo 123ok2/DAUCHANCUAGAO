@@ -1693,16 +1693,16 @@
 
         <!-- Right: Action Buttons Group (Uniform Height & Clean Layout) -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 overflow-x-auto no-scrollbar py-0.5">
-          <!-- 1. Cinema & Video -->
-          <button onclick="openSharedRouteCinema()" class="h-8 px-2.5 sm:px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap" title="Xem mô phỏng 3D Cinema & Xuất Video Full HD">
+          <!-- 1. Video -->
+          <button onclick="openSharedRouteCinema()" class="h-8 px-2.5 sm:px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0 whitespace-nowrap" title="Xem mô phỏng 3D & Xuất Video Full HD">
             <i class="fa-solid fa-film text-[10px]"></i>
-            <span>Cinema & Video</span>
+            <span>Video</span>
           </button>
 
-          <!-- 2. Export Poster -->
-          <button onclick="exportRoutePosterCard()" class="h-8 px-2 sm:px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-slate-700 hover:border-sky-500/50 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition shrink-0 whitespace-nowrap" title="Tải ảnh Poster Infographic">
+          <!-- 2. Export Ảnh -->
+          <button onclick="exportRoutePosterCard()" class="h-8 px-2 sm:px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-slate-700 hover:border-sky-500/50 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition shrink-0 whitespace-nowrap" title="Tải ảnh Hành trình">
             <i class="fa-solid fa-image text-[10px]"></i>
-            <span>Poster</span>
+            <span>Ảnh</span>
           </button>
 
           <!-- 3. Insights Modal -->
@@ -1788,10 +1788,10 @@
       <!-- Drawer Footer Actions -->
       <div class="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 flex-wrap">
         <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
-          <i class="fa-solid fa-film"></i> <span>Cinema & Video</span>
+          <i class="fa-solid fa-film"></i> <span>Video</span>
         </button>
         <button onclick="exportRoutePosterCard()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
-          <i class="fa-solid fa-file-image"></i> <span>Poster</span>
+          <i class="fa-solid fa-file-image"></i> <span>Ảnh</span>
         </button>
         <button onclick="importSharedRouteToMyRoutes()" class="w-full sm:w-auto flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition">
           <i class="fa-solid fa-bookmark"></i> <span>Lưu Bản Đồ</span>
@@ -1931,10 +1931,10 @@
         <div class="p-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2.5 shrink-0 flex-wrap">
           <div class="flex items-center gap-2 flex-wrap">
             <button onclick="closeSharedRouteInsightsModal(); openSharedRouteCinema();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
-              <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema & Xuất Video</span>
+              <i class="fa-solid fa-film"></i> <span>Mô phỏng & Video</span>
             </button>
             <button onclick="exportRoutePosterCard()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
-              <i class="fa-solid fa-file-image"></i> <span>Xuất Poster HD</span>
+              <i class="fa-solid fa-file-image"></i> <span>Xuất Ảnh HD</span>
             </button>
           </div>
 
@@ -2082,7 +2082,7 @@
               
               <button onclick="exportRoutePosterCard()" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition">
                 <i class="fa-solid fa-image text-emerald-500"></i>
-                <span>Xuất Poster Ảnh HD (Kèm hình ảnh)</span>
+                <span>Xuất Ảnh HD (Kèm hình ảnh)</span>
               </button>
             </div>
           </div>
@@ -2340,12 +2340,12 @@
             </select>
           </div>
 
-          <!-- Media Export Actions: Poster & Video (Balanced 2-col on mobile) -->
+          <!-- Media Export Actions: Ảnh & Video (Balanced 2-col on mobile) -->
           <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 w-full sm:w-auto">
-            <!-- 1. Export Poster Image -->
-            <button onclick="exportRoutePosterCard()" class="h-10 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition shadow-sm whitespace-nowrap" title="Tải ảnh Poster Infographic Hành trình HD">
+            <!-- 1. Export Image -->
+            <button onclick="exportRoutePosterCard()" class="h-10 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition shadow-sm whitespace-nowrap" title="Tải ảnh Hành trình HD">
               <i class="fa-solid fa-image"></i>
-              <span class="truncate">Xuất Poster (HD)</span>
+              <span class="truncate">Xuất Ảnh (HD)</span>
             </button>
 
             <!-- 2. Record & Export Video -->
@@ -7962,11 +7962,11 @@
         : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
 
       if (!active || activePins.length < 2) {
-        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Poster!', 'error');
+        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Ảnh!', 'error');
         return;
       }
 
-      showToast('Đang tạo thiết kế Poster Hành trình HD kèm hình ảnh...', 'info');
+      showToast('Đang tạo thiết kế Ảnh Hành trình HD kèm hình ảnh...', 'info');
 
       // Preload all uploaded photos asynchronously
       const pinsWithImages = await Promise.all(activePins.map(async (pin) => {
@@ -8177,12 +8177,12 @@
         const a = document.createElement('a');
         a.href = url;
         const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
-        a.download = `gaomaps-poster-${safeName}-${Date.now()}.png`;
+        a.download = `gaomaps-anh-${safeName}-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('Đã tải ảnh Poster Hành trình HD kèm hình ảnh thành công!', 'success');
+        showToast('Đã tải ảnh Hành trình HD kèm hình ảnh thành công!', 'success');
       }, 'image/png');
     }
 
