@@ -1268,30 +1268,107 @@
       </div>
     </div>
 
-    <!-- ==================== SHARED ROUTE TOP BANNER (When viewing a shared link) ==================== -->
-    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-indigo-900 via-sky-900 to-indigo-950 text-white shadow-2xl border-b border-sky-400/30 p-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2.5 backdrop-blur-md">
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-300 flex items-center justify-center text-base shrink-0">
-          <i class="fa-solid fa-compass"></i>
-        </div>
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-sky-500/30 text-sky-200 border border-sky-400/30">Chế độ Xem Lộ trình Chia sẻ</span>
-            <h4 id="shared-route-title-text" class="font-black text-sm text-white truncate">Lộ trình được chia sẻ</h4>
+    <!-- ==================== SHARED ROUTE TOP BANNER & EXPANDABLE SHOWCASE ==================== -->
+    <div id="shared-route-view-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-slate-950/95 via-indigo-950/95 to-slate-950/95 text-white shadow-2xl border-b border-indigo-500/40 p-3 sm:px-6 backdrop-blur-xl animate-in slide-in-from-top duration-300">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- Left: Route Info & Metric Badges -->
+        <div class="flex items-center gap-3 w-full md:w-auto min-w-0">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-lg shrink-0 border border-white/20">
+            <i class="fa-solid fa-route"></i>
           </div>
-          <p id="shared-route-subtitle-text" class="text-xs text-sky-200 truncate mt-0.5">Khám phá các điểm dừng và tuyến đường thực tế</p>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[10px] uppercase tracking-wider font-black px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-500/40">Lộ trình được chia sẻ</span>
+              <h4 id="shared-route-title-text" class="font-black text-sm sm:text-base text-white truncate">Lộ trình Gạo Maps</h4>
+            </div>
+            
+            <!-- Quick Telemetry Row (Km, Time, Stops) -->
+            <div class="flex items-center gap-2 sm:gap-3 text-xs text-slate-300 mt-1 flex-wrap font-medium">
+              <span class="inline-flex items-center gap-1 text-sky-400 font-bold">
+                <i class="fa-solid fa-road text-[11px]"></i> <span id="shared-banner-dist">-- km</span>
+              </span>
+              <span>•</span>
+              <span class="inline-flex items-center gap-1 text-amber-400 font-bold">
+                <i class="fa-solid fa-clock text-[11px]"></i> <span id="shared-banner-time">-- phút</span>
+              </span>
+              <span>•</span>
+              <span class="inline-flex items-center gap-1 text-emerald-400 font-bold">
+                <i class="fa-solid fa-location-dot text-[11px]"></i> <span id="shared-banner-stops">-- điểm</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Action Buttons (Save, Toggle Drawer, Cinema, Close) -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end shrink-0">
+          <button onclick="toggleSharedStopsShowcase()" id="btn-toggle-shared-drawer" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 border border-sky-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm">
+            <i class="fa-solid fa-images"></i>
+            <span id="btn-shared-drawer-text">Xem Ảnh & Điểm dừng</span>
+          </button>
+          
+          <button onclick="importSharedRouteToMyRoutes()" class="flex-1 md:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-xs font-black shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+            <span>Lưu vào Bản đồ của tôi</span>
+          </button>
+          
+          <button onclick="closeSharedRouteBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition shrink-0" title="Về bản đồ cá nhân">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       </div>
+    </div>
 
-      <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-        <button onclick="importSharedRouteToMyRoutes()" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 active:scale-95 transition">
-          <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-          <span>Lưu vào Lộ trình của tôi</span>
+    <!-- ==================== SHARED ROUTE FLOATING SHOWCASE DRAWER ==================== -->
+    <div id="shared-route-showcase-panel" class="hidden fixed bottom-16 lg:bottom-6 left-3 sm:left-6 right-3 sm:right-auto sm:w-96 md:w-[420px] max-h-[70vh] z-40 bg-slate-900/95 text-white rounded-3xl shadow-2xl border border-indigo-500/40 backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+      <!-- Drawer Header -->
+      <div class="p-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-indigo-600/30 text-indigo-400 border border-indigo-500/40 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-photo-film"></i>
+          </div>
+          <div class="min-w-0">
+            <h4 class="font-black text-sm text-white truncate" id="shared-drawer-title">Chi tiết các điểm dừng</h4>
+            <p class="text-[11px] text-slate-400 truncate" id="shared-drawer-stats">Ảnh & thông tin địa điểm</p>
+          </div>
+        </div>
+        <button onclick="toggleSharedStopsShowcase()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-chevron-down text-xs"></i>
         </button>
-        <button onclick="closeSharedRouteBanner()" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center justify-center gap-1 transition" title="Đóng chế độ xem">
-          <i class="fa-solid fa-xmark"></i>
-          <span class="sm:inline">Về của tôi</span>
+      </div>
+
+      <!-- Stops List with Photos, Location Names, Notes & Ratings -->
+      <div id="shared-drawer-stops-list" class="flex-1 overflow-y-auto p-3.5 space-y-3 custom-scrollbar">
+        <!-- Dynamically injected stops cards -->
+      </div>
+
+      <!-- Drawer Footer Actions -->
+      <div class="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <button onclick="openSharedRouteCinema()" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-film"></i> <span>Mô phỏng Cinema</span>
         </button>
+        <button onclick="importSharedRouteToMyRoutes()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition">
+          <i class="fa-solid fa-bookmark"></i> <span>Lưu Lộ trình này</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== IMAGE LIGHTBOX MODAL (Full Resolution View) ==================== -->
+    <div id="image-lightbox-modal" class="hidden fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-hidden animate-in fade-in duration-200" onclick="if(event.target === this) closeImageLightbox()">
+      <div class="relative max-w-4xl max-h-[90vh] w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col">
+        <!-- Header -->
+        <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-white shrink-0">
+          <div class="flex items-center gap-2 min-w-0">
+            <i class="fa-solid fa-image text-sky-400"></i>
+            <h4 id="lightbox-title" class="font-bold text-xs sm:text-sm truncate">Ảnh Kỷ niệm</h4>
+          </div>
+          <button onclick="closeImageLightbox()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+        <!-- Image Area -->
+        <div class="flex-1 bg-black flex items-center justify-center p-2 sm:p-4 min-h-[250px] max-h-[75vh] overflow-auto">
+          <img id="lightbox-img" src="" alt="Full view" class="max-w-full max-h-[70vh] object-contain rounded-xl shadow-lg" />
+        </div>
       </div>
     </div>
 
@@ -1301,19 +1378,19 @@
       <span>Khẳng định chủ quyền <b>Hoàng Sa</b> & <b>Trường Sa</b> thuộc về <b>Việt Nam</b></span>
     </div>
 
-    <!-- ==================== SHARE ROUTE MODAL ==================== -->
-    <div id="share-route-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
-      <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+    <!-- ==================== UPGRADED SHARE ROUTE MODAL ==================== -->
+    <div id="share-route-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
         
         <!-- Header -->
-        <div class="p-5 bg-gradient-to-r from-indigo-600 to-sky-600 text-white flex items-center justify-between">
+        <div class="p-4 sm:p-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-sky-600 text-white flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-inner">
               <i class="fa-solid fa-share-nodes"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">Chia sẻ Lộ trình Chuyến đi</h3>
-              <p class="text-xs text-sky-100">Gửi link để bạn bè xem chi tiết toàn bộ hành trình</p>
+              <h3 class="font-black text-base">Chia sẻ Lộ trình & Kỷ niệm</h3>
+              <p class="text-xs text-sky-100">Kèm hình ảnh thực tế, khoảng cách và thời gian di chuyển</p>
             </div>
           </div>
           <button onclick="closeShareRouteModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition">
@@ -1321,23 +1398,51 @@
           </button>
         </div>
 
-        <div class="p-6 space-y-5">
-          <!-- Route Info Preview Card -->
-          <div class="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-between">
-            <div class="space-y-1">
-              <span class="text-[10px] uppercase tracking-wider font-bold text-indigo-600 dark:text-indigo-400">Lộ trình được chia sẻ</span>
-              <h4 id="share-modal-route-name" class="font-bold text-slate-800 dark:text-slate-100 text-sm">Hành trình Xuyên Việt</h4>
-              <p id="share-modal-route-stats" class="text-xs text-slate-500 dark:text-slate-400">0 điểm dừng • 0 km</p>
+        <!-- Scrollable Modal Body -->
+        <div class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+          
+          <!-- Route Metrics & Telemetry Card -->
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 dark:from-slate-800/80 dark:to-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span id="share-route-color-dot" class="w-3 h-3 rounded-full bg-indigo-500 shrink-0"></span>
+                <h4 id="share-modal-route-name" class="font-black text-slate-800 dark:text-slate-100 text-base truncate">Lộ trình du lịch</h4>
+              </div>
+              <span id="share-route-mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Ô tô / Xe máy</span>
             </div>
-            <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/30">
-              <i class="fa-solid fa-route"></i>
+
+            <!-- 3 Telemetry Pillars -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-indigo-100 dark:border-indigo-900/40 text-center">
+              <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Tổng quãng đường</span>
+                <span id="share-modal-dist" class="font-black text-sky-600 dark:text-sky-400 text-sm sm:text-base">0.0 km</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Thời gian dự tính</span>
+                <span id="share-modal-time" class="font-black text-amber-600 dark:text-amber-400 text-sm sm:text-base">0 phút</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Điểm dừng</span>
+                <span id="share-modal-stops-count" class="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">0 điểm</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stops Preview Carousel / Mini Grid (User uploaded photos & titles) -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
+              <span><i class="fa-solid fa-camera text-sky-500 mr-1"></i> Xem trước các điểm & ảnh kỷ niệm:</span>
+              <span id="share-modal-photos-count" class="text-[11px] text-slate-400 font-normal">0 ảnh</span>
+            </label>
+            <div id="share-modal-stops-preview-list" class="flex gap-2.5 overflow-x-auto pb-2 pt-1 no-scrollbar select-none">
+              <!-- Dynamically populated with stops preview cards -->
             </div>
           </div>
 
           <!-- Share Link Box -->
           <div class="space-y-2">
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Liên kết Chia sẻ Trực tiếp (Xem ngay trên mọi thiết bị)
+              Liên kết Chia sẻ (Mở ngay trên máy tính & điện thoại)
             </label>
             <div class="flex items-center gap-2">
               <div class="relative flex-1">
@@ -1351,35 +1456,41 @@
                 <span>Sao chép</span>
               </button>
             </div>
-            <p class="text-[11px] text-slate-400">Bất kỳ ai mở link này đều có thể xem lộ trình, quãng đường và hình ảnh các điểm dừng mà bạn đã lưu.</p>
           </div>
 
-          <!-- QR Code & Quick Actions -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800 items-center">
-            <!-- QR Code Container -->
-            <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center">
-              <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-inner flex items-center justify-center">
-                <img id="share-qrcode-img" src="" alt="Mã QR Lộ Trình" class="w-full h-full object-contain" />
+          <!-- Action Grid: Poster Export, QR Code, Social Share -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800 items-center">
+            <!-- QR Code -->
+            <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <div class="w-20 h-20 bg-white p-1.5 rounded-xl shadow-inner flex items-center justify-center shrink-0">
+                <img id="share-qrcode-img" src="" alt="QR Lộ Trình" class="w-full h-full object-contain" />
               </div>
-              <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">Quét bằng Camera điện thoại</span>
+              <div class="space-y-1 text-xs">
+                <span class="font-bold text-slate-800 dark:text-slate-200 block">Quét mã QR</span>
+                <p class="text-[11px] text-slate-400 leading-tight">Dùng camera quét để mở ngay trên điện thoại</p>
+              </div>
             </div>
 
-            <!-- Social / Native Share Buttons -->
-            <div class="space-y-2.5">
-              <button onclick="triggerNativeShare()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <!-- Social Share & Poster Buttons -->
+            <div class="space-y-2">
+              <button onclick="triggerNativeShare()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
+                <i class="fa-solid fa-paper-plane"></i>
                 <span>Gửi qua Zalo / Messenger / Mail</span>
               </button>
               
-              <button onclick="downloadRouteCardImage()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition">
-                <i class="fa-solid fa-download text-indigo-500"></i>
-                <span>Tải tệp hành trình (.json)</span>
+              <button onclick="exportRoutePosterCard()" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition">
+                <i class="fa-solid fa-image text-emerald-500"></i>
+                <span>Xuất Poster Ảnh HD (Kèm hình ảnh)</span>
               </button>
             </div>
           </div>
+
         </div>
 
-        <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+          <button onclick="previewSharedRouteReceiverMode()" class="px-4 py-2 rounded-xl text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-700/50 text-xs font-bold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-eye"></i> <span>Xem trước giao diện người nhận</span>
+          </button>
           <button onclick="closeShareRouteModal()" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold hover:bg-slate-300 transition">
             Đóng
           </button>
@@ -3916,40 +4027,133 @@
     // ==========================================
     // ROUTE SHARING & URL GENERATION (LINK SHARE)
     // ==========================================
+    // ==========================================
+    // ROUTE SHARING & URL GENERATION (LINK SHARE)
+    // ==========================================
+    async function compressPhotoForSharing(photoDataUrl, maxDim = 280, quality = 0.6) {
+      if (!photoDataUrl || typeof photoDataUrl !== 'string') return '';
+      if (photoDataUrl.length < 2000) return photoDataUrl; // Already short or URL
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const w = Math.max(1, Math.round(img.width * scale));
+            const h = Math.max(1, Math.round(img.height * scale));
+            const cvs = document.createElement('canvas');
+            cvs.width = w;
+            cvs.height = h;
+            const cx = cvs.getContext('2d');
+            cx.drawImage(img, 0, 0, w, h);
+            const compressed = cvs.toDataURL('image/jpeg', quality);
+            resolve(compressed);
+          } catch (e) {
+            resolve(photoDataUrl.substring(0, 10000));
+          }
+        };
+        img.onerror = () => resolve('');
+        img.src = photoDataUrl;
+      });
+    }
+
     async function openShareRouteModal(routeId = null) {
       const targetRoute = routeId ? (routes.find(r => r.id === routeId) || getActiveRoute()) : getActiveRoute();
       const modal = document.getElementById('share-route-modal');
-      const title = document.getElementById('share-route-name-display');
-      const count = document.getElementById('share-route-stops-count');
+      const title = document.getElementById('share-modal-route-name');
+      const distEl = document.getElementById('share-modal-dist');
+      const timeEl = document.getElementById('share-modal-time');
+      const countEl = document.getElementById('share-modal-stops-count');
+      const photosCountEl = document.getElementById('share-modal-photos-count');
       const colorDot = document.getElementById('share-route-color-dot');
+      const modeBadge = document.getElementById('share-route-mode-badge');
       const input = document.getElementById('share-link-input');
-      const qrImg = document.getElementById('share-qr-image');
+      const qrImg = document.getElementById('share-qrcode-img');
+      const previewList = document.getElementById('share-modal-stops-preview-list');
 
       if (!modal || !input) return;
 
-      const routePinsData = (targetRoute.pinIds || []).map(id => {
-        const p = pins.find(pin => pin.id === id);
-        return p ? {
+      const activePins = (targetRoute.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
+      
+      const totalKm = calculateRouteDistanceKm(targetRoute);
+      const estTimeStr = targetRoute.distanceKm 
+        ? formatTravelTime(targetRoute.distanceKm * 1000 / (targetRoute.travelMode === 'walking' ? 1.2 : 12))
+        : `${activePins.length * 25} phút`;
+
+      // Update Header & Telemetry UI
+      if (title) title.textContent = targetRoute.name || 'Lộ trình Chuyến đi';
+      if (distEl) distEl.textContent = `${totalKm} km`;
+      if (timeEl) timeEl.textContent = estTimeStr;
+      if (countEl) countEl.textContent = `${activePins.length} điểm`;
+      if (colorDot) colorDot.style.backgroundColor = targetRoute.color || '#6366f1';
+      if (modeBadge) modeBadge.textContent = targetRoute.travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
+
+      const photoCount = activePins.filter(p => !!p.photo).length;
+      if (photosCountEl) photosCountEl.textContent = `${photoCount} ảnh`;
+
+      // Render mini stops preview cards
+      if (previewList) {
+        if (activePins.length === 0) {
+          previewList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic">Chưa có điểm dừng nào trong lộ trình này.</div>`;
+        } else {
+          previewList.innerHTML = activePins.map((p, idx) => {
+            const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
+            return `
+              <div class="flex-shrink-0 w-44 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col gap-2">
+                <div class="relative w-full h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  ${p.photo ? `
+                    <img src="${p.photo}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-300" onclick="openImageLightbox('${p.photo}', '${escapeHtml(p.title)}')" />
+                    <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold"><i class="fa-solid fa-camera"></i></span>
+                  ` : `
+                    <div class="text-center p-2 text-slate-400 dark:text-slate-500">
+                      <i class="fa-solid ${cat.icon} text-2xl"></i>
+                      <span class="block text-[10px] mt-1 font-medium">${cat.name}</span>
+                    </div>
+                  `}
+                  <span class="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shadow-md">
+                    ${idx + 1}
+                  </span>
+                </div>
+                <div class="min-w-0">
+                  <h6 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(p.title)}</h6>
+                  <p class="text-[10px] text-sky-600 dark:text-sky-400 truncate mt-0.5">${escapeHtml(p.locationName || p.address || cat.name)}</p>
+                  <div class="text-[11px] text-amber-400 mt-1">${'★'.repeat(p.rating || 5)}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // Compress photos asynchronously for ultra-reliable URL transmission
+      const stopsPayload = await Promise.all(activePins.map(async (p) => {
+        const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 240, 0.55) : '';
+        return {
           title: p.title,
+          locationName: p.locationName || p.address || '',
           lat: p.lat,
           lng: p.lng,
-          category: p.category,
+          category: p.category || 'sightseeing',
           rating: p.rating || 5,
-          notes: p.notes || ''
-        } : null;
-      }).filter(Boolean);
+          notes: p.notes || '',
+          date: p.date || '',
+          photo: compressedPhoto
+        };
+      }));
 
       const sharePayload = {
         name: targetRoute.name,
         desc: targetRoute.description || '',
         color: targetRoute.color || '#6366f1',
         mode: targetRoute.travelMode || 'driving',
-        stops: routePinsData,
+        distKm: totalKm,
+        durationStr: estTimeStr,
+        stops: stopsPayload,
         waypoints: targetRoute.customWaypoints || null,
         created: targetRoute.createdAt || new Date().toISOString()
       };
 
-      // Generate robust Compressed Base64 URL parameter
+      // Generate Base64 URL parameter
       let shareUrl = window.location.origin + window.location.pathname;
       try {
         const jsonStr = JSON.stringify(sharePayload);
@@ -3959,14 +4163,11 @@
         shareUrl += `?route_name=${encodeURIComponent(targetRoute.name)}`;
       }
 
-      if (title) title.textContent = targetRoute.name;
-      if (count) count.textContent = `${routePinsData.length} điểm dừng`;
-      if (colorDot) colorDot.style.backgroundColor = targetRoute.color || '#6366f1';
       input.value = shareUrl;
 
-      // QR Code via QuickChart QR API
+      // QR Code via QuickChart
       if (qrImg) {
-        qrImg.src = `https://quickchart.io/qr?text=${encodeURIComponent(shareUrl)}&size=200&margin=1`;
+        qrImg.src = `https://quickchart.io/qr?text=${encodeURIComponent(shareUrl)}&size=220&margin=1`;
       }
 
       modal.classList.remove('hidden');
@@ -3984,7 +4185,7 @@
       input.select();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(input.value).then(() => {
-          showToast('Đã sao chép link lộ trình vào bộ nhớ tạm!', 'success');
+          showToast('Đã sao chép link lộ trình kèm ảnh vào bộ nhớ tạm!', 'success');
         }).catch(() => {
           document.execCommand('copy');
           showToast('Đã sao chép link lộ trình!', 'success');
@@ -4001,7 +4202,7 @@
       if (navigator.share && input) {
         navigator.share({
           title: `Lộ trình: ${active.name} - Gạo Maps`,
-          text: `Xem lộ trình du lịch "${active.name}" được tạo trên bản đồ Gạo Maps Việt Nam:`,
+          text: `Xem lộ trình "${active.name}" kèm toàn bộ hình ảnh và các điểm tham quan trên Gạo Maps Việt Nam:`,
           url: input.value
         }).catch(err => {
           if (err.name !== 'AbortError') copyShareLink();
@@ -4009,6 +4210,151 @@
       } else {
         copyShareLink();
       }
+    }
+
+    // Image Lightbox Viewer
+    function openImageLightbox(src, title) {
+      if (!src) return;
+      const modal = document.getElementById('image-lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const titleEl = document.getElementById('lightbox-title');
+      if (modal && img) {
+        img.src = src;
+        if (titleEl) titleEl.textContent = title || 'Ảnh Kỷ niệm Du lịch';
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeImageLightbox() {
+      const modal = document.getElementById('image-lightbox-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Toggle Shared Route Showcase Drawer
+    function toggleSharedStopsShowcase() {
+      const panel = document.getElementById('shared-route-showcase-panel');
+      if (!panel) return;
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    // Render Shared Stops List in Drawer
+    function renderSharedStopsDrawer(sharedData) {
+      const listEl = document.getElementById('shared-drawer-stops-list');
+      const titleEl = document.getElementById('shared-drawer-title');
+      const statsEl = document.getElementById('shared-drawer-stats');
+
+      if (!sharedData || !Array.isArray(sharedData.stops)) return;
+
+      if (titleEl) titleEl.textContent = sharedData.name || 'Chi tiết Lộ trình';
+      if (statsEl) statsEl.textContent = `${sharedData.stops.length} điểm dừng • ${sharedData.distKm ? `${sharedData.distKm} km` : ''} ${sharedData.durationStr ? `• ${sharedData.durationStr}` : ''}`;
+
+      if (listEl) {
+        listEl.innerHTML = sharedData.stops.map((s, idx) => {
+          const cat = CATEGORIES[s.category] || CATEGORIES.sightseeing;
+          return `
+            <div class="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-md flex gap-3 items-start group hover:border-indigo-500/50 transition">
+              <!-- Stop Photo Thumbnail or Category Icon -->
+              <div class="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-900 shrink-0 flex items-center justify-center border border-slate-700">
+                ${s.photo ? `
+                  <img src="${s.photo}" alt="${escapeHtml(s.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-110 transition duration-300" onclick="openImageLightbox('${s.photo}', '${escapeHtml(s.title)}')" />
+                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass-plus text-white text-xs"></i>
+                  </div>
+                ` : `
+                  <div class="text-center p-1 text-slate-400">
+                    <i class="fa-solid ${cat.icon} text-lg"></i>
+                    <span class="block text-[9px] mt-0.5 truncate">${cat.name}</span>
+                  </div>
+                `}
+                <span class="absolute top-1 left-1 w-5 h-5 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center shadow-md">
+                  ${idx + 1}
+                </span>
+              </div>
+
+              <!-- Stop Details -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1">
+                  <h5 class="font-bold text-xs text-white truncate cursor-pointer hover:text-sky-300" onclick="focusSharedStop(${s.lat}, ${s.lng}, '${escapeHtml(s.title)}')">
+                    ${escapeHtml(s.title || `Điểm #${idx + 1}`)}
+                  </h5>
+                  <span class="text-[10px] text-amber-400 shrink-0">${'★'.repeat(s.rating || 5)}</span>
+                </div>
+
+                ${s.locationName ? `
+                  <p class="text-[11px] text-sky-400 font-medium truncate mt-0.5">
+                    <i class="fa-solid fa-location-dot text-[10px] mr-1"></i>${escapeHtml(s.locationName)}
+                  </p>
+                ` : ''}
+
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-1">
+                  <span class="${cat.textClass} font-semibold">${cat.name}</span>
+                  ${s.date ? `<span>•</span><span>${s.date}</span>` : ''}
+                </div>
+
+                ${s.notes ? `
+                  <p class="text-[11px] text-slate-300 italic mt-1.5 line-clamp-2 bg-slate-900/50 p-1.5 rounded-lg border border-slate-700/50">
+                    "${escapeHtml(s.notes)}"
+                  </p>
+                ` : ''}
+
+                <button onclick="focusSharedStop(${s.lat}, ${s.lng}, '${escapeHtml(s.title)}')" class="mt-2 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition">
+                  <i class="fa-solid fa-location-crosshairs"></i> Xem trên bản đồ
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function focusSharedStop(lat, lng, title) {
+      if (!map) return;
+      map.flyTo([lat, lng], 16, { duration: 1.2 });
+      L.popup({ offset: [0, -10] })
+        .setLatLng([lat, lng])
+        .setContent(`<div class="font-bold text-xs p-1">${title}</div>`)
+        .openOn(map);
+    }
+
+    // Preview Receiver Mode for the creator
+    function previewSharedRouteReceiverMode() {
+      closeShareRouteModal();
+      const active = getActiveRoute();
+      if (!active) return;
+      
+      const activePins = (active.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
+      const totalKm = calculateRouteDistanceKm(active);
+      const estTimeStr = active.distanceKm 
+        ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
+        : `${activePins.length * 25} phút`;
+
+      const mockPayload = {
+        name: active.name,
+        desc: active.description || '',
+        color: active.color || '#6366f1',
+        mode: active.travelMode || 'driving',
+        distKm: totalKm,
+        durationStr: estTimeStr,
+        stops: activePins.map(p => ({
+          title: p.title,
+          locationName: p.locationName || p.address || '',
+          lat: p.lat,
+          lng: p.lng,
+          category: p.category || 'sightseeing',
+          rating: p.rating || 5,
+          notes: p.notes || '',
+          date: p.date || '',
+          photo: p.photo || ''
+        })),
+        waypoints: active.customWaypoints || null
+      };
+
+      hydrateSharedRouteExperience(mockPayload);
+      showToast('Đang bật chế độ xem trước người nhận (Receiver Preview Mode)!', 'info');
     }
 
     // Parse and Hydrate Shared Route from incoming URL
@@ -4022,82 +4368,150 @@
         const sharedData = JSON.parse(decodedJson);
 
         if (sharedData && Array.isArray(sharedData.stops) && sharedData.stops.length > 0) {
-          isSharedViewMode = true;
-          sharedRoutePayload = sharedData;
-
-          // Show Shared Banner
-          const banner = document.getElementById('shared-route-view-banner');
-          const titleEl = document.getElementById('shared-route-title-text');
-          const subtitleEl = document.getElementById('shared-route-subtitle-text');
-
-          if (banner) {
-            banner.classList.remove('hidden');
-            if (titleEl) titleEl.textContent = sharedData.name || 'Lộ trình được chia sẻ';
-            if (subtitleEl) subtitleEl.textContent = `${sharedData.stops.length} điểm tham quan • ${sharedData.desc || 'Bấm "Lưu vào Lộ trình của tôi" để nhập'}`;
-          }
-
-          // If previewing shared stops, fit bounds and render interactive route
-          setTimeout(() => {
-            if (sharedData.stops.length >= 2) {
-              const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
-              map.fitBounds(bounds, { padding: [60, 60] });
-
-              const waypoints = sharedData.stops.map(s => L.latLng(s.lat, s.lng));
-              if (routingControl) {
-                map.removeControl(routingControl);
-                routingControl = null;
-              }
-              const routerService = L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1',
-                profile: sharedData.mode === 'walking' ? 'foot' : 'driving'
-              });
-              routingControl = L.Routing.control({
-                waypoints: waypoints,
-                router: routerService,
-                routeWhileDragging: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                fitSelectedRoutes: false,
-                show: false,
-                lineOptions: {
-                  styles: [{ color: sharedData.color || '#6366f1', opacity: 0.85, weight: 5 }]
-                },
-                createMarker: function(i, wp) {
-                  const stopInfo = sharedData.stops[i];
-                  const num = i + 1;
-                  const isFirst = (i === 0);
-                  const isLast = (i === sharedData.stops.length - 1);
-                  const bgClass = isFirst ? 'bg-emerald-500' : (isLast ? 'bg-rose-500' : 'bg-indigo-600');
-                  const iconHtml = `
-                    <div class="relative group cursor-pointer">
-                      <div class="w-8 h-8 rounded-full ${bgClass} text-white font-bold text-xs flex items-center justify-center shadow-lg border-2 border-white transform transition hover:scale-110">
-                        ${num}
-                      </div>
-                    </div>
-                  `;
-                  const markerIcon = L.divIcon({
-                    className: 'custom-preview-marker',
-                    html: iconHtml,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                  });
-                  const marker = L.marker(wp.latLng, { icon: markerIcon });
-                  if (stopInfo) {
-                    marker.bindPopup(`<b>${escapeHtml(stopInfo.title || `Điểm #${num}`)}</b><br>${escapeHtml(stopInfo.notes || '')}`);
-                  }
-                  return marker;
-                }
-              }).addTo(map);
-            } else if (sharedData.stops.length === 1) {
-              map.setView([sharedData.stops[0].lat, sharedData.stops[0].lng], 14);
-            }
-          }, 400);
-
+          hydrateSharedRouteExperience(sharedData);
           showToast(`Đang mở lộ trình được chia sẻ: "${sharedData.name}"`, 'success');
         }
       } catch (err) {
         console.warn('Error parsing shared route url:', err);
       }
+    }
+
+    function hydrateSharedRouteExperience(sharedData) {
+      isSharedViewMode = true;
+      sharedRoutePayload = sharedData;
+
+      // Show Shared Banner & fill telemetry
+      const banner = document.getElementById('shared-route-view-banner');
+      const titleEl = document.getElementById('shared-route-title-text');
+      const distEl = document.getElementById('shared-banner-dist');
+      const timeEl = document.getElementById('shared-banner-time');
+      const stopsEl = document.getElementById('shared-banner-stops');
+
+      if (banner) {
+        banner.classList.remove('hidden');
+        if (titleEl) titleEl.textContent = sharedData.name || 'Lộ trình được chia sẻ';
+        if (distEl) distEl.textContent = sharedData.distKm ? `${sharedData.distKm} km` : `${sharedData.stops.length * 15} km`;
+        if (timeEl) timeEl.textContent = sharedData.durationStr || `${sharedData.stops.length * 30} phút`;
+        if (stopsEl) stopsEl.textContent = `${sharedData.stops.length} điểm`;
+      }
+
+      // Render Showcase Drawer & open it automatically
+      renderSharedStopsDrawer(sharedData);
+      const showcasePanel = document.getElementById('shared-route-showcase-panel');
+      if (showcasePanel) showcasePanel.classList.remove('hidden');
+
+      // Render Interactive Route on Leaflet Map
+      setTimeout(() => {
+        if (sharedData.stops.length >= 2) {
+          const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
+          map.fitBounds(bounds, { padding: [80, 80] });
+
+          const waypoints = sharedData.stops.map(s => L.latLng(s.lat, s.lng));
+          if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+          }
+          const routerService = L.Routing.osrmv1({
+            serviceUrl: sharedData.mode === 'walking'
+              ? 'https://routing.openstreetmap.de/routed-foot/route/v1' 
+              : 'https://router.project-osrm.org/route/v1',
+            profile: sharedData.mode === 'walking' ? 'foot' : 'driving'
+          });
+
+          routingControl = L.Routing.control({
+            waypoints: waypoints,
+            router: routerService,
+            routeWhileDragging: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            fitSelectedRoutes: false,
+            show: false,
+            lineOptions: {
+              styles: [
+                { color: '#0f172a', opacity: 0.3, weight: 8 },
+                { color: sharedData.color || '#6366f1', opacity: 0.9, weight: 5 }
+              ]
+            },
+            createMarker: function(i, wp) {
+              const stopInfo = sharedData.stops[i];
+              const num = i + 1;
+              const isFirst = (i === 0);
+              const isLast = (i === sharedData.stops.length - 1);
+              const bgClass = isFirst ? 'bg-emerald-500' : (isLast ? 'bg-rose-500' : 'bg-indigo-600');
+              const iconHtml = `
+                <div class="relative group cursor-pointer">
+                  <div class="w-8 h-8 rounded-full ${bgClass} text-white font-black text-xs flex items-center justify-center shadow-xl border-2 border-white transform transition hover:scale-125">
+                    ${num}
+                  </div>
+                </div>
+              `;
+              const markerIcon = L.divIcon({
+                className: 'custom-preview-marker',
+                html: iconHtml,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+              });
+              const marker = L.marker(wp.latLng, { icon: markerIcon });
+              
+              if (stopInfo) {
+                const cat = CATEGORIES[stopInfo.category] || CATEGORIES.sightseeing;
+                const popupHtml = `
+                  <div class="p-2.5 max-w-[260px] space-y-2">
+                    ${stopInfo.photo ? `
+                      <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100">
+                        <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
+                      </div>
+                    ` : ''}
+                    <div>
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600">
+                        <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+                        ${stopInfo.rating ? `<span class="text-amber-500 ml-auto font-bold">${'★'.repeat(stopInfo.rating)}</span>` : ''}
+                      </div>
+                      <h4 class="font-bold text-sm text-slate-900 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
+                      ${stopInfo.locationName ? `<p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
+                      ${stopInfo.notes ? `<p class="text-xs text-slate-700 italic mt-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
+                    </div>
+                  </div>
+                `;
+                marker.bindPopup(popupHtml);
+              }
+              return marker;
+            }
+          }).addTo(map);
+        } else if (sharedData.stops.length === 1) {
+          map.setView([sharedData.stops[0].lat, sharedData.stops[0].lng], 15);
+        }
+      }, 400);
+    }
+
+    function openSharedRouteCinema() {
+      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops)) {
+        showToast('Không có dữ liệu để chạy Cinema!', 'error');
+        return;
+      }
+      openCinemaModal();
+    }
+
+    function closeSharedRouteBanner() {
+      isSharedViewMode = false;
+      sharedRoutePayload = null;
+      const banner = document.getElementById('shared-route-view-banner');
+      if (banner) banner.classList.add('hidden');
+      const drawer = document.getElementById('shared-route-showcase-panel');
+      if (drawer) drawer.classList.add('hidden');
+
+      // Clear query params without reload
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
+      // Re-render user's actual active route
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+      showToast('Đã quay về Bản đồ & Lộ trình của bạn!', 'info');
     }
 
     function importSharedRouteToMyRoutes() {
@@ -4114,15 +4528,18 @@
           matchedPin = {
             id: 'shared-pin-' + Date.now() + '-' + idx,
             title: s.title || `Điểm #${idx + 1}`,
+            locationName: s.locationName || '',
             lat: s.lat,
             lng: s.lng,
             category: s.category || 'sightseeing',
-            date: new Date().toISOString().split('T')[0],
+            date: s.date || new Date().toISOString().split('T')[0],
             rating: s.rating || 5,
             notes: s.notes || 'Điểm từ lộ trình được chia sẻ',
-            photo: ''
+            photo: s.photo || ''
           };
           pins.push(matchedPin);
+        } else if (!matchedPin.photo && s.photo) {
+          matchedPin.photo = s.photo;
         }
         importedPinIds.push(matchedPin.id);
       });
@@ -4135,6 +4552,7 @@
         pinIds: importedPinIds,
         customWaypoints: sharedRoutePayload.waypoints || null,
         travelMode: sharedRoutePayload.mode || 'driving',
+        distanceKm: sharedRoutePayload.distKm || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -4152,20 +4570,13 @@
       updateRouteCalculation();
 
       closeSharedRouteBanner();
-      showToast(`Đã lưu "${newRoute.name}" vào danh sách lộ trình của bạn!`, 'success');
+      showToast(`Đã lưu "${newRoute.name}" và toàn bộ ${importedPinIds.length} địa điểm kèm hình ảnh vào tài khoản của bạn!`, 'success');
 
       // Zoom to fit the route stops
       if (importedPinIds.length >= 2) {
         const bounds = L.latLngBounds(sharedRoutePayload.stops.map(s => [s.lat, s.lng]));
-        map.fitBounds(bounds, { padding: [40, 40] });
+        map.fitBounds(bounds, { padding: [60, 60] });
       }
-    }
-
-    function closeSharedRouteBanner() {
-      const banner = document.getElementById('shared-route-view-banner');
-      if (banner) banner.classList.add('hidden');
-      // Clean query params from address bar without reload
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     // ==========================================
@@ -6132,7 +6543,54 @@
     // ==========================================
     // EXPORT HIGH-RESOLUTION TRAVEL POSTER INFOGRAPHIC (PNG)
     // ==========================================
-    function exportRoutePosterCard() {
+    // ==========================================
+    // EXPORT HIGH-RESOLUTION TRAVEL POSTER INFOGRAPHIC (PNG)
+    // ==========================================
+    function loadImageHelper(src) {
+      return new Promise((resolve) => {
+        if (!src) return resolve(null);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    }
+
+    function drawRoundedCoverImage(ctx, img, x, y, width, height, radius) {
+      if (!img) return;
+      ctx.save();
+      ctx.beginPath();
+      roundRect(ctx, x, y, width, height, radius, false, false);
+      ctx.clip();
+
+      const imgRatio = img.width / img.height;
+      const targetRatio = width / height;
+      let sWidth = img.width;
+      let sHeight = img.height;
+      let sx = 0;
+      let sy = 0;
+
+      if (imgRatio > targetRatio) {
+        sWidth = img.height * targetRatio;
+        sx = (img.width - sWidth) / 2;
+      } else {
+        sHeight = img.width / targetRatio;
+        sy = (img.height - sHeight) / 2;
+      }
+
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
+      ctx.restore();
+
+      // Draw subtle border around photo
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, x, y, width, height, radius, false, true);
+      ctx.restore();
+    }
+
+    async function exportRoutePosterCard() {
       const active = getActiveRoute();
       if (!active || routePinIds.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Poster!', 'error');
@@ -6142,31 +6600,53 @@
       const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
       if (activePins.length === 0) return;
 
-      showToast('Đang tạo thiết kế Poster Hành trình HD trên nền bản đồ...', 'info');
+      showToast('Đang tạo thiết kế Poster Hành trình HD kèm hình ảnh...', 'info');
 
-      // Create high-res 1200 x 1600 canvas
+      // Preload all uploaded photos asynchronously
+      const pinsWithImages = await Promise.all(activePins.map(async (pin) => {
+        const imgObj = pin.photo ? await loadImageHelper(pin.photo) : null;
+        return { ...pin, imgObj };
+      }));
+
+      // Calculate dynamic canvas height to fit all stops gracefully
+      const totalStops = pinsWithImages.length;
+      const stopCardHeight = 220;
+      const spacing = 18;
+      const headerAreaHeight = 360;
+      const footerAreaHeight = 120;
+      const canvasHeight = Math.max(1600, headerAreaHeight + totalStops * (stopCardHeight + spacing) + footerAreaHeight);
+
+      // Create high-res 1200 x Dynamic Height canvas
       const canvas = document.createElement('canvas');
       canvas.width = 1200;
-      canvas.height = 1600;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext('2d');
 
-      // 1. Background Gradient (Dark Navy / Luxury Slate)
-      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 1600);
+      // 1. Luxury Cosmic Slate Background Gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 1200, canvasHeight);
       bgGrad.addColorStop(0, '#0a0f1d');
-      bgGrad.addColorStop(0.5, '#0f172a');
-      bgGrad.addColorStop(1, '#1e1b4b');
+      bgGrad.addColorStop(0.3, '#0f172a');
+      bgGrad.addColorStop(0.7, '#1e1b4b');
+      bgGrad.addColorStop(1, '#090d16');
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 1200, 1600);
+      ctx.fillRect(0, 0, 1200, canvasHeight);
 
       // Subtle Decorative Grid & Ornaments
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
       ctx.lineWidth = 1;
       for (let x = 0; x < 1200; x += 50) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1600); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasHeight); ctx.stroke();
       }
-      for (let y = 0; y < 1600; y += 50) {
+      for (let y = 0; y < canvasHeight; y += 50) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1200, y); ctx.stroke();
       }
+
+      // Glowing Ambient Top Circle
+      const glowGrad = ctx.createRadialGradient(600, 120, 20, 600, 120, 450);
+      glowGrad.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
+      glowGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, 1200, 600);
 
       // 2. Header Branding
       ctx.fillStyle = '#38bdf8';
@@ -6187,99 +6667,142 @@
 
       // 3. Telemetry Statistics Card Box
       const statsBoxY = 215;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-      ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.45)';
       ctx.lineWidth = 2;
       roundRect(ctx, 80, statsBoxY, 1040, 110, 24, true, true);
 
       const totalKm = calculateRouteDistanceKm(active);
       const estTimeStr = active.distanceKm 
         ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
-        : `${activePins.length * 30} phút`;
+        : `${activePins.length * 25} phút`;
+      const travelModeLabel = active.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy';
 
       // Stat 1: Distance
       ctx.textAlign = 'center';
       ctx.fillStyle = '#38bdf8';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.fillText('TỔNG QUÃNG ĐƯỜNG', 250, statsBoxY + 40);
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('TỔNG QUÃNG ĐƯỜNG', 200, statsBoxY + 40);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(`${totalKm} km`, 250, statsBoxY + 80);
+      ctx.fillText(`${totalKm} km`, 200, statsBoxY + 80);
 
       // Stat 2: Time
       ctx.fillStyle = '#f59e0b';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.fillText('THỜI GIAN DỰ TÍNH', 600, statsBoxY + 40);
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('THỜI GIAN DỰ TÍNH', 480, statsBoxY + 40);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(estTimeStr, 600, statsBoxY + 80);
+      ctx.fillText(estTimeStr, 480, statsBoxY + 80);
 
-      // Stat 3: Stops
+      // Stat 3: Travel Mode
+      ctx.fillStyle = '#ec4899';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('PHƯƠNG TIỆN', 750, statsBoxY + 40);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.fillText(travelModeLabel, 750, statsBoxY + 80);
+
+      // Stat 4: Stops
       ctx.fillStyle = '#10b981';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.fillText('ĐIỂM DỪNG KỶ NIỆM', 950, statsBoxY + 40);
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('ĐIỂM DỪNG KỶ NIỆM', 1000, statsBoxY + 40);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(`${activePins.length} điểm`, 950, statsBoxY + 80);
+      ctx.fillText(`${pinsWithImages.length} điểm`, 1000, statsBoxY + 80);
 
-      // 4. Stops Timeline List
-      let startY = 365;
-      const maxStopsToDraw = Math.min(activePins.length, 5);
-      const rowHeight = (1120 / maxStopsToDraw);
+      // 4. Stops Timeline List (with Photos and Locations)
+      let currentY = 360;
 
-      activePins.slice(0, maxStopsToDraw).forEach((pin, idx) => {
-        const itemY = startY + idx * rowHeight;
+      pinsWithImages.forEach((pin, idx) => {
+        const itemY = currentY;
+        const catConfig = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
         
         // Card surface
-        ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.75)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.lineWidth = 1.5;
-        roundRect(ctx, 80, itemY, 1040, rowHeight - 20, 20, true, true);
+        roundRect(ctx, 80, itemY, 1040, stopCardHeight, 22, true, true);
 
         // Step number circle
         ctx.beginPath();
-        ctx.arc(140, itemY + (rowHeight - 20) / 2, 28, 0, Math.PI * 2);
-        ctx.fillStyle = '#6366f1';
+        ctx.arc(140, itemY + 60, 30, 0, Math.PI * 2);
+        ctx.fillStyle = idx === 0 ? '#10b981' : (idx === pinsWithImages.length - 1 ? '#f43f5e' : '#6366f1');
         ctx.fill();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 24px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${idx + 1}`, 140, itemY + (rowHeight - 20) / 2 + 8);
+        ctx.fillText(`${idx + 1}`, 140, itemY + 68);
 
-        // Stop Details
+        // Stop Details Left Column
         ctx.textAlign = 'left';
         ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 16px sans-serif';
-        const catConfig = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
-        ctx.fillText(`${catConfig.name.toUpperCase()} • ${pin.date ? new Date(pin.date).toLocaleDateString('vi-VN') : 'Kỷ niệm'}`, 200, itemY + 40);
+        ctx.fillText(`${catConfig.name.toUpperCase()} • ${pin.date ? new Date(pin.date).toLocaleDateString('vi-VN') : 'Kỷ niệm'}`, 200, itemY + 42);
 
+        // Title
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 26px sans-serif';
-        ctx.fillText(pin.title, 200, itemY + 75);
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(pin.title.substring(0, 32) + (pin.title.length > 32 ? '...' : ''), 200, itemY + 78);
+
+        // Location Name / Address
+        if (pin.locationName || pin.address) {
+          const loc = pin.locationName || pin.address;
+          ctx.fillStyle = '#7dd3fc';
+          ctx.font = '16px sans-serif';
+          ctx.fillText(`📍 ${loc.substring(0, 42)}${loc.length > 42 ? '...' : ''}`, 200, itemY + 110);
+        }
 
         // Star rating
         let starsStr = '★'.repeat(pin.rating || 5);
         ctx.fillStyle = '#fbbf24';
         ctx.font = '22px sans-serif';
-        ctx.fillText(starsStr, 200, itemY + 110);
+        ctx.fillText(starsStr, 200, itemY + 144);
 
         // Notes
         if (pin.notes) {
           ctx.fillStyle = '#cbd5e1';
-          ctx.font = 'italic 18px sans-serif';
-          ctx.fillText(`"${pin.notes.substring(0, 60)}${pin.notes.length > 60 ? '...' : ''}"`, 200, itemY + 145);
+          ctx.font = 'italic 16px sans-serif';
+          ctx.fillText(`"${pin.notes.substring(0, 52)}${pin.notes.length > 52 ? '...' : ''}"`, 200, itemY + 180);
         }
+
+        // Right Column: Uploaded Photo Box
+        const photoWidth = 260;
+        const photoHeight = 175;
+        const photoX = 835;
+        const photoY = itemY + 22;
+
+        if (pin.imgObj) {
+          drawRoundedCoverImage(ctx, pin.imgObj, photoX, photoY, photoWidth, photoHeight, 18);
+        } else {
+          // Stylish Category Fallback Box
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+          ctx.lineWidth = 1;
+          roundRect(ctx, photoX, photoY, photoWidth, photoHeight, 18, true, true);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 36px sans-serif';
+          ctx.fillText('📷', photoX + photoWidth / 2, photoY + photoHeight / 2 - 10);
+          ctx.font = '14px sans-serif';
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText(catConfig.name, photoX + photoWidth / 2, photoY + photoHeight / 2 + 25);
+        }
+
+        currentY += stopCardHeight + spacing;
       });
 
       // 5. Sovereignty & Brand Footer
+      const footerY = canvasHeight - 70;
       ctx.fillStyle = '#e2e8f0';
       ctx.font = 'bold 18px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('🇻🇳 Quần đảo Hoàng Sa & Trường Sa là một phần không thể tách rời của lãnh thổ Việt Nam', 600, 1540);
+      ctx.fillText('🇻🇳 Quần đảo Hoàng Sa & Trường Sa là một phần không thể tách rời của lãnh thổ Việt Nam', 600, footerY);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '14px sans-serif';
-      ctx.fillText('Được thiết kế và xuất từ Gạo Maps • Ứng dụng Bản đồ Kỷ niệm Du lịch', 600, 1570);
+      ctx.fillText('Được thiết kế và xuất tự động từ Gạo Maps • Ứng dụng Bản đồ Kỷ niệm Du lịch', 600, footerY + 30);
 
       // Convert to blob and download
       canvas.toBlob((blob) => {
@@ -6293,7 +6816,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('Đã tải ảnh Poster Hành trình HD thành công!', 'success');
+        showToast('Đã tải ảnh Poster Hành trình HD kèm hình ảnh thành công!', 'success');
       }, 'image/png');
     }
 
@@ -7424,8 +7947,6 @@
     // ==========================================
     // GẠO MAPS 3D WELCOME SPLASH CONTROLLER
     // ==========================================
-    let welcomeSplashTimeout = null;
-
     function handleWelcomeStart(e) {
       if (e) {
         e.stopPropagation();
@@ -7447,25 +7968,16 @@
         card.classList.remove('scale-95', 'translate-y-3');
         card.classList.add('scale-100', 'translate-y-0');
 
-        // Attempt automatic playback
+        // Attempt initial playback if browser allows it
         setTimeout(() => {
           playWelcomeVoice();
         }, 250);
-
-        // Auto dismiss after 6 seconds if uninterrupted
-        welcomeSplashTimeout = setTimeout(() => {
-          dismissWelcomeSplash();
-        }, 6000);
       }, 50);
     }
 
     function dismissWelcomeSplash() {
       if (!hasPlayedWelcomeVoice) {
         playChiGoogleVoice(true);
-      }
-      if (welcomeSplashTimeout) {
-        clearTimeout(welcomeSplashTimeout);
-        welcomeSplashTimeout = null;
       }
       const splash = document.getElementById('gao-maps-welcome-splash');
       const card = document.getElementById('gao-maps-splash-card');
