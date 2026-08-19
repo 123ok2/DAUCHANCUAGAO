@@ -222,8 +222,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       border: 2.5px solid #ffffff;
@@ -240,13 +240,13 @@
     .custom-marker-icon {
       transform: rotate(45deg);
       color: #ffffff;
-      font-size: 15px;
+      font-size: 14px;
       transition: font-size 0.2s ease;
     }
     .custom-marker-number {
       transform: rotate(45deg);
       color: #ffffff;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 900;
       line-height: 1;
       display: inline-block;
@@ -255,20 +255,20 @@
 
     /* Dynamic Place Name Label attached to pin */
     .custom-marker-label {
-      margin-top: 6px;
+      margin-top: 4px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(15, 23, 42, 0.88);
-      color: #f8fafc;
+      background: rgba(15, 23, 42, 0.92);
+      color: #ffffff;
       font-weight: 700;
       font-size: 11px;
       letter-spacing: -0.01em;
       line-height: 1.25;
-      padding: 2.5px 8px;
+      padding: 2px 7.5px;
       border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       max-width: 140px;
@@ -284,26 +284,27 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
     .dark .custom-marker-label {
-      background: rgba(2, 6, 23, 0.92);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(2, 6, 23, 0.94);
+      border-color: rgba(255, 255, 255, 0.25);
     }
     .custom-marker-wrapper:hover .custom-marker-label {
       background: rgba(15, 23, 42, 0.98);
-      border-color: rgba(56, 189, 248, 0.8);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      border-color: rgba(56, 189, 248, 0.9);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
       transform: translateY(1px) scale(1.05);
       z-index: 10000;
     }
 
     /* Map Zoom Responsive Scaling for Pin & Place Name Labels */
-    /* Low Zoom (Overview / Country View zoom <= 7): Compact pin, hide label to prevent clutter */
+    /* Low Zoom (Overview / Country View zoom <= 7): Compact pin + crisp legible place name badge */
     .map-zoom-low .custom-marker-pin {
-      width: 26px;
-      height: 26px;
-      border-width: 1.5px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      width: 28px;
+      height: 28px;
+      border-width: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
     }
     .map-zoom-low .custom-marker-icon {
       font-size: 11px;
@@ -312,34 +313,46 @@
       font-size: 11px;
     }
     .map-zoom-low .custom-marker-label {
-      display: none; /* Auto-hide at country scale to avoid clutter */
+      display: inline-flex !important;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1.5px 6.5px;
+      max-width: 110px;
+      margin-top: 3px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
-    .map-zoom-low .custom-marker-wrapper:hover .custom-marker-label {
-      display: inline-flex; /* Show on hover even at low zoom */
-      position: absolute;
-      top: 30px;
+    .map-zoom-low .custom-marker-label-text {
+      max-width: 96px;
     }
 
-    /* Mid Zoom (Province / Regional View zoom 8 to 12): Medium pin, compact place name label */
+    /* Mid Zoom (Province / Regional View zoom 8 to 12): Medium pin, balanced place name label */
     .map-zoom-mid .custom-marker-pin {
-      width: 32px;
-      height: 32px;
-      border-width: 2px;
+      width: 34px;
+      height: 34px;
+      border-width: 2.2px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
     .map-zoom-mid .custom-marker-icon {
       font-size: 13px;
     }
     .map-zoom-mid .custom-marker-number {
-      font-size: 12px;
+      font-size: 12.5px;
     }
     .map-zoom-mid .custom-marker-label {
-      font-size: 10px;
-      padding: 1.5px 6px;
-      max-width: 110px;
+      display: inline-flex !important;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      max-width: 135px;
       margin-top: 4px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
     }
     .map-zoom-mid .custom-marker-label-text {
-      max-width: 98px;
+      max-width: 118px;
     }
 
     /* High Zoom (City / Street Level zoom >= 13): Full high-detail pin and prominent place name badge */
@@ -347,6 +360,7 @@
       width: 40px;
       height: 40px;
       border-width: 2.5px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.38);
     }
     .map-zoom-high .custom-marker-icon {
       font-size: 16px;
@@ -355,10 +369,15 @@
       font-size: 15px;
     }
     .map-zoom-high .custom-marker-label {
-      font-size: 11.5px;
-      padding: 3px 9px;
+      display: inline-flex !important;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
       max-width: 160px;
       margin-top: 6px;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
     .map-zoom-high .custom-marker-label-text {
       max-width: 142px;
@@ -3343,8 +3362,8 @@
             ${labelHtml}
           </div>
         `,
-        iconSize: [140, 68],
-        iconAnchor: [70, 36],
+        iconSize: [160, 76],
+        iconAnchor: [80, 36],
         popupAnchor: [0, -38]
       });
     }
