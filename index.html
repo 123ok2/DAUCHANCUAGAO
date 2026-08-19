@@ -6,6 +6,16 @@
   <title>Gạo Maps - Bản đồ Dấu chân Kỷ niệm</title>
   <meta name="description" content="Gạo Maps - Ứng dụng lưu giữ kỷ niệm hành trình du lịch và tính toán lộ trình đường bộ thực tế qua bản đồ tương tác." />
 
+  <!-- High Performance Tile & Resource Prefetching -->
+  <link rel="dns-prefetch" href="https://mt0.google.com">
+  <link rel="dns-prefetch" href="https://mt1.google.com">
+  <link rel="dns-prefetch" href="https://mt2.google.com">
+  <link rel="dns-prefetch" href="https://mt3.google.com">
+  <link rel="preconnect" href="https://mt1.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -45,9 +55,6 @@
 
   <!-- Canvas Confetti for Celebration FX -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
-  <!-- Authentic Chị Google Voice Data Asset -->
-  <script src="/chi_google_audio.js"></script>
 
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -732,9 +739,9 @@
       </div>
 
       <!-- GẠO MAPS 3D LUXURY WELCOME SPLASH (High Contrast, 3D Dynamic Motion, Floating Glass Plaque, Tap to Dismiss) -->
-      <div id="gao-maps-welcome-splash" onclick="dismissWelcomeSplash()" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/45 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 cursor-pointer select-none">
+      <div id="gao-maps-welcome-splash" onclick="handleWelcomeStart(event)" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/45 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 cursor-pointer select-none">
         
-        <div id="gao-maps-splash-card" class="relative gao-maps-3d-card gao-maps-floating-anim rounded-3xl p-6 sm:p-8 text-center max-w-sm sm:max-w-md w-[88%] mx-auto transform translate-y-3 scale-95 transition-all duration-500 ease-out flex flex-col items-center pointer-events-auto overflow-hidden">
+        <div id="gao-maps-splash-card" onclick="handleWelcomeStart(event)" class="relative gao-maps-3d-card gao-maps-floating-anim rounded-3xl p-6 sm:p-8 text-center max-w-sm sm:max-w-md w-[88%] mx-auto transform translate-y-3 scale-95 transition-all duration-500 ease-out flex flex-col items-center pointer-events-auto overflow-hidden">
 
           <!-- Animated Background Ambient Light Orbs -->
           <div class="absolute -top-10 -left-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl gao-glow-aura pointer-events-none"></div>
@@ -780,9 +787,9 @@
           </p>
 
           <!-- High-Contrast Clean Floating Golden Button -->
-          <div class="inline-flex items-center justify-center px-7 py-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-xs font-black tracking-widest uppercase shadow-[0_4px_22px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
+          <button type="button" onclick="handleWelcomeStart(event)" class="inline-flex items-center justify-center px-7 py-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-xs font-black tracking-widest uppercase shadow-[0_4px_22px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
             <span>Chạm để bắt đầu</span>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -1829,12 +1836,11 @@
     };
 
     // ==========================================
-    // INITIALIZATION
+    // INITIALIZATION (Instant Local First + Background Cloud Sync)
     // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       loadStorageData();
-      initFirebase();
       initMap();
       renderAllPins();
       renderSidebarList();
@@ -1853,6 +1859,11 @@
 
       // Trigger Gạo Maps Centered Welcome Splash
       triggerGaoMapsWelcomeSplash();
+
+      // Connect Firebase asynchronously in the background (0ms UI latency)
+      setTimeout(() => {
+        initFirebase();
+      }, 30);
 
       // Close modals with Escape key
       document.addEventListener('keydown', (e) => {
@@ -2474,7 +2485,11 @@
       
       const layerOptions = {
         maxZoom: tileConfig.maxZoom || 20,
-        attribution: tileConfig.attribution
+        attribution: tileConfig.attribution,
+        keepBuffer: 8,
+        updateWhenIdle: false,
+        updateWhenZooming: true,
+        crossOrigin: true
       };
       if (tileConfig.subdomains && tileConfig.subdomains.length > 0) {
         layerOptions.subdomains = tileConfig.subdomains;
@@ -7349,12 +7364,42 @@
           playPromise.then(() => {
             hasPlayedWelcomeVoice = true;
           }).catch(err => {
-            console.log('Autoplay restriction: Waiting for user gesture to play voice:', err);
+            console.log('Audio autoplay blocked by browser policy, waiting for user gesture or fallback:', err);
+            if (force) {
+              speakVietnameseFallback();
+            }
           });
         }
       } catch (e) {
         console.warn('Audio playback error:', e);
+        if (force) {
+          speakVietnameseFallback();
+        }
       }
+    }
+
+    function speakVietnameseFallback() {
+      if (hasPlayedWelcomeVoice) return;
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const text = "Xin chào bạn đến với Gạo Maps, bản đồ dấu chân kỷ niệm.";
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'vi-VN';
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi') || v.name.includes('Vietnamese') || v.name.includes('Google tiếng Việt'));
+        if (viVoice) {
+          utterance.voice = viVoice;
+        }
+        
+        utterance.onstart = () => {
+          hasPlayedWelcomeVoice = true;
+        };
+        window.speechSynthesis.speak(utterance);
+      } catch(e) {}
     }
 
     // Alias for compatibility
@@ -7381,6 +7426,14 @@
     // ==========================================
     let welcomeSplashTimeout = null;
 
+    function handleWelcomeStart(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      playChiGoogleVoice(true);
+      dismissWelcomeSplash();
+    }
+
     function triggerGaoMapsWelcomeSplash() {
       const splash = document.getElementById('gao-maps-welcome-splash');
       const card = document.getElementById('gao-maps-splash-card');
@@ -7399,31 +7452,17 @@
           playWelcomeVoice();
         }, 250);
 
-        // Auto dismiss after 5 seconds if uninterrupted
+        // Auto dismiss after 6 seconds if uninterrupted
         welcomeSplashTimeout = setTimeout(() => {
           dismissWelcomeSplash();
-        }, 5000);
+        }, 6000);
       }, 50);
-
-      // Dismiss on user interaction and immediately ensure voice plays
-      const dismissOnInteraction = () => {
-        if (!hasPlayedWelcomeVoice) {
-          playChiGoogleVoice(true);
-        }
-        dismissWelcomeSplash();
-        window.removeEventListener('pointerdown', dismissOnInteraction);
-        window.removeEventListener('touchstart', dismissOnInteraction);
-        window.removeEventListener('keydown', dismissOnInteraction);
-      };
-
-      setTimeout(() => {
-        window.addEventListener('pointerdown', dismissOnInteraction, { once: true });
-        window.addEventListener('touchstart', dismissOnInteraction, { once: true });
-        window.addEventListener('keydown', dismissOnInteraction, { once: true });
-      }, 350);
     }
 
     function dismissWelcomeSplash() {
+      if (!hasPlayedWelcomeVoice) {
+        playChiGoogleVoice(true);
+      }
       if (welcomeSplashTimeout) {
         clearTimeout(welcomeSplashTimeout);
         welcomeSplashTimeout = null;
