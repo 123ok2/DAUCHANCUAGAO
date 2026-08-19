@@ -27,6 +27,11 @@
     };
   </script>
 
+  <!-- Google Fonts: Playfair Display & Dancing Script for Artistic Travel Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -41,12 +46,150 @@
   <!-- Canvas Confetti for Celebration FX -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
+  <!-- Authentic Chị Google Voice Data Asset -->
+  <script src="/chi_google_audio.js"></script>
+
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 
   <style>
+    /* 3D Luxury Welcome Splash Styling & Dynamic Motion */
+    @keyframes gaoFloat3D {
+      0%, 100% {
+        transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+      }
+      50% {
+        transform: translateY(-7px) rotateX(2.5deg) rotateY(-1.5deg);
+      }
+    }
+
+    @keyframes gaoShimmerSweep {
+      0% {
+        background-position: -200% center;
+      }
+      100% {
+        background-position: 200% center;
+      }
+    }
+
+    @keyframes gaoOrbitSpin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes gaoFootstepWalk {
+      0%, 100% {
+        transform: rotate(-12deg) scale(1);
+      }
+      50% {
+        transform: rotate(10deg) scale(1.1);
+      }
+    }
+
+    @keyframes gaoGlowPulse {
+      0%, 100% {
+        transform: scale(0.95);
+        opacity: 0.4;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.85;
+      }
+    }
+
+    @keyframes gaoSparkleFloat {
+      0%, 100% {
+        transform: translateY(0px) scale(0.8);
+        opacity: 0.3;
+      }
+      50% {
+        transform: translateY(-12px) scale(1.2);
+        opacity: 1;
+      }
+    }
+
+    .gao-maps-floating-anim {
+      animation: gaoFloat3D 4s ease-in-out infinite;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
+    .gao-maps-3d-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      text-shadow: 
+        0 1px 0 #fde68a,
+        0 2px 0 #fbbf24,
+        0 3px 0 #f59e0b,
+        0 4px 0 #d97706,
+        0 5px 0 #92400e,
+        0 6px 6px rgba(0, 0, 0, 0.7),
+        0 10px 25px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(245, 158, 11, 0.5);
+      position: relative;
+    }
+
+    .gao-maps-3d-subtitle {
+      font-family: 'Dancing Script', cursive;
+      font-weight: 700;
+      color: #fef08a;
+      text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 4px 12px rgba(0, 0, 0, 0.9),
+        0 0 20px rgba(251, 191, 36, 0.6);
+    }
+
+    .gao-maps-3d-badge {
+      background: radial-gradient(circle at 30% 30%, #fde68a, #f59e0b 55%, #92400e 100%);
+      box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.8),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+        0 8px 25px rgba(0, 0, 0, 0.6),
+        0 0 35px rgba(245, 158, 11, 0.45);
+    }
+
+    .gao-footstep-icon {
+      animation: gaoFootstepWalk 2.8s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    .gao-halo-ring {
+      animation: gaoOrbitSpin 8s linear infinite;
+    }
+
+    .gao-glow-aura {
+      animation: gaoGlowPulse 3s ease-in-out infinite;
+    }
+
+    .gao-sparkle-1 {
+      animation: gaoSparkleFloat 2.6s ease-in-out infinite;
+    }
+    .gao-sparkle-2 {
+      animation: gaoSparkleFloat 3.2s ease-in-out 0.8s infinite;
+    }
+    .gao-sparkle-3 {
+      animation: gaoSparkleFloat 2.9s ease-in-out 1.4s infinite;
+    }
+
+    .gao-maps-3d-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.93), rgba(2, 6, 23, 0.97));
+      border: 1.5px solid rgba(251, 191, 36, 0.5);
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        inset 0 0 35px rgba(245, 158, 11, 0.15),
+        0 25px 60px -10px rgba(0, 0, 0, 0.9),
+        0 0 45px rgba(245, 158, 11, 0.35);
+    }
+
     /* Custom map and UI styling */
     .leaflet-routing-container {
       display: none !important; /* We render our own custom sleek UI for route stats */
@@ -495,21 +638,31 @@
           </button>
         </div>
 
-        <!-- Search Bar with Nominatim Autocomplete -->
+        <!-- Search Bar with Nominatim Autocomplete & Elegant Globe Badge -->
         <div class="pointer-events-auto relative flex-1 max-w-lg min-w-0">
-          <div class="flex items-center h-11 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 px-3 sm:px-3.5 focus-within:ring-2 focus-within:ring-sky-500 transition">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm sm:text-base mr-2 shrink-0"></i>
-            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm..." class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none truncate" autocomplete="off" />
-            <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 text-sm px-1.5 shrink-0">
+          <div class="flex items-center h-11 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 px-2.5 sm:px-3 focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 transition-all">
+            
+            <!-- Beautiful Stylized Globe Icon Button -->
+            <button type="button" id="btn-search-globe" onclick="showQuickSuggestions()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 text-white flex items-center justify-center shadow-md shadow-sky-500/20 mr-2 shrink-0 hover:scale-105 active:scale-95 transition-all duration-200 group" title="Gợi ý địa điểm du lịch & khám phá">
+              <!-- Custom Stylized Dual-Tone Globe SVG matching user design -->
+              <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm-1 2.062A8.006 8.006 0 004.062 11H7a2 2 0 012 2v1a2 2 0 002 2v1.5a.5.5 0 01-.5.5H10v1.938A8.004 8.004 0 0012 20c4.418 0 8-3.582 8-8 0-.338-.021-.67-.062-.998L17.5 13.5a1.5 1.5 0 01-1.5-1.5V11a2 2 0 00-2-2h-3V4.062z" />
+              </svg>
+            </button>
+
+            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm, kỷ niệm hoặc địa chỉ..." class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none truncate pr-1" autocomplete="off" />
+            
+            <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm p-1 shrink-0 transition" title="Xóa tìm kiếm">
               <i class="fa-solid fa-circle-xmark"></i>
             </button>
-            <div id="search-spinner" class="hidden animate-spin text-sky-500 text-sm ml-2 shrink-0">
+            
+            <div id="search-spinner" class="hidden animate-spin text-sky-500 text-sm px-1 shrink-0">
               <i class="fa-solid fa-circle-notch"></i>
             </div>
           </div>
 
-          <!-- Search Results Dropdown -->
-          <div id="search-results-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 z-50">
+          <!-- Search Results Dropdown (Wide & High Information Density) -->
+          <div id="search-results-dropdown" class="hidden absolute top-full left-0 mt-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 max-h-[75vh] w-full min-w-[310px] sm:min-w-[480px] md:min-w-[540px] max-w-[95vw] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 z-50">
             <!-- Results populated here -->
           </div>
         </div>
@@ -521,23 +674,51 @@
           <div class="relative">
             <button id="btn-map-layers" class="h-11 px-3 sm:px-3.5 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 sm:gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
               <i class="fa-solid fa-layer-group text-sky-600"></i>
-              <span id="current-layer-name" class="hidden md:inline">Bản đồ Sáng</span>
+              <span id="current-layer-name" class="hidden md:inline">Google Đường phố</span>
               <i class="fa-solid fa-chevron-down text-xs text-slate-400 hidden sm:inline"></i>
             </button>
 
             <!-- Map Layers Menu -->
-            <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
-              <button onclick="setMapTile('light')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-sun text-amber-500"></i> Carto Sáng (Mặc định)
+            <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
+              <div class="px-2.5 py-1 text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Google Maps</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-100 dark:bg-sky-950 font-bold">Mặc định</span>
+              </div>
+              <button onclick="setMapTile('google_streets')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-map text-sky-500 group-hover:scale-110 transition"></i>
+                  <span>Google Đường phố</span>
+                </div>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">Chuẩn</span>
               </button>
+              <button onclick="setMapTile('google_satellite')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-satellite text-teal-500 group-hover:scale-110 transition"></i>
+                  <span>Google Vệ tinh (Hybrid)</span>
+                </div>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 font-bold">Nét cao</span>
+              </button>
+              <button onclick="setMapTile('google_terrain')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-mountain-sun text-emerald-500 group-hover:scale-110 transition"></i>
+                  <span>Google Địa hình</span>
+                </div>
+              </button>
+              <button onclick="setMapTile('google_traffic')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-traffic-light text-rose-500 group-hover:scale-110 transition"></i>
+                  <span>Google Giao thông</span>
+                </div>
+              </button>
+
+              <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+              <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chế độ khác</div>
+
               <button onclick="setMapTile('dark')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-moon text-indigo-500"></i> Carto Tối (Dark Matter)
+                <i class="fa-solid fa-moon text-indigo-500"></i> Bản đồ Ban đêm (Dark)
               </button>
               <button onclick="setMapTile('osm')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-map text-emerald-500"></i> Đường phố OpenStreetMap
-              </button>
-              <button onclick="setMapTile('satellite')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-satellite text-teal-500"></i> Vệ tinh Esri World Imagery
+                <i class="fa-solid fa-map-location-dot text-amber-500"></i> OpenStreetMap
               </button>
             </div>
           </div>
@@ -547,6 +728,73 @@
             <i class="fa-solid fa-plus text-base"></i>
             <span>Ghim Kỷ niệm</span>
           </button>
+        </div>
+      </div>
+
+      <!-- GẠO MAPS 3D LUXURY WELCOME SPLASH (High Contrast, 3D Dynamic Motion, Floating Glass Plaque, Tap to Dismiss) -->
+      <div id="gao-maps-welcome-splash" onclick="dismissWelcomeSplash()" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/45 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 cursor-pointer select-none">
+        
+        <div id="gao-maps-splash-card" class="relative gao-maps-3d-card gao-maps-floating-anim rounded-3xl p-6 sm:p-8 text-center max-w-sm sm:max-w-md w-[88%] mx-auto transform translate-y-3 scale-95 transition-all duration-500 ease-out flex flex-col items-center pointer-events-auto overflow-hidden">
+          
+          <!-- Quick Voice Replay Button (Top Right) -->
+          <button onclick="event.stopPropagation(); playWelcomeVoice(true);" class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-white/10 hover:bg-amber-400/20 text-amber-300 flex items-center justify-center text-xs transition border border-white/10 shadow-sm" title="Phát lại giọng chào 'Xin chào bạn đến với Gạo Maps'">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <!-- Animated Background Ambient Light Orbs -->
+          <div class="absolute -top-10 -left-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl gao-glow-aura pointer-events-none"></div>
+          <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-sky-500/20 rounded-full blur-2xl gao-glow-aura pointer-events-none" style="animation-delay: 1.5s;"></div>
+
+          <!-- Floating Golden Stardust Sparkles -->
+          <span class="absolute top-4 left-6 text-amber-300 text-xs gao-sparkle-1 pointer-events-none">✦</span>
+          <span class="absolute top-8 right-12 text-amber-200 text-sm gao-sparkle-2 pointer-events-none">✧</span>
+          <span class="absolute bottom-6 left-8 text-yellow-300 text-xs gao-sparkle-3 pointer-events-none">★</span>
+          <span class="absolute bottom-8 right-6 text-amber-400 text-xs gao-sparkle-1 pointer-events-none" style="animation-delay: 1.2s;">✦</span>
+
+          <!-- 3D Golden Footprints Emblem with Orbiting Ring & Ambient Glow -->
+          <div class="relative mb-3 flex items-center justify-center">
+            <!-- Pulsing outer glow aura -->
+            <div class="absolute -inset-4 bg-gradient-to-r from-amber-400/30 via-rose-500/30 to-amber-300/30 rounded-full blur-lg gao-glow-aura"></div>
+            
+            <!-- Orbiting dashed decorative ring -->
+            <div class="absolute -inset-2 rounded-full border border-dashed border-amber-300/50 gao-halo-ring pointer-events-none"></div>
+            
+            <!-- 3D Solid Gold Medal -->
+            <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full gao-maps-3d-badge flex items-center justify-center text-2xl sm:text-3xl text-slate-950 transform hover:scale-110 transition-transform duration-300 shadow-2xl">
+              <i class="fa-solid fa-shoe-prints gao-footstep-icon drop-shadow-md"></i>
+            </div>
+          </div>
+
+          <!-- GẠO MAPS 3D Extruded Title with Dynamic Presence -->
+          <h1 class="gao-maps-3d-title text-3xl sm:text-4xl md:text-5xl mb-1 pl-1 select-none">
+            GẠO MAPS
+          </h1>
+
+          <!-- Dấu chân Kỷ niệm 3D Script Subtitle with Golden Rays -->
+          <div class="flex items-center justify-center gap-3 sm:gap-4 my-2 select-none">
+            <span class="w-8 sm:w-14 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-amber-300 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
+            <span class="gao-maps-3d-subtitle text-2xl sm:text-3xl md:text-4xl tracking-wide">
+              Dấu chân Kỷ niệm
+            </span>
+            <span class="w-8 sm:w-14 h-[2px] bg-gradient-to-l from-transparent via-amber-400 to-amber-300 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
+          </div>
+
+          <!-- High-Contrast Poetic Micro-line -->
+          <p class="text-xs sm:text-sm font-medium text-slate-200 italic tracking-wider drop-shadow-md max-w-xs mx-auto mb-3 leading-relaxed select-none">
+            "Mỗi chuyến đi là một hạt ngọc thời gian khắc ghi từng bước chân"
+          </p>
+
+          <!-- Authentic Chị Google Voice Badge Button -->
+          <button type="button" onclick="event.stopPropagation(); playChiGoogleVoice(true);" class="mb-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-900 border border-amber-400/50 text-amber-300 text-[11px] font-semibold tracking-wide shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <i class="fa-solid fa-volume-high text-xs text-amber-400 animate-pulse"></i>
+            <span>Giọng Chị Google</span>
+          </button>
+
+          <!-- High-Contrast Floating Interactive Hint with Gentle Pulse -->
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-[11px] font-black tracking-widest uppercase shadow-[0_4px_18px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-all">
+            <i class="fa-solid fa-compass text-xs animate-spin" style="animation-duration: 6s;"></i>
+            <span>Chạm để bắt đầu</span>
+          </div>
         </div>
       </div>
 
@@ -1546,32 +1794,49 @@
     // Device Directory Handle for local disk/phone storage (File System Access API)
     let deviceDirHandle = null;
 
-    // Map Tile URL Options (Compliant with Vietnam Sovereignty & International Neutral Standards)
+    // Map Tile URL Options (Google Maps & Custom Tile Layers)
     const MAP_TILES = {
-      light: {
-        name: 'Carto Sáng',
-        url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>, &copy; OpenStreetMap contributors'
+      google_streets: {
+        name: 'Google Đường phố',
+        url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        attribution: '&copy; Google Maps'
       },
-      voyager: {
-        name: 'Bản đồ Chi tiết',
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>, &copy; OpenStreetMap'
+      google_satellite: {
+        name: 'Google Vệ tinh',
+        url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        attribution: '&copy; Google Maps Vệ tinh'
+      },
+      google_terrain: {
+        name: 'Google Địa hình',
+        url: 'https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        attribution: '&copy; Google Maps Địa hình'
+      },
+      google_traffic: {
+        name: 'Google Giao thông',
+        url: 'https://mt{s}.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        attribution: '&copy; Google Maps'
       },
       dark: {
-        name: 'Carto Tối',
+        name: 'Bản đồ Ban đêm',
         url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>, &copy; OpenStreetMap contributors'
+        subdomains: ['a', 'b', 'c', 'd'],
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>, &copy; OpenStreetMap'
       },
       osm: {
         name: 'OpenStreetMap',
         url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        subdomains: ['a', 'b', 'c'],
+        maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      },
-      satellite: {
-        name: 'Vệ tinh Esri',
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        attribution: 'Tiles &copy; Esri &mdash; DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS'
       }
     };
 
@@ -1597,6 +1862,9 @@
         updateRouteCalculation();
       }
       renderRouteStops();
+
+      // Trigger Gạo Maps Centered Welcome Splash
+      triggerGaoMapsWelcomeSplash();
 
       // Close modals with Escape key
       document.addEventListener('keydown', (e) => {
@@ -2097,8 +2365,8 @@
         zoomControl: false // Sleek custom buttons
       });
 
-      // Default Tile Layer
-      const savedTile = localStorage.getItem(LS_TILE_KEY) || 'voyager';
+      // Default Tile Layer (Google Maps Streets as default)
+      const savedTile = localStorage.getItem(LS_TILE_KEY) || 'google_streets';
       setMapTile(savedTile, false);
 
       // Add Vietnam Sovereignty Layer (Hoàng Sa, Trường Sa, Phú Quốc, Côn Đảo)
@@ -2198,21 +2466,30 @@
     }
 
     function setMapTile(tileKey, save = true) {
-      const tileConfig = MAP_TILES[tileKey] || MAP_TILES.voyager;
+      const tileConfig = MAP_TILES[tileKey] || MAP_TILES.google_streets;
       if (currentTileLayer) {
         map.removeLayer(currentTileLayer);
       }
-      currentTileLayer = L.tileLayer(tileConfig.url, {
-        maxZoom: 19,
+      
+      const layerOptions = {
+        maxZoom: tileConfig.maxZoom || 20,
         attribution: tileConfig.attribution
-      }).addTo(map);
+      };
+      if (tileConfig.subdomains && tileConfig.subdomains.length > 0) {
+        layerOptions.subdomains = tileConfig.subdomains;
+      }
+
+      currentTileLayer = L.tileLayer(tileConfig.url, layerOptions).addTo(map);
 
       // Re-ensure sovereignty markers sit on top
       if (sovereigntyLayerGroup && map.hasLayer(sovereigntyLayerGroup)) {
         sovereigntyLayerGroup.bringToFront();
       }
 
-      document.getElementById('current-layer-name').textContent = tileConfig.name;
+      const layerNameEl = document.getElementById('current-layer-name');
+      if (layerNameEl) {
+        layerNameEl.textContent = tileConfig.name;
+      }
       if (save) {
         localStorage.setItem(LS_TILE_KEY, tileKey);
         showToast(`Đã chuyển sang ${tileConfig.name}`, 'info');
@@ -6250,11 +6527,31 @@
     // SEARCH & AUTOCOMPLETE LOGIC
     // ==========================================
     let searchDebounceTimer = null;
+    const POPULAR_DESTINATIONS = [
+      { name: "Hà Nội", desc: "Thủ đô ngàn năm văn hiến, Hồ Hoàn Kiếm, Phố cổ", lat: 21.028511, lng: 105.854167, icon: "fa-landmark", tag: "Thủ đô" },
+      { name: "TP. Hồ Chí Minh", desc: "Thành phố sôi động, Chợ Bến Thành, Dinh Độc Lập", lat: 10.823099, lng: 106.629664, icon: "fa-city", tag: "Đô thị" },
+      { name: "Đà Nẵng", desc: "Thành phố đáng sống, Cầu Rồng, Bán đảo Sơn Trà", lat: 16.054407, lng: 108.202167, icon: "fa-water", tag: "Biển đảo" },
+      { name: "Đà Lạt", desc: "Thành phố ngàn hoa & sương mù lãng mạn, Lâm Đồng", lat: 11.940419, lng: 108.458313, icon: "fa-mountain-sun", tag: "Cao nguyên" },
+      { name: "Phú Quốc", desc: "Đảo ngọc biển xanh cát trắng, Kiên Giang", lat: 10.289879, lng: 103.984020, icon: "fa-umbrella-beach", tag: "Nghỉ dưỡng" },
+      { name: "Hội An", desc: "Phố cổ di sản thế giới lung linh đèn lồng, Quảng Nam", lat: 15.880058, lng: 108.338047, icon: "fa-monument", tag: "Di sản" },
+      { name: "Sapa", desc: "Đỉnh Fansipan nóc nhà Đông Dương, ruộng bậc thang", lat: 22.336360, lng: 103.843781, icon: "fa-mountain", tag: "Khám phá" },
+      { name: "Vịnh Hạ Long", desc: "Kỳ quan thiên nhiên thế giới, Quảng Ninh", lat: 20.910051, lng: 107.183902, icon: "fa-ship", tag: "Kỳ quan" },
+      { name: "Huế", desc: "Cố đô đền đài lăng tẩm & sông Hương thơ mộng", lat: 16.463713, lng: 107.590866, icon: "fa-archway", tag: "Văn hóa" },
+      { name: "Ninh Bình", desc: "Tràng An, Tam Cốc Bích Động non nước hữu tình", lat: 20.250614, lng: 105.974454, icon: "fa-tree", tag: "Sinh thái" }
+    ];
+
+    function getSearchInputElement() {
+      return document.getElementById('map-search-input') || document.getElementById('search-input');
+    }
+
+    function getSearchClearButton() {
+      return document.getElementById('btn-search-clear') || document.getElementById('btn-clear-search');
+    }
 
     function initSearchAutocomplete() {
-      const searchInput = document.getElementById('search-input');
+      const searchInput = getSearchInputElement();
       const dropdown = document.getElementById('search-results-dropdown');
-      const clearBtn = document.getElementById('btn-clear-search');
+      const clearBtn = getSearchClearButton();
 
       if (!searchInput || !dropdown) return;
 
@@ -6264,14 +6561,27 @@
           clearBtn?.classList.remove('hidden');
         } else {
           clearBtn?.classList.add('hidden');
-          dropdown.classList.add('hidden');
+          showQuickSuggestions();
           return;
         }
 
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
           performLocationSearch(query);
-        }, 350);
+        }, 300);
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const query = searchInput.value.trim();
+          if (query) {
+            clearTimeout(searchDebounceTimer);
+            performLocationSearch(query, true);
+          }
+        } else if (e.key === 'Escape') {
+          dropdown.classList.add('hidden');
+        }
       });
 
       clearBtn?.addEventListener('click', () => {
@@ -6282,45 +6592,126 @@
       });
 
       searchInput.addEventListener('focus', () => {
-        if (searchInput.value.trim().length > 0 && dropdown.children.length > 0) {
+        if (searchInput.value.trim().length === 0) {
+          showQuickSuggestions();
+        } else if (dropdown.children.length > 0) {
           dropdown.classList.remove('hidden');
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const searchContainer = searchInput.closest('.relative');
+        if (searchContainer && !searchContainer.contains(e.target)) {
+          dropdown.classList.add('hidden');
         }
       });
     }
 
-    async function performLocationSearch(query) {
+    function showQuickSuggestions() {
       const dropdown = document.getElementById('search-results-dropdown');
+      const searchInput = getSearchInputElement();
       if (!dropdown) return;
 
       dropdown.classList.remove('hidden');
+
+      let html = `
+        <div class="p-3 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/80 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-300">
+            <i class="fa-solid fa-earth-americas text-sky-500"></i>
+            <span>Gợi ý điểm đến nổi tiếng tại Việt Nam</span>
+          </div>
+          <span class="text-[11px] font-medium text-slate-400">Nhấp để bay tới</span>
+        </div>
+        <div class="p-1.5 max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+      `;
+
+      html += POPULAR_DESTINATIONS.map(d => `
+        <div onclick="selectQuickDestination(${d.lat}, ${d.lng}, '${escapeHtml(d.name)}')" class="p-3 hover:bg-sky-50 dark:hover:bg-slate-800/80 rounded-xl cursor-pointer flex items-center gap-3 transition group">
+          <div class="w-9 h-9 rounded-2xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-200 shadow-xs">
+            <i class="fa-solid ${d.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <p class="text-xs font-bold text-slate-800 dark:text-slate-100">${d.name}</p>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold shrink-0">${d.tag}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug break-words">${d.desc}</p>
+          </div>
+          <i class="fa-solid fa-arrow-right text-xs text-slate-300 dark:text-slate-600 group-hover:text-sky-500 group-hover:translate-x-1 transition-all"></i>
+        </div>
+      `).join('');
+
+      html += `</div>`;
+      dropdown.innerHTML = html;
+      searchInput?.focus();
+    }
+
+    function selectQuickDestination(lat, lng, name) {
+      const dropdown = document.getElementById('search-results-dropdown');
+      const searchInput = getSearchInputElement();
+      if (dropdown) dropdown.classList.add('hidden');
+      if (searchInput) searchInput.value = name;
+      getSearchClearButton()?.classList.remove('hidden');
+
+      map.flyTo([lat, lng], 13, { duration: 1.5 });
+      showToast(`Đã di chuyển tới ${name}`, 'info');
+    }
+
+    async function performLocationSearch(query, autoSelectFirst = false) {
+      const dropdown = document.getElementById('search-results-dropdown');
+      const spinner = document.getElementById('search-spinner');
+      if (!dropdown) return;
+
+      dropdown.classList.remove('hidden');
+      if (spinner) spinner.classList.remove('hidden');
+
       dropdown.innerHTML = `
-        <div class="p-3 text-xs text-slate-400 flex items-center gap-2">
-          <i class="fa-solid fa-circle-notch fa-spin text-sky-500"></i> Đang tìm kiếm "${escapeHtml(query)}"...
+        <div class="p-4 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2.5">
+          <i class="fa-solid fa-circle-notch fa-spin text-sky-500 text-base"></i> 
+          <span class="font-semibold">Đang tìm kiếm thông tin chi tiết "${escapeHtml(query)}"...</span>
         </div>
       `;
 
-      // 1. Search in local pins
+      // 1. Search in local saved pins
+      const lowerQuery = query.toLowerCase();
       const matchedPins = pins.filter(p => 
-        p.title.toLowerCase().includes(query.toLowerCase()) || 
-        (p.notes && p.notes.toLowerCase().includes(query.toLowerCase()))
+        (p.title && p.title.toLowerCase().includes(lowerQuery)) || 
+        (p.notes && p.notes.toLowerCase().includes(lowerQuery)) ||
+        (p.locationName && p.locationName.toLowerCase().includes(lowerQuery))
       );
 
+      // 2. Search OpenStreetMap Nominatim API with structured address details
       let externalResults = [];
       try {
-        // 2. Search OpenStreetMap Nominatim with Vietnam boundary viewbox
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5&accept-language=vi`;
-        const resp = await fetch(url);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}&limit=10&accept-language=vi,en`;
+        const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
         if (resp.ok) {
           externalResults = await resp.json();
         }
       } catch (e) {
         console.warn('Online search error:', e);
+      } finally {
+        if (spinner) spinner.classList.add('hidden');
+      }
+
+      if (autoSelectFirst) {
+        if (matchedPins.length > 0) {
+          selectSearchPin(matchedPins[0].id);
+          return;
+        } else if (externalResults.length > 0) {
+          const first = externalResults[0];
+          selectSearchOsmLocation(parseFloat(first.lat), parseFloat(first.lon), first.display_name);
+          return;
+        }
       }
 
       if (matchedPins.length === 0 && externalResults.length === 0) {
         dropdown.innerHTML = `
-          <div class="p-3 text-xs text-slate-400 text-center">
-            Không tìm thấy địa điểm nào phù hợp.
+          <div class="p-6 text-xs text-slate-400 text-center space-y-1.5">
+            <i class="fa-regular fa-compass text-3xl text-slate-300 dark:text-slate-600 block mb-1"></i>
+            <p class="font-bold text-sm text-slate-700 dark:text-slate-200">Không tìm thấy địa điểm "${escapeHtml(query)}"</p>
+            <p class="text-xs text-slate-500">Hãy thử gõ tên xã, huyện, tỉnh thành, hoặc địa danh du lịch phổ biến.</p>
           </div>
         `;
         return;
@@ -6328,37 +6719,144 @@
 
       let html = '';
 
+      // Render Matched Saved Memories with Maximum Information
       if (matchedPins.length > 0) {
-        html += `<div class="px-3 py-1.5 text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider bg-sky-50 dark:bg-sky-950/40 border-b border-slate-100 dark:border-slate-700">Kỷ niệm đã lưu (${matchedPins.length})</div>`;
+        html += `
+          <div class="px-3.5 py-2.5 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-950/60 dark:to-indigo-950/40 border-b border-sky-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
+              <i class="fa-solid fa-bookmark text-sky-600 dark:text-sky-400"></i>
+              <span>Kỷ niệm của bạn</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-sky-200 dark:bg-sky-900 text-sky-800 dark:text-sky-200 text-xs font-bold">${matchedPins.length} kết quả</span>
+          </div>
+        `;
         html += matchedPins.map(p => {
           const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
+          const starsStr = '★'.repeat(p.rating || 5);
+          const photoCount = Array.isArray(p.photos) ? p.photos.length : 0;
           return `
-            <div onclick="selectSearchPin('${p.id}')" class="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/60 cursor-pointer flex items-center gap-2.5 transition border-b border-slate-100 dark:border-slate-800">
-              <div class="w-7 h-7 rounded-lg ${cat.bgClass} text-white flex items-center justify-center text-xs shrink-0">
+            <div onclick="selectSearchPin('${p.id}')" class="p-3.5 hover:bg-sky-50/70 dark:hover:bg-slate-800/80 cursor-pointer flex items-start gap-3 transition border-b border-slate-100 dark:border-slate-800/60 group">
+              <div class="w-10 h-10 rounded-2xl ${cat.bgClass} text-white flex items-center justify-center text-sm shrink-0 shadow-md group-hover:scale-105 transition mt-0.5">
                 <i class="fa-solid ${cat.icon}"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(p.title)}</p>
-                <p class="text-[10px] text-slate-400 truncate">${p.date || 'Đã lưu'} • ${p.rating || 5}★</p>
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">${escapeHtml(p.title)}</h4>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full ${cat.bgClass} text-white font-semibold shadow-xs">${cat.name}</span>
+                  <span class="text-xs text-amber-500 font-bold tracking-tight">${starsStr}</span>
+                </div>
+                
+                <!-- Full Location & Date -->
+                <div class="flex items-center gap-2 flex-wrap text-xs text-slate-600 dark:text-slate-300 mb-1.5">
+                  <span class="flex items-center gap-1 font-medium"><i class="fa-solid fa-location-dot text-rose-500"></i> ${escapeHtml(p.locationName || 'Việt Nam')}</span>
+                  <span>•</span>
+                  <span class="flex items-center gap-1"><i class="fa-regular fa-calendar text-slate-400"></i> ${p.date || 'Chưa ghi ngày'}</span>
+                  ${photoCount > 0 ? `<span>•</span><span class="flex items-center gap-1 text-sky-600 dark:text-sky-400 font-semibold"><i class="fa-solid fa-image"></i> ${photoCount} ảnh</span>` : ''}
+                </div>
+
+                <!-- Full Notes (No Truncate) -->
+                ${p.notes ? `
+                  <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/50 text-xs text-slate-700 dark:text-slate-300 italic mb-2 break-words leading-relaxed">
+                    "${escapeHtml(p.notes)}"
+                  </div>
+                ` : ''}
+
+                <!-- Coordinates & Action -->
+                <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+                  <span class="font-mono text-[10px]"><i class="fa-solid fa-crosshairs"></i> ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</span>
+                  <span class="text-xs font-bold text-sky-600 dark:text-sky-400 group-hover:underline flex items-center gap-1">
+                    Xem kỷ niệm <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                  </span>
+                </div>
               </div>
             </div>
           `;
         }).join('');
       }
 
+      // Render OpenStreetMap Map Locations with Full Administrative Details
       if (externalResults.length > 0) {
-        html += `<div class="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">Địa điểm trên bản đồ Việt Nam</div>`;
-        html += externalResults.map((item, idx) => {
+        html += `
+          <div class="px-3.5 py-2.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/60 dark:to-slate-800 border-b border-indigo-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
+              <i class="fa-solid fa-map-location-dot text-indigo-600 dark:text-indigo-400"></i>
+              <span>Địa điểm trên bản đồ</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs font-bold">${externalResults.length} địa điểm</span>
+          </div>
+        `;
+        html += externalResults.map((item) => {
           const lat = parseFloat(item.lat);
           const lon = parseFloat(item.lon);
+          const parts = item.display_name.split(',').map(s => s.trim());
+          const mainTitle = parts[0];
+          const addressRest = parts.slice(1).join(', ');
+
+          // Place type detection
+          const typeNames = {
+            administrative: 'Khu vực hành chính',
+            village: 'Xã / Thôn',
+            town: 'Thị trấn',
+            city: 'Thành phố',
+            state: 'Tỉnh / Thành',
+            suburb: 'Phường / Khóm',
+            neighbourhood: 'Khu phố',
+            tourism: 'Điểm du lịch',
+            attraction: 'Thắng cảnh',
+            historic: 'Di tích lịch sử',
+            viewpoint: 'Điểm ngắm cảnh',
+            peak: 'Đỉnh núi',
+            beach: 'Bãi biển',
+            water: 'Sông hồ',
+            park: 'Công viên',
+            restaurant: 'Ẩm thực',
+            cafe: 'Quán Cafe',
+            hotel: 'Lưu trú'
+          };
+          const rawType = item.type || item.class || 'place';
+          const typeLabel = typeNames[rawType] || rawType;
+
+          // Extract province/state if available
+          const provinceName = item.address?.state || item.address?.city || (parts.length > 2 ? parts[parts.length - 2] : '');
+
           return `
-            <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(item.display_name).replace(/'/g, "\\'")}')" class="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/60 cursor-pointer flex items-center gap-2.5 transition border-b border-slate-100 dark:border-slate-800">
-              <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs shrink-0">
-                <i class="fa-solid fa-location-dot"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(item.display_name.split(',')[0])}</p>
-                <p class="text-[10px] text-slate-400 truncate">${escapeHtml(item.display_name)}</p>
+            <div class="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition border-b border-slate-100 dark:border-slate-800/60 group">
+              <div class="flex items-start gap-3">
+                <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base shrink-0 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-105 transition shadow-sm cursor-pointer mt-0.5">
+                  <i class="fa-solid fa-location-dot"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <!-- Title & Badges -->
+                  <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="cursor-pointer">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                      <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">${escapeHtml(mainTitle)}</h4>
+                      <span class="text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold">${typeLabel}</span>
+                      ${provinceName ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium"><i class="fa-solid fa-map-pin text-[9px] mr-1 text-slate-400"></i>${escapeHtml(provinceName)}</span>` : ''}
+                    </div>
+
+                    <!-- Complete Address (No truncation, full text wrapping) -->
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words mb-2 font-normal">
+                      ${escapeHtml(addressRest || item.display_name)}
+                    </p>
+                  </div>
+
+                  <!-- Footer with coordinates and Quick Actions -->
+                  <div class="flex items-center justify-between gap-2 flex-wrap pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                    <span class="font-mono text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <i class="fa-solid fa-crosshairs text-slate-400"></i> ${lat.toFixed(5)}, ${lon.toFixed(5)}
+                    </span>
+                    
+                    <div class="flex items-center gap-2">
+                      <button type="button" onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-location-arrow"></i> Xem trên bản đồ
+                      </button>
+                      <button type="button" onclick="openAddMemoryFromSearch(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                        <i class="fa-solid fa-plus"></i> Ghim
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           `;
@@ -6369,21 +6867,65 @@
     }
 
     function selectSearchPin(pinId) {
-      document.getElementById('search-results-dropdown').classList.add('hidden');
+      const dropdown = document.getElementById('search-results-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
       focusPin(pinId);
     }
 
-    function selectSearchOsmLocation(lat, lng, name) {
-      document.getElementById('search-results-dropdown').classList.add('hidden');
-      map.flyTo([lat, lng], 15, { duration: 1.2 });
-      
+    function selectSearchOsmLocation(lat, lng, name, address = '') {
+      const dropdown = document.getElementById('search-results-dropdown');
+      const searchInput = getSearchInputElement();
+      if (dropdown) dropdown.classList.add('hidden');
+      if (searchInput && name) searchInput.value = name;
+      getSearchClearButton()?.classList.remove('hidden');
+
+      map.flyTo([lat, lng], 14, { duration: 1.2 });
+      showToast(`Đang chuyển đến ${name}`, 'info');
+
+      // Create a temporary highlighted pulse marker
+      const tempMarker = L.circleMarker([lat, lng], {
+        radius: 12,
+        color: '#0284c7',
+        fillColor: '#38bdf8',
+        fillOpacity: 0.8,
+        weight: 3
+      }).addTo(map);
+
+      tempMarker.bindPopup(`
+        <div class="p-3.5 max-w-[280px] text-left space-y-2">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Địa điểm tìm kiếm</span>
+          </div>
+          <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(name)}</h4>
+          ${address ? `<p class="text-xs text-slate-600 dark:text-slate-300 break-words leading-relaxed">${escapeHtml(address)}</p>` : ''}
+          <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+            <span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+          </div>
+          <button onclick="openAddMemoryFromSearch(${lat}, ${lng}, '${escapeHtml(name).replace(/'/g, "\\'")}', '${escapeHtml(address).replace(/'/g, "\\'")}'); map.removeLayer(this._tempMarker || map);" class="w-full py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Ghim kỷ niệm tại đây
+          </button>
+        </div>
+      `, { offset: [0, -5] }).openPopup();
+
       setTimeout(() => {
-        openAddMemoryModal(lat, lng);
+        try { map.removeLayer(tempMarker); } catch(e) {}
+      }, 20000);
+    }
+
+    async function openAddMemoryFromSearch(lat, lng, name, address) {
+      const dropdown = document.getElementById('search-results-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+      
+      await openAddMemoryModal(lat, lng);
+      if (name) {
         const nameInput = document.getElementById('form-name');
-        if (nameInput && name) {
-          nameInput.value = name.split(',')[0];
-        }
-      }, 1200);
+        if (nameInput) nameInput.value = name;
+      }
+      if (address) {
+        const locInput = document.getElementById('form-location-name');
+        if (locInput) locInput.value = address;
+      }
     }
     // BACKUP & DEVICE DIRECTORY STORAGE
     // ==========================================
@@ -6736,6 +7278,147 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+
+    // ==========================================
+    // GIỌNG ĐỌC "CHỊ GOOGLE" TIẾNG VIỆT (AUTHENTIC MP3 AUDIO)
+    // ==========================================
+    let hasPlayedWelcomeVoice = false;
+    let welcomeAudioInstance = null;
+
+    function playWelcomeChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        
+        // Pentatonic bright travel chime chord (E5, G#5, B5, E6)
+        const notes = [659.25, 830.61, 987.77, 1318.51];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + idx * 0.08 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.08 + 0.8);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.85);
+        });
+      } catch (err) {
+        // AudioContext silent fallback
+      }
+    }
+
+    function playChiGoogleVoice(force = false) {
+      if (!force && hasPlayedWelcomeVoice) return;
+      
+      playWelcomeChime();
+
+      // Directly play authentic embedded Chị Google MP3 audio data
+      const audioSource = (typeof window.CHI_GOOGLE_AUDIO_DATA === 'string' && window.CHI_GOOGLE_AUDIO_DATA.length > 50)
+        ? window.CHI_GOOGLE_AUDIO_DATA
+        : '/chi_google_welcome.mp3';
+
+      try {
+        if (welcomeAudioInstance) {
+          welcomeAudioInstance.pause();
+          welcomeAudioInstance.currentTime = 0;
+        }
+        welcomeAudioInstance = new Audio(audioSource);
+        welcomeAudioInstance.volume = 1.0;
+
+        const playPromise = welcomeAudioInstance.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            hasPlayedWelcomeVoice = true;
+          }).catch(err => {
+            console.log('Audio playback pending user interaction:', err);
+            // Attach one-time touch / click listener to immediately unlock & play
+            const unlockAndPlay = () => {
+              if (welcomeAudioInstance) {
+                welcomeAudioInstance.play().catch(() => {});
+              }
+              window.removeEventListener('pointerdown', unlockAndPlay);
+              window.removeEventListener('touchstart', unlockAndPlay);
+            };
+            window.addEventListener('pointerdown', unlockAndPlay, { once: true });
+            window.addEventListener('touchstart', unlockAndPlay, { once: true });
+          });
+        }
+      } catch (e) {
+        console.warn('Audio play error:', e);
+      }
+    }
+
+    // Alias for compatibility
+    const playWelcomeVoice = playChiGoogleVoice;
+
+    // ==========================================
+    // GẠO MAPS 3D WELCOME SPLASH CONTROLLER
+    // ==========================================
+    let welcomeSplashTimeout = null;
+
+    function triggerGaoMapsWelcomeSplash() {
+      const splash = document.getElementById('gao-maps-welcome-splash');
+      const card = document.getElementById('gao-maps-splash-card');
+      if (!splash || !card) return;
+
+      setTimeout(() => {
+        splash.classList.remove('opacity-0', 'pointer-events-none');
+        splash.classList.add('opacity-100', 'pointer-events-auto');
+        card.classList.remove('scale-95', 'translate-y-3');
+        card.classList.add('scale-100', 'translate-y-0');
+
+        // Play Vietnamese voice greeting
+        setTimeout(() => {
+          playWelcomeVoice();
+        }, 300);
+
+        // Auto dismiss after 3.8 seconds
+        welcomeSplashTimeout = setTimeout(() => {
+          dismissWelcomeSplash();
+        }, 3800);
+      }, 150);
+
+      // Instantly dismiss on any touch / click / scroll / keydown
+      const dismissOnInteraction = () => {
+        dismissWelcomeSplash();
+        window.removeEventListener('pointerdown', dismissOnInteraction);
+        window.removeEventListener('touchstart', dismissOnInteraction);
+        window.removeEventListener('keydown', dismissOnInteraction);
+      };
+
+      setTimeout(() => {
+        window.addEventListener('pointerdown', dismissOnInteraction, { once: true });
+        window.addEventListener('touchstart', dismissOnInteraction, { once: true });
+        window.addEventListener('keydown', dismissOnInteraction, { once: true });
+      }, 350);
+    }
+
+    function dismissWelcomeSplash() {
+      if (welcomeSplashTimeout) {
+        clearTimeout(welcomeSplashTimeout);
+        welcomeSplashTimeout = null;
+      }
+      const splash = document.getElementById('gao-maps-welcome-splash');
+      const card = document.getElementById('gao-maps-splash-card');
+      if (splash && !splash.classList.contains('opacity-0')) {
+        splash.classList.remove('opacity-100', 'pointer-events-auto');
+        splash.classList.add('opacity-0', 'pointer-events-none');
+        if (card) {
+          card.classList.remove('scale-100', 'translate-y-0');
+          card.classList.add('scale-95', '-translate-y-3');
+        }
+      }
     }
   </script>
 </body>
