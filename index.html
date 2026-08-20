@@ -725,70 +725,38 @@
       <!-- Tab Content 3: Analytics & Statistics (Tối giản & Trực quan) -->
       <div id="tab-stats" class="hidden flex-1 flex-col overflow-y-auto p-4 space-y-4 w-full">
         
-        <!-- 1. DẤU CHÂN VIỆT NAM & BỜ BIỂN (2 THÀNH TỰU ĐẶC BIỆT) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <!-- Card 1: 63 Tỉnh Thành Đã Đi Qua -->
+        <!-- 1. DẤU CHÂN VIỆT NAM (34 TỈNH THÀNH MỚI) -->
+        <div class="w-full">
+          <!-- Card: 34 Tỉnh Thành Đã Đi Qua -->
           <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between relative overflow-hidden group">
             <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
               <i class="fa-solid fa-map-location-dot"></i>
             </div>
             <div>
               <div class="flex items-center justify-between text-amber-100 text-xs font-bold uppercase tracking-wider">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-flag text-amber-300"></i> Đã đi qua tỉnh thành</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-flag text-amber-300"></i> Đã đi qua tỉnh thành (34 tỉnh mới)</span>
                 <span id="stat-visited-provinces-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
               </div>
               <div class="my-2.5">
                 <div class="flex items-baseline gap-1.5">
-                  <span id="stat-visited-provinces-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 / 63</span>
+                  <span id="stat-visited-provinces-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 / 34</span>
                   <span class="text-xs sm:text-sm font-semibold text-amber-200">tỉnh thành</span>
                 </div>
                 <p class="text-[11px] text-amber-100/90 mt-0.5" id="stat-visited-provinces-sub">Tự động nhận diện từ các kỷ niệm & lộ trình</p>
               </div>
             </div>
 
-            <!-- Progress Bar 63 Provinces -->
+            <!-- Progress Bar 34 Provinces -->
             <div class="space-y-2 pt-2 border-t border-white/20">
               <div class="w-full h-2 rounded-full bg-black/25 overflow-hidden p-0.5">
                 <div id="stat-visited-provinces-bar" class="h-full rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 transition-all duration-700 ease-out" style="width: 0%;"></div>
               </div>
-              <div class="flex items-center justify-between text-[10px] text-amber-100/90 font-medium">
-                <span id="stat-reg-bac">Bắc: 0/25</span>
-                <span id="stat-reg-trung">Trung: 0/19</span>
-                <span id="stat-reg-taynguyen">T.Nguyên: 0/5</span>
-                <span id="stat-reg-dongnam">ĐNB: 0/6</span>
-                <span id="stat-reg-mientay">ĐBSCL: 0/13</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2: 3.260 km Đã Chinh Phục -->
-          <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 text-white shadow-lg shadow-cyan-500/20 flex flex-col justify-between relative overflow-hidden group">
-            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
-              <i class="fa-solid fa-route"></i>
-            </div>
-            <div>
-              <div class="flex items-center justify-between text-cyan-100 text-xs font-bold uppercase tracking-wider">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-cyan-300"></i> Đã chinh phục quãng đường</span>
-                <span id="stat-conquered-coastline-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
-              </div>
-              <div class="my-2.5">
-                <div class="flex items-baseline gap-1.5">
-                  <span id="stat-conquered-coastline-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 km</span>
-                  <span class="text-xs sm:text-sm font-semibold text-cyan-200">/ 3.260 km</span>
-                </div>
-                <p class="text-[11px] text-cyan-100/90 mt-0.5" id="stat-conquered-coastline-sub">Đã qua <strong id="stat-visited-coastal-count" class="font-bold text-white">0</strong> / 28 tỉnh thành</p>
-              </div>
-            </div>
-
-            <!-- Progress Bar Coastline -->
-            <div class="space-y-2 pt-2 border-t border-white/20">
-              <div class="w-full h-2 rounded-full bg-black/25 overflow-hidden p-0.5">
-                <div id="stat-conquered-coastline-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-200 via-teal-200 to-white transition-all duration-700 ease-out" style="width: 0%;"></div>
-              </div>
-              <div class="flex items-center justify-between text-[10px] text-cyan-100/90 font-medium">
-                <span>Móng Cái (Quảng Ninh)</span>
-                <span class="font-bold text-white"><i class="fa-solid fa-compass mr-1"></i>3.260 km</span>
-                <span>Hà Tiên (Kiên Giang)</span>
+              <div class="grid grid-cols-5 gap-1 text-center text-[10px] sm:text-[11px] text-amber-100/90 font-medium">
+                <span id="stat-reg-bac" class="truncate">Bắc: 0/15</span>
+                <span id="stat-reg-trung" class="truncate">Trung: 0/9</span>
+                <span id="stat-reg-taynguyen" class="truncate">T.Nguyên: 0/2</span>
+                <span id="stat-reg-dongnam" class="truncate">ĐNB: 0/3</span>
+                <span id="stat-reg-mientay" class="truncate">ĐBSCL: 0/5</span>
               </div>
             </div>
           </div>
@@ -810,18 +778,18 @@
           </div>
         </div>
 
-        <!-- 3. INTERACTIVE PROVINCE FOOTPRINT EXPLORER (BẢN ĐỒ DẤU CHÂN 63 TỈNH THÀNH) -->
+        <!-- 3. INTERACTIVE PROVINCE FOOTPRINT EXPLORER (BẢN ĐỒ DẤU CHÂN 34 TỈNH THÀNH) -->
         <div class="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-4 space-y-3.5 shadow-xs">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-700/60">
             <div>
               <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <i class="fa-solid fa-map-location-dot text-amber-500"></i>
-                <span>Danh Sách 63 Tỉnh Thành & 28 Tỉnh Ven Biển</span>
+                <span>Danh Sách 34 Tỉnh Thành Mới & 18 Tỉnh/Thành Ven Biển</span>
               </h4>
               <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Nhấp vào tỉnh thành để xem kỷ niệm hoặc định vị trên bản đồ</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <span id="stat-province-filter-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">0/63 tỉnh</span>
+              <span id="stat-province-filter-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">0/34 tỉnh</span>
             </div>
           </div>
 
@@ -829,15 +797,15 @@
           <div class="space-y-2">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-              <input type="text" id="province-search-input" oninput="handleProvinceFilterSearch(this.value)" placeholder="Tìm kiếm tỉnh thành (Hà Nội, Đà Nẵng, Khánh Hòa...)" class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" />
+              <input type="text" id="province-search-input" oninput="handleProvinceFilterSearch(this.value)" placeholder="Tìm kiếm tỉnh thành (Hà Nội, TP.HCM, Đà Nẵng, Khánh Hòa...)" class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" />
             </div>
 
             <!-- Filter Buttons -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-              <button onclick="setProvinceFilterTab('all')" id="tab-prov-all" class="prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[11px] shrink-0">Tất cả (63)</button>
+              <button onclick="setProvinceFilterTab('all')" id="tab-prov-all" class="prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[11px] shrink-0">Tất cả (34)</button>
               <button onclick="setProvinceFilterTab('visited')" id="tab-prov-visited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">✅ Đã đi qua (<span id="prov-visited-tab-count">0</span>)</button>
-              <button onclick="setProvinceFilterTab('unvisited')" id="tab-prov-unvisited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">⏳ Chưa đi qua (<span id="prov-unvisited-tab-count">63</span>)</button>
-              <button onclick="setProvinceFilterTab('coastal')" id="tab-prov-coastal" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">🌊 28 Tỉnh Ven Biển</button>
+              <button onclick="setProvinceFilterTab('unvisited')" id="tab-prov-unvisited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">⏳ Chưa đi qua (<span id="prov-unvisited-tab-count">34</span>)</button>
+              <button onclick="setProvinceFilterTab('coastal')" id="tab-prov-coastal" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">🌊 18 Tỉnh/Thành Ven Biển</button>
             </div>
           </div>
 
@@ -947,15 +915,10 @@
         <div class="pointer-events-auto flex items-center gap-2 shrink-0">
           
           <!-- Top Floating Footprint & Coastline Stat Pill -->
-          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-2 h-11 px-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành & Đã chinh phục bao nhiêu km">
+          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-2 h-11 px-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 shadow-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành">
             <span class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
               <i class="fa-solid fa-flag text-amber-500"></i>
-              <span id="top-stat-provinces">0/63 tỉnh</span>
-            </span>
-            <span class="text-slate-300 dark:text-slate-700 font-normal">•</span>
-            <span class="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform">
-              <i class="fa-solid fa-route text-cyan-500"></i>
-              <span id="top-stat-coastline">0 km</span>
+              <span id="top-stat-provinces">0/34 tỉnh</span>
             </span>
           </button>
 
@@ -5086,6 +5049,11 @@
         };
       }));
 
+      // Ensure targetRoute has latest customWaypoints if it's the active route
+      if (targetRoute && targetRoute.id === activeRouteId && customRouteWaypoints) {
+        targetRoute.customWaypoints = customRouteWaypoints;
+      }
+
       const sharePayload = {
         name: targetRoute.name,
         desc: targetRoute.description || '',
@@ -5094,7 +5062,9 @@
         distKm: totalKm,
         durationStr: estTimeStr,
         stops: stopsPayload,
-        waypoints: targetRoute.customWaypoints || null,
+        waypoints: (targetRoute.customWaypoints && targetRoute.customWaypoints.length >= 2)
+          ? targetRoute.customWaypoints
+          : (targetRoute.id === activeRouteId && customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null),
         created: targetRoute.createdAt || new Date().toISOString()
       };
 
@@ -5655,6 +5625,10 @@
       const active = getActiveRoute();
       if (!active) return;
       
+      if (customRouteWaypoints && customRouteWaypoints.length >= 2) {
+        active.customWaypoints = customRouteWaypoints;
+      }
+
       const activePins = (active.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
       const totalKm = calculateRouteDistanceKm(active);
       const estTimeStr = active.distanceKm 
@@ -5679,7 +5653,9 @@
           date: p.date || '',
           photo: p.photo || ''
         })),
-        waypoints: active.customWaypoints || null
+        waypoints: (active.customWaypoints && active.customWaypoints.length >= 2)
+          ? active.customWaypoints
+          : (customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null)
       };
 
       hydrateSharedRouteExperience(mockPayload);
@@ -5755,7 +5731,10 @@
           const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
           map.fitBounds(bounds, { padding: [80, 80] });
 
-          const waypoints = sharedData.stops.map(s => L.latLng(s.lat, s.lng));
+          const waypoints = (sharedData.waypoints && Array.isArray(sharedData.waypoints) && sharedData.waypoints.length >= 2)
+            ? sharedData.waypoints.map(wp => L.latLng(wp.lat, wp.lng))
+            : sharedData.stops.map(s => L.latLng(s.lat, s.lng));
+
           if (routingControl) {
             map.removeControl(routingControl);
             routingControl = null;
@@ -5782,18 +5761,22 @@
               ]
             },
             createMarker: function(i, wp) {
-              const stopInfo = sharedData.stops[i];
-              const num = i + 1;
-              const isFirst = (i === 0);
-              const isLast = (i === sharedData.stops.length - 1 && sharedData.stops.length > 1);
+              const stopInfo = sharedData.stops.find(s => Math.abs(s.lat - wp.latLng.lat) < 0.0005 && Math.abs(s.lng - wp.latLng.lng) < 0.0005);
+              if (!stopInfo) {
+                return null;
+              }
+              const stopIndex = sharedData.stops.indexOf(stopInfo);
+              const num = stopIndex + 1;
+              const isFirst = (stopIndex === 0);
+              const isLast = (stopIndex === sharedData.stops.length - 1 && sharedData.stops.length > 1);
               
               const marker = L.marker(wp.latLng, {
-                icon: createCustomMarkerIcon(stopInfo || { category: 'sightseeing', title: `Điểm #${num}` }, {
+                icon: createCustomMarkerIcon(stopInfo, {
                   routeIndex: num,
                   isFirst: isFirst,
                   isLast: isLast
                 }),
-                title: stopInfo ? stopInfo.title : `Điểm #${num}`
+                title: stopInfo.title || `Điểm #${num}`
               });
               
               if (stopInfo) {
@@ -6991,18 +6974,24 @@
         }));
       }
 
-      // Fallback: interpolate between route stop pins
+      // Fallback: interpolate between route waypoints or stop pins
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const activePins = isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      const active = isShared ? sharedRoutePayload : getActiveRoute();
+      
+      const customWps = isShared
+        ? (sharedRoutePayload.waypoints && sharedRoutePayload.waypoints.length >= 2 ? sharedRoutePayload.waypoints : null)
+        : (customRouteWaypoints || (active && active.customWaypoints && active.customWaypoints.length >= 2 ? active.customWaypoints : null));
 
-      if (activePins.length < 2) return [];
+      const waypointsToUse = customWps || (isShared
+        ? sharedRoutePayload.stops
+        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean));
+
+      if (!waypointsToUse || waypointsToUse.length < 2) return [];
 
       const points = [];
-      for (let i = 0; i < activePins.length - 1; i++) {
-        const p1 = activePins[i];
-        const p2 = activePins[i + 1];
+      for (let i = 0; i < waypointsToUse.length - 1; i++) {
+        const p1 = waypointsToUse[i];
+        const p2 = waypointsToUse[i + 1];
         const steps = 30;
         for (let s = 0; s <= steps; s++) {
           const t = s / steps;
@@ -8333,81 +8322,53 @@
     }
 
     // ==========================================
-    // 63 TỈNH THÀNH & 3.260 KM BỜ BIỂN VIỆT NAM DATABASE & DETECTION
+    // ==========================================
+    // 34 TỈNH THÀNH (SAU SÁP NHẬP) DATABASE & DETECTION
     // ==========================================
     const VIETNAM_PROVINCES = [
-      // MIỀN BẮC (25 tỉnh/thành)
+      // MIỀN BẮC (15 tỉnh/thành)
       { id: 'hanoi', name: 'Hà Nội', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.0285, lng: 105.8542, aliases: ['hà nội', 'ha noi', 'hanoi', 'hoàn kiếm', 'ba đình', 'đống đa', 'hai bà trưng', 'cầu giấy', 'tây hồ', 'thanh xuân', 'hoàng mai', 'long biên', 'nam từ liêm', 'bắc từ liêm', 'hà đông', 'sơn tây', 'ba vì', 'chương mỹ', 'phúc thọ', 'đan phượng', 'đông anh', 'gia lâm', 'hoài đức', 'mê linh', 'mỹ đức', 'phú xuyên', 'quốc oai', 'sóc sơn', 'thạch thất', 'thanh oai', 'thanh trì', 'thường tín', 'ứng hòa', 'hồ gươm', 'hồ tây', 'phố cổ hà nội'] },
-      { id: 'haiphong', name: 'Hải Phòng', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 125, lat: 20.8449, lng: 106.6881, aliases: ['hải phòng', 'hai phong', 'haiphong', 'đồ sơn', 'cát bà', 'vịnh lan hạ', 'bạch long vĩ', 'thủy nguyên', 'an dương', 'kiến an', 'hồng bàng', 'ngô quyền', 'lê chân', 'hải an', 'đảo cát bà'] },
-      { id: 'quangninh', name: 'Quảng Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 250, lat: 21.2500, lng: 107.2000, aliases: ['quảng ninh', 'quang ninh', 'hạ long', 'vịnh hạ long', 'cẩm phả', 'móng cái', 'uông bí', 'đông triều', 'quảng yên', 'cô tô', 'vân đồn', 'ba chẽ', 'bình liêu', 'đầm hà', 'hải hà', 'tiên yên', 'đảo cô tô', 'yên tử', 'núi yên tử', 'chùa ba vàng', 'trà cổ', 'bình liêu'] },
-      { id: 'thaibinh', name: 'Thái Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 52, lat: 20.4500, lng: 106.3400, aliases: ['thái bình', 'thai binh', 'quỳnh phụ', 'hưng hà', 'đông hưng', 'thái thụy', 'tiền hải', 'kiến xương', 'vũ thư', 'chùa keo', 'biển đồng châu', 'cồn đen', 'cồn vành'] },
-      { id: 'namdinh', name: 'Nam Định', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 72, lat: 20.4200, lng: 106.1600, aliases: ['nam định', 'nam dinh', 'mỹ lộc', 'vụ bản', 'ý yên', 'nghĩa hưng', 'nam trực', 'trực ninh', 'xuân trường', 'giao thủy', 'hải hậu', 'đền trần', 'nhà thờ đổ hải lý', 'vườn quốc gia xuân thủy', 'quất lâm'] },
-      { id: 'ninhbinh', name: 'Ninh Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 18, lat: 20.2500, lng: 105.9700, aliases: ['ninh bình', 'ninh binh', 'tam điệp', 'hoa lư', 'gia viễn', 'nho quan', 'yên khánh', 'yên mô', 'kim sơn', 'tràng an', 'bái đính', 'tam cốc', 'bích động', 'hang múa', 'tuyệt tình cốc', 'cố đô hoa lư', 'vườn quốc gia cúc phương'] },
-      { id: 'bacgiang', name: 'Bắc Giang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.2700, lng: 106.1900, aliases: ['bắc giang', 'bac giang', 'việt yên', 'hiệp hòa', 'lục ngạn', 'lục nam', 'yên dũng', 'tân yên', 'lạng giang', 'sơn động', 'yên thế', 'chùa vĩnh nghiêm', 'suối mỡ'] },
-      { id: 'backan', name: 'Bắc Kạn', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.1400, lng: 105.8300, aliases: ['bắc kạn', 'bắc cạn', 'bac kan', 'ba bể', 'hồ ba bể', 'chợ đồn', 'ngân sơn', 'bạch thông', 'chợ mới', 'na rì', 'pác nặm'] },
-      { id: 'bacninh', name: 'Bắc Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.1800, lng: 106.0700, aliases: ['bắc ninh', 'bac ninh', 'từ sơn', 'thuận thành', 'quế võ', 'tiên du', 'yên phong', 'gia bình', 'lương tài', 'chùa dâu', 'đền đô', 'chùa phật tích'] },
+      { id: 'haiphong', name: 'Hải Phòng', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 125, lat: 20.8449, lng: 106.6881, aliases: ['hải phòng', 'hai phong', 'haiphong', 'hải dương', 'hai duong', 'đồ sơn', 'cát bà', 'vịnh lan hạ', 'bạch long vĩ', 'thủy nguyên', 'an dương', 'kiến an', 'hồng bàng', 'ngô quyền', 'lê chân', 'hải an', 'chí linh', 'kinh môn', 'bình giang', 'cẩm giàng', 'gia lộc', 'kim thành', 'nam sách', 'ninh giang', 'thanh hà', 'thanh miện', 'tứ kỳ', 'côn sơn kiếp bạc', 'đảo cát bà'] },
+      { id: 'quangninh', name: 'Quảng Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 250, lat: 21.2500, lng: 107.2000, aliases: ['quảng ninh', 'quang ninh', 'hạ long', 'vịnh hạ long', 'cẩm phả', 'móng cái', 'uông bí', 'đông triều', 'quảng yên', 'cô tô', 'vân đồn', 'ba chẽ', 'bình liêu', 'đầm hà', 'hải hà', 'tiên yên', 'đảo cô tô', 'yên tử', 'núi yên tử', 'chùa ba vàng', 'trà cổ'] },
+      { id: 'bacninh', name: 'Bắc Ninh', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.1800, lng: 106.0700, aliases: ['bắc ninh', 'bac ninh', 'bắc giang', 'bac giang', 'từ sơn', 'thuận thành', 'quế võ', 'tiên du', 'yên phong', 'gia bình', 'lương tài', 'việt yên', 'hiệp hòa', 'lục ngạn', 'lục nam', 'yên dũng', 'tân yên', 'lạng giang', 'sơn động', 'yên thế', 'chùa dâu', 'đền đô', 'chùa phật tích', 'chùa vĩnh nghiêm', 'suối mỡ'] },
+      { id: 'hungyen', name: 'Hưng Yên', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 52, lat: 20.6500, lng: 106.0500, aliases: ['hưng yên', 'hung yen', 'thái bình', 'thai binh', 'mỹ hào', 'ân thi', 'khoái châu', 'kim động', 'phù cừ', 'tiên lữ', 'văn giang', 'văn lâm', 'yên mỹ', 'phố hiến', 'ecopark', 'quỳnh phụ', 'hưng hà', 'đông hưng', 'thái thụy', 'tiền hải', 'kiến xương', 'vũ thư', 'chùa keo', 'biển đồng châu', 'cồn đen', 'cồn vành'] },
+      { id: 'ninhbinh', name: 'Ninh Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: true, coastlineKm: 90, lat: 20.2500, lng: 105.9700, aliases: ['ninh bình', 'ninh binh', 'hà nam', 'ha nam', 'nam định', 'nam dinh', 'tam điệp', 'hoa lư', 'gia viễn', 'nho quan', 'yên khánh', 'yên mô', 'kim sơn', 'tràng an', 'bái đính', 'tam cốc', 'bích động', 'hang múa', 'tuyệt tình cốc', 'cố đô hoa lư', 'vườn quốc gia cúc phương', 'phủ lý', 'duy tiên', 'kim bảng', 'thanh liêm', 'bình lục', 'lý nhân', 'chùa tam chúc', 'mỹ lộc', 'vụ bản', 'ý yên', 'nghĩa hưng', 'nam trực', 'trực ninh', 'xuân trường', 'giao thủy', 'hải hậu', 'đền trần', 'nhà thờ đổ hải lý', 'vườn quốc gia xuân thủy', 'quất lâm'] },
+      { id: 'phutho', name: 'Phú Thọ', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3200, lng: 105.2200, aliases: ['phú thọ', 'phu tho', 'vĩnh phúc', 'vinh phuc', 'hòa bình', 'hoa binh', 'việt trì', 'đoan hùng', 'hạ hòa', 'thanh ba', 'phù ninh', 'lâm thao', 'tam nông', 'thanh thủy', 'cẩm khê', 'yên lập', 'thanh sơn', 'tân sơn', 'đền hùng', 'đồi chè long cốc', 'vườn quốc gia xuân sơn', 'vĩnh yên', 'phúc yên', 'bình xuyên', 'lập thạch', 'sông lô', 'tam dương', 'tam đảo', 'vĩnh tường', 'yên lạc', 'tây thiên', 'hồ đại lải', 'mai châu', 'lương sơn', 'cao phong', 'đà bắc', 'kim bôi', 'lạc sơn', 'lạc thủy', 'tân lạc', 'yên thủy', 'thung nai', 'thủy điện hòa bình'] },
+      { id: 'thainguyen', name: 'Thái Nguyên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.5900, lng: 105.8400, aliases: ['thái nguyên', 'thai nguyen', 'bắc kạn', 'bắc cạn', 'bac kan', 'sông công', 'phổ yên', 'định hóa', 'phú lương', 'đồng hỷ', 'võ nhai', 'đại từ', 'phú bình', 'hồ núi cốc', 'đồi chè tân cương', 'ba bể', 'hồ ba bể', 'chợ đồn', 'ngân sơn', 'bạch thông', 'chợ mới', 'na rì', 'pác nặm'] },
+      { id: 'tuyenquang', name: 'Tuyên Quang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.8200, lng: 105.2100, aliases: ['tuyên quang', 'tuyen quang', 'hà giang', 'ha giang', 'chiêm hóa', 'hàm yên', 'lâm bình', 'na hang', 'sơn dương', 'yên sơn', 'hồ na hang', 'tân trào', 'đồng văn', 'mèo vạc', 'yên minh', 'quản bạ', 'vị xuyên', 'bắc mê', 'hoàng su phì', 'xín mần', 'bắc quang', 'quang bình', 'cột cờ lũng cú', 'mã pí lèng', 'sông nho quế', 'núi đôi quản bạ'] },
+      { id: 'laocai', name: 'Lào Cai', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.4800, lng: 103.9700, aliases: ['lào cai', 'lao cai', 'yên bái', 'yen bai', 'sa pa', 'sapa', 'bát xát', 'mường khương', 'si ma cai', 'bắc hà', 'bảo thắng', 'bảo yên', 'văn bàn', 'fansipan', 'phan xi păng', 'thung lũng mường hoa', 'y tý', 'y ty', 'nghĩa lộ', 'mù cang chải', 'mù căng chải', 'lục yên', 'trạm tấu', 'trấn yên', 'văn chấn', 'văn yên', 'yên bình', 'đèo khau phạ', 'hồ thác bà'] },
       { id: 'caobang', name: 'Cao Bằng', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.6600, lng: 106.2500, aliases: ['cao bằng', 'cao bang', 'thác bản giốc', 'pác bó', 'trùng khánh', 'hà quảng', 'bảo lạc', 'bảo lâm', 'hạ lang', 'hòa an', 'nguyên bình', 'thạch an', 'động ngườm ngao', 'hồ thang hen'] },
-      { id: 'dienbien', name: 'Điện Biên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3800, lng: 103.0100, aliases: ['điện biên', 'dien bien', 'điện biên phủ', 'mường thanh', 'mường nhé', 'mường chà', 'tủa chùa', 'tuần giáo', 'điện biên đông', 'nậm pồ', 'a pa chải', 'đèo pha đin'] },
-      { id: 'hagiang', name: 'Hà Giang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.8200, lng: 104.9800, aliases: ['hà giang', 'ha giang', 'đồng văn', 'mèo vạc', 'yên minh', 'quản bạ', 'vị xuyên', 'bắc mê', 'hoàng su phì', 'xín mần', 'bắc quang', 'quang bình', 'cột cờ lũng cú', 'mã pí lèng', 'sông nho quế', 'núi đôi quản bạ'] },
-      { id: 'hanam', name: 'Hà Nam', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.5400, lng: 105.9100, aliases: ['hà nam', 'ha nam', 'phủ lý', 'duy tiên', 'kim bảng', 'thanh liêm', 'bình lục', 'lý nhân', 'chùa tam chúc'] },
-      { id: 'haiduong', name: 'Hải Dương', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.9300, lng: 106.3100, aliases: ['hải dương', 'hai duong', 'chí linh', 'kinh môn', 'bình giang', 'cẩm giàng', 'gia lộc', 'kim thành', 'nam sách', 'ninh giang', 'thanh hà', 'thanh miện', 'tứ kỳ', 'côn sơn kiếp bạc'] },
-      { id: 'hoabinh', name: 'Hòa Bình', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.8100, lng: 105.3300, aliases: ['hòa bình', 'hoa binh', 'mai châu', 'lương sơn', 'cao phong', 'đà bắc', 'kim bôi', 'lạc sơn', 'lạc thủy', 'tân lạc', 'yên thủy', 'thung nai', 'thủy điện hòa bình'] },
-      { id: 'hungyen', name: 'Hưng Yên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 20.6500, lng: 106.0500, aliases: ['hưng yên', 'hung yen', 'mỹ hào', 'ân thi', 'khoái châu', 'kim động', 'phù cừ', 'tiên lữ', 'văn giang', 'văn lâm', 'yên mỹ', 'phố hiến', 'ecopark'] },
-      { id: 'laichau', name: 'Lai Châu', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.3900, lng: 103.4700, aliases: ['lai châu', 'lai chau', 'mường tè', 'sìn hồ', 'nậm nhùn', 'tam đường', 'phong thổ', 'tân uyên', 'than uyên', 'đèo ô quy hồ', 'ô quy hồ'] },
       { id: 'langson', name: 'Lạng Sơn', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.8500, lng: 106.7600, aliases: ['lạng sơn', 'lang son', 'hữu lũng', 'chi lăng', 'cao lộc', 'lộc bình', 'đình lập', 'văn lãng', 'tràng định', 'văn quan', 'bình gia', 'bắc sơn', 'mẫu sơn', 'tân thanh', 'chợ đông kinh'] },
-      { id: 'laocai', name: 'Lào Cai', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.4800, lng: 103.9700, aliases: ['lào cai', 'lao cai', 'sa pa', 'sapa', 'bát xát', 'mường khương', 'si ma cai', 'bắc hà', 'bảo thắng', 'bảo yên', 'văn bàn', 'fansipan', 'phan xi păng', 'thung lũng mường hoa', 'y tý', 'y ty'] },
-      { id: 'phutho', name: 'Phú Thọ', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3200, lng: 105.2200, aliases: ['phú thọ', 'phu tho', 'việt trì', 'đoan hùng', 'hạ hòa', 'thanh ba', 'phù ninh', 'lâm thao', 'tam nông', 'thanh thủy', 'cẩm khê', 'yên lập', 'thanh sơn', 'tân sơn', 'đền hùng', 'đồi chè long cốc', 'vườn quốc gia xuân sơn'] },
+      { id: 'laichau', name: 'Lai Châu', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 22.3900, lng: 103.4700, aliases: ['lai châu', 'lai chau', 'mường tè', 'sìn hồ', 'nậm nhùn', 'tam đường', 'phong thổ', 'tân uyên', 'than uyên', 'đèo ô quy hồ', 'ô quy hồ'] },
+      { id: 'dienbien', name: 'Điện Biên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3800, lng: 103.0100, aliases: ['điện biên', 'dien bien', 'điện biên phủ', 'mường thanh', 'mường nhé', 'mường chà', 'tủa chùa', 'tuần giáo', 'điện biên đông', 'nậm pồ', 'a pa chải', 'đèo pha đin'] },
       { id: 'sonla', name: 'Sơn La', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3200, lng: 103.9100, aliases: ['sơn la', 'son la', 'mộc châu', 'quỳnh nhai', 'mường la', 'thuận châu', 'phù yên', 'bắc yên', 'mai sơn', 'sông mã', 'yên châu', 'sốp cộp', 'vân hồ', 'đồi chè mộc châu', 'tà xùa', 'thác dải yếm'] },
-      { id: 'thainguyen', name: 'Thái Nguyên', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.5900, lng: 105.8400, aliases: ['thái nguyên', 'thai nguyen', 'sông công', 'phổ yên', 'định hóa', 'phú lương', 'đồng hỷ', 'võ nhai', 'đại từ', 'phú bình', 'hồ núi cốc', 'đồi chè tân cương'] },
-      { id: 'tuyenquang', name: 'Tuyên Quang', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.8200, lng: 105.2100, aliases: ['tuyên quang', 'tuyen quang', 'chiêm hóa', 'hàm yên', 'lâm bình', 'na hang', 'sơn dương', 'yên sơn', 'hồ na hang', 'tân trào'] },
-      { id: 'vinhphuc', name: 'Vĩnh Phúc', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.3100, lng: 105.6000, aliases: ['vĩnh phúc', 'vinh phuc', 'vĩnh yên', 'phúc yên', 'bình xuyên', 'lập thạch', 'sông lô', 'tam dương', 'tam đảo', 'vĩnh tường', 'yên lạc', 'tam dao', 'tây thiên', 'hồ đại lải'] },
-      { id: 'yenbai', name: 'Yên Bái', region: 'bac', regionName: 'Miền Bắc', isCoastal: false, coastlineKm: 0, lat: 21.7200, lng: 104.9100, aliases: ['yên bái', 'yen bai', 'nghĩa lộ', 'mù cang chải', 'lục yên', 'trạm tấu', 'trấn yên', 'văn chấn', 'văn yên', 'yên bình', 'mù căng chải', 'ruộng bậc thang mù cang chải', 'đèo khau phạ', 'hồ thác bà'] },
 
-      // MIỀN TRUNG (19 tỉnh/thành: Bắc Trung Bộ & Duyên hải Nam Trung Bộ)
+      // MIỀN TRUNG (9 tỉnh/thành)
       { id: 'thanhhoa', name: 'Thanh Hóa', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 102, lat: 19.8000, lng: 105.7700, aliases: ['thanh hóa', 'thanh hoa', 'sầm sơn', 'bỉm sơn', 'nghi sơn', 'hà trung', 'hậu lộc', 'nga sơn', 'hoằng hóa', 'thọ xuân', 'triệu sơn', 'thiệu hóa', 'yên định', 'vĩnh lộc', 'thường xuân', 'như xuân', 'như thanh', 'bá thước', 'cẩm thủy', 'thạch thành', 'ngọc lặc', 'lang chánh', 'quan hóa', 'quan sơn', 'mường lát', 'thành nhà hồ', 'pù luông', 'suối cá thần cẩm lương', 'hải tiến'] },
       { id: 'nghean', name: 'Nghệ An', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 82, lat: 19.3300, lng: 104.9100, aliases: ['nghệ an', 'nghe an', 'vinh', 'cửa lò', 'thái hòa', 'hoàng mai', 'quỳnh lưu', 'diễn châu', 'nghi lộc', 'hưng nguyên', 'nam đàn', 'thanh chương', 'đô lương', 'tân kỳ', 'quỳ hợp', 'quỳ châu', 'quế phong', 'con cuông', 'tương dương', 'kỳ sơn', 'anh sơn', 'quê bác', 'làng sen', 'đảo chè thanh chương'] },
       { id: 'hatinh', name: 'Hà Tĩnh', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 137, lat: 18.3400, lng: 105.9000, aliases: ['hà tĩnh', 'ha tinh', 'hồng lĩnh', 'kỳ anh', 'nghi xuân', 'đức thọ', 'hương sơn', 'hương khê', 'vũ quang', 'can lộc', 'lộc hà', 'thạch hà', 'cẩm xuyên', 'ngã ba đồng lộc', 'biển thiên cầm', 'núi hồng lĩnh'] },
-      { id: 'quangbinh', name: 'Quảng Bình', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 116, lat: 17.4700, lng: 106.6000, aliases: ['quảng bình', 'quang binh', 'đồng hới', 'ba đồn', 'minh hóa', 'tuyên hóa', 'quảng trạch', 'bố trạch', 'lệ thủy', 'phong nha', 'phong nha kẻ bàng', 'động thiên đường', 'hang sơn đoòng', 'hang én', 'suối nước moọc', 'bãi đá nhảy', 'vũng chùa đảo yến', 'sơn đoòng'] },
-      { id: 'quangtri', name: 'Quảng Trị', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 75, lat: 16.7500, lng: 107.1800, aliases: ['quảng trị', 'quang tri', 'đông hà', 'vĩnh linh', 'gio linh', 'cam lộ', 'triệu phong', 'hải lăng', 'hướng hóa', 'đakrông', 'cồn cỏ', 'thành cổ quảng trị', 'địa đạo vịnh mốc', 'cầu hiền lương', 'sông bến hải', 'la vang'] },
-      { id: 'thuathienhue', name: 'Thừa Thiên Huế', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 128, lat: 16.4637, lng: 107.5909, aliases: ['thừa thiên huế', 'thua thien hue', 'huế', 'hue', 'hương thủy', 'hương trà', 'a lưới', 'nam đông', 'phong điền', 'phú lộc', 'phú vang', 'quảng điền', 'đại nội huế', 'sông hương', 'chùa thiên mụ', 'lăng khải định', 'lăng tự đức', 'vịnh lăng cô', 'lăng cô', 'đèo hải vân', 'phá tam giang'] },
-      { id: 'danang', name: 'Đà Nẵng', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 92, lat: 16.0544, lng: 108.2022, aliases: ['đà nẵng', 'da nang', 'danang', 'hải châu', 'thanh khê', 'sơn trà', 'ngũ hành sơn', 'liên chiểu', 'cẩm lệ', 'hòa vang', 'hoàng sa', 'cầu rồng', 'bà nà', 'bà nà hills', 'cầu vàng', 'bán đảo sơn trà', 'mỹ khê', 'biển mỹ khê'] },
-      { id: 'quangnam', name: 'Quảng Nam', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 125, lat: 15.5600, lng: 108.0000, aliases: ['quảng nam', 'quang nam', 'tam kỳ', 'hội an', 'hoi an', 'điện bàn', 'đại lộc', 'duy xuyên', 'quế sơn', 'nam giang', 'phước sơn', 'hiệp đức', 'thăng bình', 'tiên phước', 'bắc trà my', 'nam trà my', 'núi thành', 'phố cổ hội an', 'thánh địa mỹ sơn', 'mỹ sơn', 'cù lao chàm', 'rừng dừa bảy mẫu'] },
-      { id: 'quangngai', name: 'Quảng Ngãi', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 130, lat: 15.1200, lng: 108.7900, aliases: ['quảng ngãi', 'quang ngai', 'lý sơn', 'đảo lý sơn', 'bình sơn', 'trà bồng', 'sơn tịnh', 'tư nghĩa', 'sơn hà', 'sơn tây', 'minh long', 'nghĩa hành', 'mộ đức', 'đức phổ', 'ba tơ', 'biển mỹ khê quảng ngãi', 'núi thiên ấn'] },
-      { id: 'binhdinh', name: 'Bình Định', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 134, lat: 13.7800, lng: 109.2200, aliases: ['bình định', 'binh dinh', 'quy nhơn', 'quynhon', 'kỳ co', 'eo gió', 'an nhơn', 'hoài nhơn', 'tây sơn', 'phù mỹ', 'phù cát', 'tuy phước', 'vân canh', 'vĩnh thạnh', 'hoài ân', 'ghềnh ráng', 'cù lao xanh', 'hòn khô'] },
-      { id: 'phuyen', name: 'Phú Yên', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 189, lat: 13.0800, lng: 109.0900, aliases: ['phú yên', 'phu yen', 'tuy hòa', 'tuy hoa', 'sông cầu', 'đông hòa', 'đồng xuân', 'sông hinh', 'tây hòa', 'tuy an', 'phú hòa', 'ghềnh đá đĩa', 'ghenh da dia', 'mũi điện', 'mũi đại lãnh', 'vũng rô', 'tháp nghinh phong', 'bãi xép', 'đầm ô loan'] },
-      { id: 'khanhhoa', name: 'Khánh Hòa', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 385, lat: 12.2400, lng: 109.1900, aliases: ['khánh hòa', 'khanh hoa', 'nha trang', 'nhatrang', 'cam ranh', 'ninh hòa', 'vạn ninh', 'diên khánh', 'khánh vĩnh', 'khánh sơn', 'cam lâm', 'trường sa', 'vịnh nha trang', 'vịnh vân phong', 'vịnh cam ranh', 'hòn tằm', 'hòn mun', 'bình ba', 'bình hưng', 'điệp sơn', 'tháp bà ponagar'] },
-      { id: 'ninhthuan', name: 'Ninh Thuận', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 105, lat: 11.5600, lng: 108.9900, aliases: ['ninh thuận', 'ninh thuan', 'phan rang', 'tháp chàm', 'bác ái', 'ninh hải', 'ninh phước', 'ninh sơn', 'thuận bắc', 'thuận nam', 'vịnh vĩnh hy', 'vĩnh hy', 'đồng cừu an hòa', 'mũi dinh', 'đồi cát nam cương', 'núi chúa', 'vườn quốc gia núi chúa'] },
-      { id: 'binhthuan', name: 'Bình Thuận', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 192, lat: 10.9300, lng: 108.1000, aliases: ['bình thuận', 'binh thuan', 'phan thiết', 'phanthiet', 'mũi né', 'muine', 'la gi', 'tuy phong', 'bắc bình', 'hàm thuận bắc', 'hàm thuận nam', 'hàm tân', 'tánh linh', 'đức linh', 'phú quý', 'đảo phú quý', 'mũi kê gà', 'bàu trắng', 'đồi cát bay'] },
+      { id: 'quangtri', name: 'Quảng Trị', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 191, lat: 16.7500, lng: 107.1800, aliases: ['quảng trị', 'quang tri', 'quảng bình', 'quang binh', 'đồng hới', 'ba đồn', 'minh hóa', 'tuyên hóa', 'quảng trạch', 'bố trạch', 'lệ thủy', 'phong nha', 'phong nha kẻ bàng', 'động thiên đường', 'hang sơn đoòng', 'hang én', 'suối nước moọc', 'bãi đá nhảy', 'vũng chùa đảo yến', 'sơn đoòng', 'đông hà', 'vĩnh linh', 'gio linh', 'cam lộ', 'triệu phong', 'hải lăng', 'hướng hóa', 'đakrông', 'cồn cỏ', 'thành cổ quảng trị', 'địa đạo vịnh mốc', 'cầu hiền lương', 'sông bến hải', 'la vang'] },
+      { id: 'hue', name: 'Thành phố Huế', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 128, lat: 16.4637, lng: 107.5909, aliases: ['thành phố huế', 'thừa thiên huế', 'thua thien hue', 'huế', 'hue', 'hương thủy', 'hương trà', 'a lưới', 'nam đông', 'phong điền', 'phú lộc', 'phú vang', 'quảng điền', 'đại nội huế', 'sông hương', 'chùa thiên mụ', 'lăng khải định', 'lăng tự đức', 'vịnh lăng cô', 'lăng cô', 'đèo hải vân', 'phá tam giang'] },
+      { id: 'danang', name: 'Thành phố Đà Nẵng', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 217, lat: 16.0544, lng: 108.2022, aliases: ['đà nẵng', 'da nang', 'danang', 'thành phố đà nẵng', 'quảng nam', 'quang nam', 'hải châu', 'thanh khê', 'sơn trà', 'ngũ hành sơn', 'liên chiểu', 'cẩm lệ', 'hòa vang', 'hoàng sa', 'cầu rồng', 'bà nà', 'bà nà hills', 'cầu vàng', 'bán đảo sơn trà', 'mỹ khê', 'biển mỹ khê', 'tam kỳ', 'hội an', 'hoi an', 'điện bàn', 'đại lộc', 'duy xuyên', 'quế sơn', 'nam giang', 'phước sơn', 'hiệp đức', 'thăng bình', 'tiên phước', 'bắc trà my', 'nam trà my', 'núi thành', 'phố cổ hội an', 'thánh địa mỹ sơn', 'mỹ sơn', 'cù lao chàm', 'rừng dừa bảy mẫu'] },
+      { id: 'quangngai', name: 'Quảng Ngãi', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 130, lat: 15.1200, lng: 108.7900, aliases: ['quảng ngãi', 'quang ngai', 'kon tum', 'kontum', 'lý sơn', 'đảo lý sơn', 'bình sơn', 'trà bồng', 'sơn tịnh', 'tư nghĩa', 'sơn hà', 'sơn tây', 'minh long', 'nghĩa hành', 'mộ đức', 'đức phổ', 'ba tơ', 'biển mỹ khê quảng ngãi', 'núi thiên ấn', 'măng đen', 'mang den', 'ngọc hồi', 'đắk hà', 'đắk tô', 'sa thầy', 'kon plông', 'đắk glei', 'tu mơ rông', 'ia h drai', 'ngã ba đông dương', 'nhà thờ gỗ kon tum', 'cầu treo kon klor'] },
+      { id: 'gialai', name: 'Gia Lai', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 134, lat: 13.9800, lng: 108.0000, aliases: ['gia lai', 'gialai', 'bình định', 'binh dinh', 'quy nhơn', 'quynhon', 'pleiku', 'kỳ co', 'eo gió', 'an nhơn', 'hoài nhơn', 'tây sơn', 'phù mỹ', 'phù cát', 'tuy phước', 'vân canh', 'vĩnh thạnh', 'hoài ân', 'ghềnh ráng', 'cù lao xanh', 'hòn khô', 'an khê', 'ayar pa', 'chư păh', 'chư prông', 'chư sê', 'đắk doa', 'đắk pơ', 'đức cơ', 'ia grai', 'ia pa', 'kbang', 'kông chro', 'krông pa', 'mang yang', 'phú thiện', 'biển hồ tơ nưng', 'biển hồ pleiku', 'núi lửa chư đăng ya'] },
+      { id: 'khanhhoa', name: 'Khánh Hòa', region: 'trung', regionName: 'Miền Trung', isCoastal: true, coastlineKm: 679, lat: 12.2400, lng: 109.1900, aliases: ['khánh hòa', 'khanh hoa', 'phú yên', 'phu yen', 'ninh thuận', 'ninh thuan', 'nha trang', 'nhatrang', 'cam ranh', 'tuy hòa', 'tuy hoa', 'phan rang', 'tháp chàm', 'ninh hòa', 'vạn ninh', 'diên khánh', 'khánh vĩnh', 'khánh sơn', 'cam lâm', 'trường sa', 'vịnh nha trang', 'vịnh vân phong', 'vịnh cam ranh', 'hòn tằm', 'hòn mun', 'bình ba', 'bình hưng', 'điệp sơn', 'tháp bà ponagar', 'sông cầu', 'đông hòa', 'đồng xuân', 'sông hinh', 'tây hòa', 'tuy an', 'phú hòa', 'ghềnh đá đĩa', 'mũi điện', 'mũi đại lãnh', 'vũng rô', 'tháp nghinh phong', 'bãi xép', 'đầm ô loan', 'vịnh vĩnh hy', 'vĩnh hy', 'mũi dinh', 'đồi cát nam cương', 'núi chúa'] },
 
-      // TÂY NGUYÊN (5 tỉnh)
-      { id: 'daklak', name: 'Đắk Lắk', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 12.6600, lng: 108.0300, aliases: ['đắk lắk', 'đắc lắc', 'dak lak', 'buôn ma thuột', 'bmt', 'buôn đôn', 'hồ lắk', 'cư mgar', 'ea hleo', 'krông buk', 'krông ana', 'krông năng', 'krông pắc', 'ea kar', 'ea súp', 'm drắk', 'lắk', 'bảo tàng cà phê'] },
-      { id: 'daknong', name: 'Đắk Nông', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 12.0000, lng: 107.6800, aliases: ['đắk nông', 'đắc nông', 'dak nong', 'gia nghĩa', 'đắk mil', 'đắk r lấp', 'đắk song', 'đắk glong', 'krông nô', 'cư jút', 'tuy đức', 'hồ tà đùng', 'tà đùng', 'vịnh hạ long tây nguyên'] },
-      { id: 'gialai', name: 'Gia Lai', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 13.9800, lng: 108.0000, aliases: ['gia lai', 'gialai', 'pleiku', 'an khê', 'ayar pa', 'chư păh', 'chư prông', 'chư sê', 'đắk doa', 'đắk pơ', 'đức cơ', 'ia grai', 'ia pa', 'kbang', 'kông chro', 'krông pa', 'mang yang', 'phú thiện', 'biển hồ tơ nưng', 'biển hồ pleiku', 'núi lửa chư đăng ya'] },
-      { id: 'kontum', name: 'Kon Tum', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 14.3500, lng: 108.0000, aliases: ['kon tum', 'kontum', 'măng đen', 'mang den', 'ngọc hồi', 'đắk hà', 'đắk tô', 'sa thầy', 'kon plông', 'đắk glei', 'tu mơ rông', 'ia h drai', 'ngã ba đông dương', 'nhà thờ gỗ kon tum', 'cầu treo kon klor'] },
-      { id: 'lamdong', name: 'Lâm Đồng', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 11.9400, lng: 108.4500, aliases: ['lâm đồng', 'lam dong', 'đà lạt', 'da lat', 'dalat', 'bảo lộc', 'đức trọng', 'di linh', 'đơn dương', 'lạc dương', 'đạ huoai', 'đạ tẻh', 'cát tiên', 'lâm hà', 'đam rông', 'hồ xuân hương', 'thung lũng tình yêu', 'langbiang', 'thác datanla', 'đồi chè cầu đất'] },
+      // TÂY NGUYÊN (2 tỉnh)
+      { id: 'lamdong', name: 'Lâm Đồng', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: true, coastlineKm: 192, lat: 11.9400, lng: 108.4500, aliases: ['lâm đồng', 'lam dong', 'đắk nông', 'đắc nông', 'dak nong', 'bình thuận', 'binh thuan', 'đà lạt', 'da lat', 'dalat', 'bảo lộc', 'đức trọng', 'di linh', 'đơn dương', 'lạc dương', 'đạ huoai', 'đạ tẻh', 'cát tiên', 'lâm hà', 'đam rông', 'hồ xuân hương', 'thung lũng tình yêu', 'langbiang', 'thác datanla', 'đồi chè cầu đất', 'gia nghĩa', 'đắk mil', 'đắk song', 'hồ tà đùng', 'tà đùng', 'phan thiết', 'phanthiet', 'mũi né', 'muine', 'la gi', 'phú quý', 'đảo phú quý', 'mũi kê gà', 'bàu trắng', 'đồi cát bay'] },
+      { id: 'daklak', name: 'Đắk Lắk', region: 'taynguyen', regionName: 'Tây Nguyên', isCoastal: false, coastlineKm: 0, lat: 12.6600, lng: 108.0300, aliases: ['đắk lắk', 'đắc lắc', 'dak lak', 'bình phước', 'binh phuoc', 'buôn ma thuột', 'bmt', 'buôn đôn', 'hồ lắk', 'cư mgar', 'ea hleo', 'krông buk', 'krông ana', 'krông năng', 'krông pắc', 'ea kar', 'ea súp', 'm drắk', 'lắk', 'bảo tàng cà phê', 'đồng xoài', 'phước long', 'bình long', 'chơn thành', 'đồng phú', 'bù đăng', 'bù đốp', 'bù gia mập', 'lộc ninh', 'hớn quản', 'núi bà rá', 'trảng cỏ bù lạch'] },
 
-      // ĐÔNG NAM BỘ (6 tỉnh/thành)
-      { id: 'tphcm', name: 'TP. Hồ Chí Minh', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: true, coastlineKm: 20, lat: 10.7769, lng: 106.7009, aliases: ['tp. hồ chí minh', 'hồ chí minh', 'tphcm', 'tp hcm', 'sài gòn', 'saigon', 'ho chi minh', 'quận 1', 'quận 3', 'quận 4', 'quận 5', 'quận 6', 'quận 7', 'quận 8', 'quận 10', 'quận 11', 'quận 12', 'bình thạnh', 'phú nhuận', 'gò vấp', 'tân bình', 'tân phú', 'bình tân', 'thủ đức', 'củ chi', 'hóc môn', 'bình chánh', 'nhà bè', 'cần giờ', 'chợ bến thành', 'nhà thờ đức bà', 'dinh độc lập', 'nguyễn huệ', 'đảo khỉ cần giờ', 'biển cần giờ'] },
-      { id: 'bariavungtau', name: 'Bà Rịa - Vũng Tàu', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: true, coastlineKm: 305, lat: 10.4900, lng: 107.1700, aliases: ['bà rịa', 'vũng tàu', 'ba ria', 'vung tau', 'vungtau', 'côn đảo', 'con dao', 'long hải', 'hồ tràm', 'xuyên mộc', 'phú mỹ', 'đất đỏ', 'châu đức', 'hồ cốc', 'bãi sau', 'bãi trước', 'ngọn hải đăng vũng tàu', 'tượng chúa kito'] },
-      { id: 'binhduong', name: 'Bình Dương', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.1300, lng: 106.6600, aliases: ['bình dương', 'binh duong', 'thủ dầu một', 'dĩ an', 'thuận an', 'bến cát', 'tân uyên', 'bắc tân uyên', 'bàu bàng', 'dầu tiếng', 'phú giáo', 'đại nam', 'lạc cảnh đại nam'] },
-      { id: 'binhphuoc', name: 'Bình Phước', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.7500, lng: 106.9000, aliases: ['bình phước', 'binh phuoc', 'đồng xoài', 'phước long', 'bình long', 'chơn thành', 'đồng phú', 'bù đăng', 'bù đốp', 'bù gia mập', 'lộc ninh', 'hớn quản', 'núi bà rá', 'trảng cỏ bù lạch'] },
-      { id: 'dongnai', name: 'Đồng Nai', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 10.9500, lng: 106.8100, aliases: ['đồng nai', 'dong nai', 'biên hòa', 'long khánh', 'long thành', 'nhơn trạch', 'trảng bom', 'thống nhất', 'vĩnh cửu', 'cẩm mỹ', 'xuân lộc', 'định quán', 'tân phú', 'thác giang điền', 'vườn quốc gia cát tiên', 'hồ trị an'] },
+      // ĐÔNG NAM BỘ (3 tỉnh/thành)
+      { id: 'tphcm', name: 'TP. Hồ Chí Minh', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: true, coastlineKm: 325, lat: 10.7769, lng: 106.7009, aliases: ['tp. hồ chí minh', 'hồ chí minh', 'tphcm', 'tp hcm', 'sài gòn', 'saigon', 'ho chi minh', 'bà rịa', 'vũng tàu', 'ba ria', 'vung tau', 'vungtau', 'côn đảo', 'con dao', 'long hải', 'hồ tràm', 'xuyên mộc', 'phú mỹ', 'đất đỏ', 'châu đức', 'hồ cốc', 'bãi sau', 'bãi trước', 'ngọn hải đăng vũng tàu', 'tượng chúa kito', 'quận 1', 'quận 3', 'quận 4', 'quận 5', 'quận 6', 'quận 7', 'quận 8', 'quận 10', 'quận 11', 'quận 12', 'bình thạnh', 'phú nhuận', 'gò vấp', 'tân bình', 'tân phú', 'bình tân', 'thủ đức', 'củ chi', 'hóc môn', 'bình chánh', 'nhà bè', 'cần giờ', 'chợ bến thành', 'nhà thờ đức bà', 'dinh độc lập', 'nguyễn huệ', 'đảo khỉ cần giờ', 'biển cần giờ'] },
+      { id: 'dongnai', name: 'Đồng Nai', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 10.9500, lng: 106.8100, aliases: ['đồng nai', 'dong nai', 'bình dương', 'binh duong', 'biên hòa', 'thủ dầu một', 'dĩ an', 'thuận an', 'bến cát', 'tân uyên', 'bắc tân uyên', 'bàu bàng', 'dầu tiếng', 'phú giáo', 'đại nam', 'lạc cảnh đại nam', 'long khánh', 'long thành', 'nhơn trạch', 'trảng bom', 'thống nhất', 'vĩnh cửu', 'cẩm mỹ', 'xuân lộc', 'định quán', 'tân phú', 'thác giang điền', 'vườn quốc gia cát tiên', 'hồ trị an'] },
       { id: 'tayninh', name: 'Tây Ninh', region: 'dongnambo', regionName: 'Đông Nam Bộ', isCoastal: false, coastlineKm: 0, lat: 11.3100, lng: 106.1000, aliases: ['tây ninh', 'tay ninh', 'trảng bàng', 'hòa thành', 'tân biên', 'tân châu', 'dương minh châu', 'châu thành', 'bến cầu', 'gò dầu', 'núi bà đen', 'tòa thánh tây ninh', 'hồ dầu tiếng', 'ma thiên lãnh'] },
 
-      // ĐỒNG BẰNG SÔNG CỬU LONG / MIỀN TÂY (13 tỉnh/thành)
-      { id: 'cantho', name: 'Cần Thơ', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.0300, lng: 105.7800, aliases: ['cần thơ', 'can tho', 'cantho', 'ninh kiều', 'bến ninh kiều', 'chợ nổi cái răng', 'bình thủy', 'cái răng', 'ô môn', 'thốt nốt', 'phong điền', 'cờ đỏ', 'thới lai', 'vĩnh thạnh'] },
-      { id: 'angiang', name: 'An Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.5300, lng: 105.1500, aliases: ['an giang', 'angiang', 'long xuyên', 'châu đốc', 'núi sam', 'miếu bà chúa xứ', 'tri tôn', 'tịnh biên', 'thất sơn', 'núi cấm', 'rừng tràm trà sư', 'chợ nổi long xuyên'] },
+      // ĐỒNG BẰNG SÔNG CỬU LONG / MIỀN TÂY (5 tỉnh/thành)
+      { id: 'cantho', name: 'Thành phố Cần Thơ', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.0300, lng: 105.7800, aliases: ['cần thơ', 'can tho', 'cantho', 'long an', 'longan', 'hậu giang', 'hau giang', 'ninh kiều', 'bến ninh kiều', 'chợ nổi cái răng', 'bình thủy', 'cái răng', 'ô môn', 'thốt nốt', 'phong điền', 'cờ đỏ', 'thới lai', 'vĩnh thạnh', 'tân an', 'kiến tường', 'bến lức', 'cần đước', 'cần giuộc', 'đức hòa', 'đức huệ', 'mộc hóa', 'tân hưng', 'tân thạnh', 'tân trụ', 'thạnh hóa', 'thủ thừa', 'vĩnh hưng', 'làng nổi tân lập', 'vị thanh', 'ngã bảy', 'long mỹ', 'phụng hiệp', 'vị thủy', 'chợ nổi ngã bảy'] },
+      { id: 'vinhlong', name: 'Vĩnh Long', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 162, lat: 10.2500, lng: 105.9700, aliases: ['vĩnh long', 'vinh long', 'tiền giang', 'tien giang', 'bến tre', 'ben tre', 'bentre', 'trà vinh', 'tra vinh', 'mỹ tho', 'my tho', 'gò công', 'cai lậy', 'tân phước', 'chợ gạo', 'bình minh', 'long hồ', 'mang thít', 'vũng liêm', 'tam bình', 'trà ôn', 'cù lao an bình', 'cầu mỹ thuận', 'chợ lách', 'mỏ cày', 'giồng trôm', 'bình đại', 'ba tri', 'thạnh phú', 'xứ dừa', 'cồn phụng', 'duyên hải', 'càng long', 'cầu kè', 'tiểu cần', 'ba động', 'chùa hang', 'ao bà om'] },
       { id: 'dongthap', name: 'Đồng Tháp', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.4500, lng: 105.6300, aliases: ['đồng tháp', 'dong thap', 'cao lãnh', 'sa đéc', 'hồng ngự', 'tân hồng', 'tam nông', 'tháp mười', 'thanh bình', 'lấp vò', 'lai vung', 'châu thành', 'tràm chim', 'làng hoa sa đéc', 'vườn quốc gia tràm chim', 'khu di tích xẻo quýt'] },
-      { id: 'longan', name: 'Long An', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.5300, lng: 106.4100, aliases: ['long an', 'longan', 'tân an', 'kiến tường', 'bến lức', 'cần đước', 'cần giuộc', 'châu thành', 'đức hòa', 'đức huệ', 'mộc hóa', 'tân hưng', 'tân thạnh', 'tân trụ', 'thạnh hóa', 'thủ thừa', 'vĩnh hưng', 'làng nổi tân lập'] },
-      { id: 'tiengiang', name: 'Tiền Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 32, lat: 10.3500, lng: 106.3600, aliases: ['tiền giang', 'tien giang', 'mỹ tho', 'my tho', 'gò công', 'cai lậy', 'tân phước', 'châu thành', 'chợ gạo', 'gò công tây', 'gò công đông', 'tân phú đông', 'chùa vĩnh tràng', 'cù lao thới sơn', 'biển tân thành'] },
-      { id: 'bentre', name: 'Bến Tre', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 65, lat: 10.2400, lng: 106.3700, aliases: ['bến tre', 'ben tre', 'bentre', 'châu thành', 'chợ lách', 'mỏ cày', 'giồng trôm', 'bình đại', 'ba tri', 'thạnh phú', 'xứ dừa', 'cồn phụng', 'cồn quy', 'cồn ốc'] },
-      { id: 'vinhlong', name: 'Vĩnh Long', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 10.2500, lng: 105.9700, aliases: ['vĩnh long', 'vinh long', 'bình minh', 'long hồ', 'mang thít', 'vũng liêm', 'tam bình', 'trà ôn', 'bình tân', 'cù lao an bình', 'cầu mỹ thuận'] },
-      { id: 'haugiang', name: 'Hậu Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: false, coastlineKm: 0, lat: 9.7800, lng: 105.4700, aliases: ['hậu giang', 'hau giang', 'vị thanh', 'ngã bảy', 'long mỹ', 'phụng hiệp', 'châu thành', 'châu thành a', 'vị thủy', 'chợ nổi ngã bảy'] },
-      { id: 'travinh', name: 'Trà Vinh', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 65, lat: 9.9300, lng: 106.3400, aliases: ['trà vinh', 'tra vinh', 'duyên hải', 'càng long', 'cầu kè', 'tiểu cần', 'châu thành', 'cầu ngang', 'trà cú', 'ba động', 'chùa hang', 'ao bà om', 'chùa âng'] },
-      { id: 'soctrang', name: 'Sóc Trăng', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 72, lat: 9.6000, lng: 105.9700, aliases: ['sóc trăng', 'soc trang', 'ngã năm', 'vĩnh châu', 'châu thành', 'kế sách', 'mỹ tú', 'cù lao dung', 'long phú', 'mỹ xuyên', 'thạnh trị', 'trần đề', 'chùa dơi', 'chùa chén kiểu', 'chùa som rong', 'chợ nổi ngã năm'] },
-      { id: 'baclieu', name: 'Bạc Liêu', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 56, lat: 9.2900, lng: 105.7200, aliases: ['bạc liêu', 'bac lieu', 'giá rai', 'hồng dân', 'phước long', 'vĩnh lợi', 'đông hải', 'hòa bình', 'công tử bạc liêu', 'điện gió bạc liêu', 'nhà thờ tắc sậy', 'cha diệp'] },
-      { id: 'camau', name: 'Cà Mau', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 254, lat: 9.1700, lng: 105.1500, aliases: ['cà mau', 'ca mau', 'đất mũi', 'mũi cà mau', 'u minh', 'thới bình', 'trần văn thời', 'cái nước', 'đầm dơi', 'năm căn', 'phú tân', 'ngọc hiển', 'hòn khoai', 'rừng u minh hạ', 'hòn đá bạc', 'cột mốc gps 0001'] },
-      { id: 'kiengiang', name: 'Kiên Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 200, lat: 10.0100, lng: 105.0800, aliases: ['kiên giang', 'kien giang', 'phú quốc', 'phu quoc', 'phuquoc', 'rạch giá', 'hà tiên', 'kiên lương', 'hòn đất', 'tân hiệp', 'châu thành', 'giồng riềng', 'gò quao', 'an biên', 'an minh', 'vĩnh thuận', 'u minh thượng', 'kiên hải', 'nam du', 'hòn sơn', 'đảo phú quốc', 'thổ chu', 'quần đảo bà lụa'] }
+      { id: 'camau', name: 'Cà Mau', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 382, lat: 9.1700, lng: 105.1500, aliases: ['cà mau', 'ca mau', 'sóc trăng', 'soc trang', 'bạc liêu', 'bac lieu', 'đất mũi', 'mũi cà mau', 'u minh', 'thới bình', 'trần văn thời', 'cái nước', 'đầm dơi', 'năm căn', 'phú tân', 'ngọc hiển', 'hòn khoai', 'rừng u minh hạ', 'hòn đá bạc', 'cột mốc gps 0001', 'ngã năm', 'vĩnh châu', 'kế sách', 'mỹ tú', 'cù lao dung', 'long phú', 'mỹ xuyên', 'thạnh trị', 'trần đề', 'chùa dơi', 'chùa chén kiểu', 'chùa som rong', 'chợ nổi ngã năm', 'giá rai', 'hồng dân', 'phước long', 'vĩnh lợi', 'đông hải', 'hòa bình', 'công tử bạc liêu', 'điện gió bạc liêu', 'nhà thờ tắc sậy', 'cha diệp'] },
+      { id: 'angiang', name: 'An Giang', region: 'mientay', regionName: 'ĐBSCL', isCoastal: true, coastlineKm: 200, lat: 10.5300, lng: 105.1500, aliases: ['an giang', 'angiang', 'kiên giang', 'kien giang', 'long xuyên', 'châu đốc', 'núi sam', 'miếu bà chúa xứ', 'tri tôn', 'tịnh biên', 'thất sơn', 'núi cấm', 'rừng tràm trà sư', 'chợ nổi long xuyên', 'phú quốc', 'phu quoc', 'phuquoc', 'rạch giá', 'hà tiên', 'kiên lương', 'hòn đất', 'tân hiệp', 'giồng riềng', 'gò quao', 'an biên', 'an minh', 'vĩnh thuận', 'u minh thượng', 'kiên hải', 'nam du', 'hòn sơn', 'đảo phú quốc', 'thổ chu', 'quần đảo bà lụa'] }
     ];
 
     // State for province footprint filtering
@@ -8486,7 +8447,7 @@
     }
 
     /**
-     * Calculate Complete Vietnam 63 Provinces Footprint & 3,260 km Coastline
+     * Calculate Complete Vietnam 34 Provinces Footprint & Coastline
      */
     function calculateVietnamFootprint() {
       const visitedMap = new Map(); // provId -> { prov, pins: [] }
@@ -8556,14 +8517,14 @@
         }
       });
 
-      const TOTAL_PROVINCES = 63;
-      const TOTAL_COASTAL_PROVINCES = 28;
+      const TOTAL_PROVINCES = 34;
+      const TOTAL_COASTAL_PROVINCES = 18;
       const TOTAL_COASTLINE_KM = 3260;
 
       const provincePct = ((visitedCount / TOTAL_PROVINCES) * 100).toFixed(1);
       const coastlinePct = Math.min(100, (conqueredCoastlineKm / TOTAL_COASTLINE_KM) * 100).toFixed(1);
 
-      // 4. Update UI Elements for 63 Provinces
+      // 4. Update UI Elements for 34 Provinces
       const valProvEl = document.getElementById('stat-visited-provinces-val');
       if (valProvEl) valProvEl.textContent = `${visitedCount} / ${TOTAL_PROVINCES}`;
 
@@ -8576,25 +8537,25 @@
       const subProvEl = document.getElementById('stat-visited-provinces-sub');
       if (subProvEl) {
         subProvEl.innerHTML = visitedCount > 0
-          ? `Bạn đã đặt dấu chân đến <strong class="text-white font-bold">${visitedCount}</strong> tỉnh thành trên cả nước`
+          ? `Bạn đã đặt dấu chân đến <strong class="text-white font-bold">${visitedCount}</strong> / 34 tỉnh thành trên cả nước`
           : `Tự động nhận diện từ các kỷ niệm & lộ trình của bạn`;
       }
 
       // Regional break down
       const regBacEl = document.getElementById('stat-reg-bac');
-      if (regBacEl) regBacEl.textContent = `Bắc: ${bacVisited}/25`;
+      if (regBacEl) regBacEl.textContent = `Bắc: ${bacVisited}/15`;
 
       const regTrungEl = document.getElementById('stat-reg-trung');
-      if (regTrungEl) regTrungEl.textContent = `Trung: ${trungVisited}/19`;
+      if (regTrungEl) regTrungEl.textContent = `Trung: ${trungVisited}/9`;
 
       const regTayNguyenEl = document.getElementById('stat-reg-taynguyen');
-      if (regTayNguyenEl) regTayNguyenEl.textContent = `T.Nguyên: ${tayNguyenVisited}/5`;
+      if (regTayNguyenEl) regTayNguyenEl.textContent = `T.Nguyên: ${tayNguyenVisited}/2`;
 
       const regDongNamEl = document.getElementById('stat-reg-dongnam');
-      if (regDongNamEl) regDongNamEl.textContent = `ĐNB: ${dongNamBoVisited}/6`;
+      if (regDongNamEl) regDongNamEl.textContent = `ĐNB: ${dongNamBoVisited}/3`;
 
       const regMienTayEl = document.getElementById('stat-reg-mientay');
-      if (regMienTayEl) regMienTayEl.textContent = `ĐBSCL: ${mienTayVisited}/13`;
+      if (regMienTayEl) regMienTayEl.textContent = `ĐBSCL: ${mienTayVisited}/5`;
 
       // 5. Update UI Elements for Coastline
       const valCoastlineEl = document.getElementById('stat-conquered-coastline-val');
