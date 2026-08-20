@@ -448,8 +448,8 @@
 <body class="h-full w-full overflow-hidden bg-slate-100 text-slate-800 antialiased select-none font-sans">
   <div id="app" class="relative flex h-full w-full overflow-hidden">
     
-    <!-- ==================== SIDEBAR ==================== -->
-    <aside id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-30 flex flex-col w-full sm:w-96 md:w-[420px] lg:w-[420px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 ease-in-out -translate-x-full lg:translate-x-0 shrink-0">
+    <!-- ==================== SIDEBAR (Truly Floating Overlay) ==================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex flex-col w-full sm:w-96 md:w-[420px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full shrink-0">
       
       <!-- App Header -->
       <div class="px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-sky-600 to-indigo-600 text-white shrink-0">
@@ -470,7 +470,7 @@
           <button id="btn-theme-toggle" title="Đổi giao diện Sáng/Tối" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-sm transition">
             <i class="fa-solid fa-moon"></i>
           </button>
-          <button id="btn-close-sidebar" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-sm transition" title="Đóng danh sách">
+          <button id="btn-close-sidebar" onclick="closeSidebar()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-sm transition" title="Đóng danh sách">
             <i class="fa-solid fa-xmark text-base"></i>
           </button>
         </div>
@@ -863,8 +863,8 @@
       </div>
     </aside>
 
-    <!-- Backdrop overlay for Mobile Sidebar -->
-    <div id="sidebar-backdrop" onclick="closeSidebar()" class="fixed inset-0 z-20 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
+    <!-- Backdrop overlay for Floating Sidebar -->
+    <div id="sidebar-backdrop" onclick="closeSidebar()" class="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-none"></div>
 
     <!-- ==================== MAIN MAP VIEWPORT ==================== -->
     <main class="relative flex-1 h-full w-full overflow-hidden bg-slate-200">
@@ -873,7 +873,7 @@
       <div id="map" class="h-full w-full z-0"></div>
 
       <!-- TOP FLOATING SEARCH & CONTROLS BAR (Compact & Non-Intrusive Floating Island) -->
-      <div class="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-4 right-2.5 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2 pointer-events-none transition-all duration-300">
+      <div id="top-floating-bar" class="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-4 right-2.5 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2 pointer-events-none transition-all duration-300 ease-in-out">
         
         <!-- Sidebar Toggle (Hamburger Button) -->
         <div class="pointer-events-auto shrink-0">
@@ -4230,10 +4230,7 @@
     function isSidebarCurrentlyOpen() {
       const sb = document.getElementById('sidebar');
       if (!sb) return false;
-      if (window.innerWidth >= 1024) {
-        return !sb.classList.contains('lg:-ml-[420px]');
-      }
-      return !sb.classList.contains('-translate-x-full');
+      return sb.classList.contains('translate-x-0') && !sb.classList.contains('-translate-x-full');
     }
 
     function toggleSidebar() {
@@ -4249,9 +4246,10 @@
       const backdrop = document.getElementById('sidebar-backdrop');
       const icon = document.getElementById('toggle-sidebar-icon');
       const toggleBtn = document.getElementById('btn-toggle-sidebar');
+      const topBar = document.getElementById('top-floating-bar');
 
       if (sb) {
-        sb.classList.remove('-translate-x-full', 'lg:-ml-[420px]', 'lg:opacity-0', 'lg:pointer-events-none');
+        sb.classList.remove('-translate-x-full');
         sb.classList.add('translate-x-0');
       }
 
@@ -4260,17 +4258,17 @@
         backdrop.classList.add('opacity-100', 'pointer-events-auto');
       }
 
+      if (topBar) {
+        topBar.classList.add('lg:left-[436px]');
+      }
+
+      if (toggleBtn) {
+        toggleBtn.parentElement.classList.add('lg:hidden');
+      }
+
       if (icon) {
         icon.classList.add('rotate-90', 'text-sky-600', 'dark:text-sky-400');
       }
-      if (toggleBtn) {
-        toggleBtn.classList.add('ring-2', 'ring-sky-500/50');
-      }
-
-      // Smoothly recalculate map layout size
-      setTimeout(() => {
-        if (map) map.invalidateSize();
-      }, 320);
     }
 
     function closeSidebar() {
@@ -4278,10 +4276,11 @@
       const backdrop = document.getElementById('sidebar-backdrop');
       const icon = document.getElementById('toggle-sidebar-icon');
       const toggleBtn = document.getElementById('btn-toggle-sidebar');
+      const topBar = document.getElementById('top-floating-bar');
 
       if (sb) {
         sb.classList.remove('translate-x-0');
-        sb.classList.add('-translate-x-full', 'lg:-ml-[420px]', 'lg:opacity-0', 'lg:pointer-events-none');
+        sb.classList.add('-translate-x-full');
       }
 
       if (backdrop) {
@@ -4289,19 +4288,19 @@
         backdrop.classList.add('opacity-0', 'pointer-events-none');
       }
 
+      if (topBar) {
+        topBar.classList.remove('lg:left-[436px]');
+      }
+
+      if (toggleBtn) {
+        toggleBtn.parentElement.classList.remove('lg:hidden');
+      }
+
       if (icon) {
         icon.classList.remove('rotate-90', 'text-sky-600', 'dark:text-sky-400');
       }
-      if (toggleBtn) {
-        toggleBtn.classList.remove('ring-2', 'ring-sky-500/50');
-      }
 
       updateMobileNavState('map');
-
-      // Smoothly recalculate map layout size
-      setTimeout(() => {
-        if (map) map.invalidateSize();
-      }, 320);
     }
 
     // Render Pin Cards in Sidebar
