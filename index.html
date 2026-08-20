@@ -872,146 +872,142 @@
       <!-- Leaflet Map Container -->
       <div id="map" class="h-full w-full z-0"></div>
 
-      <!-- TOP FLOATING SEARCH & CONTROLS BAR (Compact & Non-Intrusive Floating Island) -->
-      <div id="top-floating-bar" class="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-4 right-2.5 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2 pointer-events-none transition-all duration-300 ease-in-out">
-        
-        <!-- Sidebar Toggle (Hamburger Button) -->
-        <div class="pointer-events-auto shrink-0">
-          <button id="btn-toggle-sidebar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-all duration-200 active:scale-90 group" title="Mở/Đóng danh sách">
-            <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-sm sm:text-base transition-all duration-200 group-hover:scale-110"></i>
-          </button>
-        </div>
-
-        <!-- Search Bar with Nominatim Autocomplete & Elegant Globe Badge -->
-        <div class="pointer-events-auto relative flex-1 min-w-[140px] sm:min-w-[190px] md:min-w-[230px] max-w-sm md:max-w-md">
-          <div class="flex items-center h-9 sm:h-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md border border-slate-200/70 dark:border-slate-800 px-2 sm:px-2.5 focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 hover:bg-white dark:hover:bg-slate-900 transition-all">
-            
-            <!-- Beautiful Stylized Globe Icon Button -->
-            <button type="button" id="btn-search-globe" onclick="showQuickSuggestions()" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 text-white flex items-center justify-center shadow-xs mr-1.5 shrink-0 hover:scale-105 active:scale-95 transition-all duration-200 group" title="Gợi ý địa điểm du lịch & khám phá">
-              <!-- Custom Stylized Dual-Tone Globe SVG matching user design -->
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm-1 2.062A8.006 8.006 0 004.062 11H7a2 2 0 012 2v1a2 2 0 002 2v1.5a.5.5 0 01-.5.5H10v1.938A8.004 8.004 0 0012 20c4.418 0 8-3.582 8-8 0-.338-.021-.67-.062-.998L17.5 13.5a1.5 1.5 0 01-1.5-1.5V11a2 2 0 00-2-2h-3V4.062z" />
-              </svg>
-            </button>
-
-            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm..." class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none truncate pr-1" autocomplete="off" />
-            
-            <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1 shrink-0 transition" title="Xóa tìm kiếm">
-              <i class="fa-solid fa-circle-xmark"></i>
-            </button>
-            
-            <div id="search-spinner" class="hidden animate-spin text-sky-500 text-xs px-1 shrink-0">
-              <i class="fa-solid fa-circle-notch"></i>
-            </div>
-          </div>
-
-          <!-- Search Results Dropdown (Wide & High Information Density) -->
-          <div id="search-results-dropdown" class="hidden absolute top-full left-0 mt-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 max-h-[75vh] w-full min-w-[290px] sm:min-w-[440px] md:min-w-[500px] max-w-[95vw] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 z-50">
-            <!-- Results populated here -->
-          </div>
-        </div>
-
-        <!-- Quick Map Style & Desktop Action -->
-        <div class="pointer-events-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <!-- TOP FLOATING SEARCH & CONTROLS BAR (Always Centered & Fully Responsive Floating Island) -->
+      <div id="top-floating-bar" class="absolute top-2 sm:top-3.5 inset-x-0 z-20 flex items-center justify-center px-2 sm:px-4 pointer-events-none transition-all duration-300 ease-in-out">
+        <div class="flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 max-w-full w-auto">
           
-          <!-- Top Floating Footprint & Coastline Stat Pill -->
-          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-1.5 h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành">
-            <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
-              <i class="fa-solid fa-flag text-amber-500 text-xs"></i>
-              <span id="top-stat-provinces" class="whitespace-nowrap">0/34 tỉnh</span>
-            </span>
-          </button>
-
-          <!-- Floating Route Distance & Time Status Pill (Directly integrated next to province counter) -->
-          <div id="floating-route-pill" class="hidden items-center gap-1 sm:gap-1.5 h-9 sm:h-10 pl-2 sm:pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-emerald-500/40 shrink-0 select-none transition-all duration-200">
-            <div class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <i class="fa-solid fa-route text-[10px] sm:text-[11px]"></i>
-            </div>
-            <div class="flex items-center gap-1 text-xs">
-              <span id="pill-distance" class="font-extrabold text-white text-xs whitespace-nowrap">0 km</span>
-              <span class="text-slate-400 text-[10px] hidden lg:inline">•</span>
-              <span id="pill-time" class="text-[11px] font-medium text-emerald-300 hidden lg:inline whitespace-nowrap">0 phút</span>
-            </div>
-            <button onclick="switchTab('route'); openSidebar();" class="h-6 sm:h-7 px-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-[10px] sm:text-[11px] font-bold shadow-xs transition flex items-center gap-1 shrink-0" title="Xem chi tiết lộ trình trong danh sách">
-              <span>Xem</span>
-              <i class="fa-solid fa-arrow-right text-[8px]"></i>
-            </button>
-            <button onclick="document.getElementById('floating-route-pill').classList.add('hidden'); document.getElementById('floating-route-pill').classList.remove('flex');" class="w-5 h-5 rounded-md hover:bg-white/20 text-slate-400 hover:text-white text-[10px] flex items-center justify-center transition shrink-0" title="Ẩn thẻ lộ trình">
-              <i class="fa-solid fa-xmark"></i>
+          <!-- Sidebar Toggle (Hamburger Button) -->
+          <div class="pointer-events-auto shrink-0">
+            <button id="btn-toggle-sidebar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-all duration-200 active:scale-90 group" title="Mở/Đóng danh sách">
+              <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-sm sm:text-base transition-all duration-200 group-hover:scale-110"></i>
             </button>
           </div>
 
-          <!-- Active Route Filter Banner (Directly integrated next to province counter / route pill) -->
-          <div id="active-route-filter-banner" class="hidden items-center gap-1.5 h-9 sm:h-10 pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-sky-500/40 shrink-0 select-none transition-all duration-200">
-            <div class="w-2 h-2 rounded-full bg-sky-400 shrink-0 animate-pulse"></div>
-            <div class="text-xs truncate max-w-[80px] sm:max-w-[120px]">
-              <span id="route-filter-banner-name" class="font-bold text-white text-xs truncate block">Lộ trình</span>
-            </div>
-            <span id="route-filter-banner-count" class="text-[10px] text-sky-200 px-1.5 py-0.2 rounded-md bg-sky-500/20 font-bold border border-sky-500/30 shrink-0">0 điểm</span>
-            <button onclick="clearMapRouteFilter()" class="w-5 h-5 rounded-md hover:bg-rose-500 hover:text-white text-slate-300 text-[10px] transition flex items-center justify-center shrink-0" title="Hiện tất cả kỷ niệm">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
+          <!-- Search Bar with Nominatim Autocomplete & Elegant Globe Badge -->
+          <div class="pointer-events-auto relative flex-1 min-w-[125px] sm:min-w-[180px] md:min-w-[220px] max-w-[200px] sm:max-w-xs md:max-w-sm lg:max-w-md">
+            <div class="flex items-center h-9 sm:h-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md border border-slate-200/70 dark:border-slate-800 px-2 sm:px-2.5 focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 hover:bg-white dark:hover:bg-slate-900 transition-all">
+              
+              <!-- Beautiful Stylized Globe Icon Button -->
+              <button type="button" id="btn-search-globe" onclick="showQuickSuggestions()" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 text-white flex items-center justify-center shadow-xs mr-1.5 shrink-0 hover:scale-105 active:scale-95 transition-all duration-200 group" title="Gợi ý địa điểm du lịch & khám phá">
+                <!-- Custom Stylized Dual-Tone Globe SVG matching user design -->
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm-1 2.062A8.006 8.006 0 004.062 11H7a2 2 0 012 2v1a2 2 0 002 2v1.5a.5.5 0 01-.5.5H10v1.938A8.004 8.004 0 0012 20c4.418 0 8-3.582 8-8 0-.338-.021-.67-.062-.998L17.5 13.5a1.5 1.5 0 01-1.5-1.5V11a2 2 0 00-2-2h-3V4.062z" />
+                </svg>
+              </button>
 
-          <!-- Map Style Selector -->
-          <div class="relative">
-            <button id="btn-map-layers" class="h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 hover:bg-white dark:hover:bg-slate-900 transition text-xs sm:text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
-              <i class="fa-solid fa-layer-group text-sky-600 text-xs sm:text-sm"></i>
-              <span id="current-layer-name" class="hidden xl:inline text-xs">Google Đường phố</span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden xl:inline"></i>
-            </button>
-
-            <!-- Map Layers Menu -->
-            <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
-              <div class="px-2.5 py-1 text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex items-center justify-between">
-                <span>Google Maps</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-100 dark:bg-sky-950 font-bold">Mặc định</span>
+              <input type="text" id="map-search-input" placeholder="Tìm kiếm địa điểm..." class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none truncate pr-1" autocomplete="off" />
+              
+              <button id="btn-search-clear" class="hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1 shrink-0 transition" title="Xóa tìm kiếm">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </button>
+              
+              <div id="search-spinner" class="hidden animate-spin text-sky-500 text-xs px-1 shrink-0">
+                <i class="fa-solid fa-circle-notch"></i>
               </div>
-              <button onclick="setMapTile('google_streets')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-map text-sky-500 group-hover:scale-110 transition"></i>
-                  <span>Google Đường phố</span>
-                </div>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">Chuẩn</span>
-              </button>
-              <button onclick="setMapTile('google_satellite')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-satellite text-teal-500 group-hover:scale-110 transition"></i>
-                  <span>Google Vệ tinh (Hybrid)</span>
-                </div>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 font-bold">Nét cao</span>
-              </button>
-              <button onclick="setMapTile('google_terrain')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-mountain-sun text-emerald-500 group-hover:scale-110 transition"></i>
-                  <span>Google Địa hình</span>
-                </div>
-              </button>
-              <button onclick="setMapTile('google_traffic')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
-                <div class="flex items-center gap-2.5">
-                  <i class="fa-solid fa-traffic-light text-rose-500 group-hover:scale-110 transition"></i>
-                  <span>Google Giao thông</span>
-                </div>
-              </button>
+            </div>
 
-              <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
-              <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chế độ khác</div>
-
-              <button onclick="setMapTile('dark')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-moon text-indigo-500"></i> Bản đồ Ban đêm (Dark)
-              </button>
-              <button onclick="setMapTile('osm')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-map-location-dot text-amber-500"></i> OpenStreetMap
-              </button>
+            <!-- Search Results Dropdown (Wide & High Information Density) -->
+            <div id="search-results-dropdown" class="hidden absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 max-h-[70vh] w-[86vw] sm:w-[420px] md:w-[480px] max-w-[92vw] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 z-50">
+              <!-- Results populated here -->
             </div>
           </div>
 
-          <!-- Add Memory Floating Action Button (Desktop header) -->
-          <button id="btn-quick-add" class="hidden sm:flex h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md items-center gap-1.5 hover:opacity-95 active:scale-95 transition text-xs sm:text-sm font-bold shrink-0" title="Thêm kỷ niệm mới">
-            <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
-            <span class="hidden md:inline">Ghim Kỷ niệm</span>
-            <span class="md:hidden">Ghim</span>
-          </button>
+          <!-- Quick Actions Group -->
+          <div class="pointer-events-auto flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+            
+            <!-- Top Floating Footprint & Coastline Stat Pill -->
+            <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-1.5 h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành">
+              <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-flag text-amber-500 text-xs"></i>
+                <span id="top-stat-provinces" class="whitespace-nowrap">0/34 tỉnh</span>
+              </span>
+            </button>
+
+            <!-- Floating Route Distance & Time Status Pill (Directly integrated next to province counter) -->
+            <div id="floating-route-pill" class="hidden items-center gap-1 sm:gap-1.5 h-9 sm:h-10 pl-2 sm:pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-emerald-500/40 shrink-0 select-none transition-all duration-200">
+              <div class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-route text-[10px] sm:text-[11px]"></i>
+              </div>
+              <div class="flex items-center gap-1 text-xs">
+                <span id="pill-distance" class="font-extrabold text-white text-xs whitespace-nowrap">0 km</span>
+                <span class="text-slate-400 text-[10px] hidden lg:inline">•</span>
+                <span id="pill-time" class="text-[11px] font-medium text-emerald-300 hidden lg:inline whitespace-nowrap">0 phút</span>
+              </div>
+              <button onclick="switchTab('route'); openSidebar();" class="h-6 sm:h-7 px-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-[10px] sm:text-[11px] font-bold shadow-xs transition flex items-center gap-1 shrink-0" title="Xem chi tiết lộ trình trong danh sách">
+                <span>Xem</span>
+                <i class="fa-solid fa-arrow-right text-[8px]"></i>
+              </button>
+              <button onclick="document.getElementById('floating-route-pill').classList.add('hidden'); document.getElementById('floating-route-pill').classList.remove('flex');" class="w-5 h-5 rounded-md hover:bg-white/20 text-slate-400 hover:text-white text-[10px] flex items-center justify-center transition shrink-0" title="Ẩn thẻ lộ trình">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Active Route Filter Banner (Directly integrated next to province counter / route pill) -->
+            <div id="active-route-filter-banner" class="hidden items-center gap-1.5 h-9 sm:h-10 pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-sky-500/40 shrink-0 select-none transition-all duration-200">
+              <div class="w-2 h-2 rounded-full bg-sky-400 shrink-0 animate-pulse"></div>
+              <div class="text-xs truncate max-w-[80px] sm:max-w-[120px]">
+                <span id="route-filter-banner-name" class="font-bold text-white text-xs truncate block">Lộ trình</span>
+              </div>
+              <span id="route-filter-banner-count" class="text-[10px] text-sky-200 px-1.5 py-0.2 rounded-md bg-sky-500/20 font-bold border border-sky-500/30 shrink-0">0 điểm</span>
+              <button onclick="clearMapRouteFilter()" class="w-5 h-5 rounded-md hover:bg-rose-500 hover:text-white text-slate-300 text-[10px] transition flex items-center justify-center shrink-0" title="Hiện tất cả kỷ niệm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Map Style Selector -->
+            <div class="relative">
+              <button id="btn-map-layers" class="h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 hover:bg-white dark:hover:bg-slate-900 transition text-xs sm:text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
+                <i class="fa-solid fa-layer-group text-sky-600 text-xs sm:text-sm"></i>
+                <span id="current-layer-name" class="hidden xl:inline text-xs">Google Đường phố</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden xl:inline"></i>
+              </button>
+
+              <!-- Map Layers Menu -->
+              <div id="map-layers-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 space-y-1 text-sm font-medium">
+                <div class="px-2.5 py-1 text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex items-center justify-between">
+                  <span>Google Maps</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-100 dark:bg-sky-950 font-bold">Mặc định</span>
+                </div>
+                <button onclick="setMapTile('google_streets')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-map text-sky-500 group-hover:scale-110 transition"></i>
+                    <span>Google Đường phố</span>
+                  </div>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">Chuẩn</span>
+                </button>
+                <button onclick="setMapTile('google_satellite')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-satellite text-teal-500 group-hover:scale-110 transition"></i>
+                    <span>Google Vệ tinh (Hybrid)</span>
+                  </div>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 font-bold">Nét cao</span>
+                </button>
+                <button onclick="setMapTile('google_terrain')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-mountain-sun text-emerald-500 group-hover:scale-110 transition"></i>
+                    <span>Google Địa hình</span>
+                  </div>
+                </button>
+                <button onclick="setMapTile('google_traffic')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-between group transition">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-traffic-light text-rose-500 group-hover:scale-110 transition"></i>
+                    <span>Google Giao thông</span>
+                  </div>
+                </button>
+
+                <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+                <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chế độ khác</div>
+
+                <button onclick="setMapTile('dark')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
+                  <i class="fa-solid fa-moon text-indigo-500"></i> Bản đồ Ban đêm (Dark)
+                </button>
+                <button onclick="setMapTile('osm')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition">
+                  <i class="fa-solid fa-map-location-dot text-amber-500"></i> OpenStreetMap
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -3153,27 +3149,27 @@
       });
 
       // Setup event listeners for sidebar toggles & buttons
-      document.getElementById('btn-toggle-sidebar').addEventListener('click', toggleSidebar);
-      document.getElementById('btn-close-sidebar').addEventListener('click', closeSidebar);
-      document.getElementById('btn-quick-add').addEventListener('click', () => {
+      document.getElementById('btn-toggle-sidebar')?.addEventListener('click', toggleSidebar);
+      document.getElementById('btn-close-sidebar')?.addEventListener('click', closeSidebar);
+      document.getElementById('btn-quick-add')?.addEventListener('click', () => {
         const center = map.getCenter();
         openAddMemoryModal(center.lat, center.lng);
       });
 
       // Map Layers dropdown toggle
-      document.getElementById('btn-map-layers').addEventListener('click', (e) => {
+      document.getElementById('btn-map-layers')?.addEventListener('click', (e) => {
         e.stopPropagation();
         const menu = document.getElementById('map-layers-menu');
-        menu.classList.toggle('hidden');
+        menu?.classList.toggle('hidden');
       });
 
       document.addEventListener('click', () => {
-        document.getElementById('map-layers-menu').classList.add('hidden');
-        document.getElementById('search-results-dropdown').classList.add('hidden');
+        document.getElementById('map-layers-menu')?.classList.add('hidden');
+        document.getElementById('search-results-dropdown')?.classList.add('hidden');
       });
 
       // GPS Location Button
-      document.getElementById('btn-gps-location').addEventListener('click', handleGPSFlyTo);
+      document.getElementById('btn-gps-location')?.addEventListener('click', handleGPSFlyTo);
 
       // Map Zoom Responsive Styling for Place Names and Pin Sizes
       map.on('zoomend zoom', updateMapZoomClasses);
@@ -4245,8 +4241,6 @@
       const sb = document.getElementById('sidebar');
       const backdrop = document.getElementById('sidebar-backdrop');
       const icon = document.getElementById('toggle-sidebar-icon');
-      const toggleBtn = document.getElementById('btn-toggle-sidebar');
-      const topBar = document.getElementById('top-floating-bar');
 
       if (sb) {
         sb.classList.remove('-translate-x-full');
@@ -4258,14 +4252,6 @@
         backdrop.classList.add('opacity-100', 'pointer-events-auto');
       }
 
-      if (topBar) {
-        topBar.classList.add('lg:left-[436px]');
-      }
-
-      if (toggleBtn) {
-        toggleBtn.parentElement.classList.add('lg:hidden');
-      }
-
       if (icon) {
         icon.classList.add('rotate-90', 'text-sky-600', 'dark:text-sky-400');
       }
@@ -4275,8 +4261,6 @@
       const sb = document.getElementById('sidebar');
       const backdrop = document.getElementById('sidebar-backdrop');
       const icon = document.getElementById('toggle-sidebar-icon');
-      const toggleBtn = document.getElementById('btn-toggle-sidebar');
-      const topBar = document.getElementById('top-floating-bar');
 
       if (sb) {
         sb.classList.remove('translate-x-0');
@@ -4286,14 +4270,6 @@
       if (backdrop) {
         backdrop.classList.remove('opacity-100', 'pointer-events-auto');
         backdrop.classList.add('opacity-0', 'pointer-events-none');
-      }
-
-      if (topBar) {
-        topBar.classList.remove('lg:left-[436px]');
-      }
-
-      if (toggleBtn) {
-        toggleBtn.parentElement.classList.remove('lg:hidden');
       }
 
       if (icon) {
@@ -4539,17 +4515,17 @@
     // Keyword filter search
     const filterInput = document.getElementById('filter-search');
     const clearFilterBtn = document.getElementById('btn-clear-filter');
-    filterInput.addEventListener('input', (e) => {
+    filterInput?.addEventListener('input', (e) => {
       activeSearchKeyword = e.target.value.trim();
       if (activeSearchKeyword) {
-        clearFilterBtn.classList.remove('hidden');
+        clearFilterBtn?.classList.remove('hidden');
       } else {
-        clearFilterBtn.classList.add('hidden');
+        clearFilterBtn?.classList.add('hidden');
       }
       renderSidebarList();
     });
-    clearFilterBtn.addEventListener('click', () => {
-      filterInput.value = '';
+    clearFilterBtn?.addEventListener('click', () => {
+      if (filterInput) filterInput.value = '';
       activeSearchKeyword = '';
       clearFilterBtn.classList.add('hidden');
       renderSidebarList();
