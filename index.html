@@ -883,7 +883,7 @@
         </div>
 
         <!-- Search Bar with Nominatim Autocomplete & Elegant Globe Badge -->
-        <div class="pointer-events-auto relative flex-1 max-w-sm sm:max-w-md min-w-0">
+        <div class="pointer-events-auto relative flex-1 min-w-[140px] sm:min-w-[190px] md:min-w-[230px] max-w-sm md:max-w-md">
           <div class="flex items-center h-9 sm:h-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md border border-slate-200/70 dark:border-slate-800 px-2 sm:px-2.5 focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 hover:bg-white dark:hover:bg-slate-900 transition-all">
             
             <!-- Beautiful Stylized Globe Icon Button -->
@@ -915,19 +915,50 @@
         <div class="pointer-events-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
           
           <!-- Top Floating Footprint & Coastline Stat Pill -->
-          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-1.5 h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành">
-            <span class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+          <button onclick="switchTab('stats')" class="hidden md:flex items-center gap-1.5 h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 transition text-xs font-bold shrink-0 select-none active:scale-95 group" title="Xem chi tiết: Đã qua bao nhiêu tỉnh thành">
+            <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
               <i class="fa-solid fa-flag text-amber-500 text-xs"></i>
-              <span id="top-stat-provinces">0/34 tỉnh</span>
+              <span id="top-stat-provinces" class="whitespace-nowrap">0/34 tỉnh</span>
             </span>
           </button>
 
+          <!-- Floating Route Distance & Time Status Pill (Directly integrated next to province counter) -->
+          <div id="floating-route-pill" class="hidden items-center gap-1 sm:gap-1.5 h-9 sm:h-10 pl-2 sm:pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-emerald-500/40 shrink-0 select-none transition-all duration-200">
+            <div class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-route text-[10px] sm:text-[11px]"></i>
+            </div>
+            <div class="flex items-center gap-1 text-xs">
+              <span id="pill-distance" class="font-extrabold text-white text-xs whitespace-nowrap">0 km</span>
+              <span class="text-slate-400 text-[10px] hidden lg:inline">•</span>
+              <span id="pill-time" class="text-[11px] font-medium text-emerald-300 hidden lg:inline whitespace-nowrap">0 phút</span>
+            </div>
+            <button onclick="switchTab('route'); openSidebar();" class="h-6 sm:h-7 px-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-[10px] sm:text-[11px] font-bold shadow-xs transition flex items-center gap-1 shrink-0" title="Xem chi tiết lộ trình trong danh sách">
+              <span>Xem</span>
+              <i class="fa-solid fa-arrow-right text-[8px]"></i>
+            </button>
+            <button onclick="document.getElementById('floating-route-pill').classList.add('hidden'); document.getElementById('floating-route-pill').classList.remove('flex');" class="w-5 h-5 rounded-md hover:bg-white/20 text-slate-400 hover:text-white text-[10px] flex items-center justify-center transition shrink-0" title="Ẩn thẻ lộ trình">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Active Route Filter Banner (Directly integrated next to province counter / route pill) -->
+          <div id="active-route-filter-banner" class="hidden items-center gap-1.5 h-9 sm:h-10 pl-2.5 pr-1.5 rounded-xl sm:rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 text-white backdrop-blur-md shadow-md border border-sky-500/40 shrink-0 select-none transition-all duration-200">
+            <div class="w-2 h-2 rounded-full bg-sky-400 shrink-0 animate-pulse"></div>
+            <div class="text-xs truncate max-w-[80px] sm:max-w-[120px]">
+              <span id="route-filter-banner-name" class="font-bold text-white text-xs truncate block">Lộ trình</span>
+            </div>
+            <span id="route-filter-banner-count" class="text-[10px] text-sky-200 px-1.5 py-0.2 rounded-md bg-sky-500/20 font-bold border border-sky-500/30 shrink-0">0 điểm</span>
+            <button onclick="clearMapRouteFilter()" class="w-5 h-5 rounded-md hover:bg-rose-500 hover:text-white text-slate-300 text-[10px] transition flex items-center justify-center shrink-0" title="Hiện tất cả kỷ niệm">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
           <!-- Map Style Selector -->
           <div class="relative">
-            <button id="btn-map-layers" class="h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 hover:bg-white dark:hover:bg-slate-900 transition text-xs sm:text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
+            <button id="btn-map-layers" class="h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 hover:bg-white dark:hover:bg-slate-900 transition text-xs sm:text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
               <i class="fa-solid fa-layer-group text-sky-600 text-xs sm:text-sm"></i>
-              <span id="current-layer-name" class="hidden lg:inline text-xs">Google Đường phố</span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden sm:inline"></i>
+              <span id="current-layer-name" class="hidden xl:inline text-xs">Google Đường phố</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden xl:inline"></i>
             </button>
 
             <!-- Map Layers Menu -->
@@ -982,19 +1013,6 @@
             <span class="md:hidden">Ghim</span>
           </button>
         </div>
-      </div>
-
-      <!-- ACTIVE ROUTE FILTER NOTIFICATION (Smart Micro-Chip, Non-blocking at top left) -->
-      <div id="active-route-filter-banner" class="hidden absolute top-12.5 sm:top-14.5 left-2.5 sm:left-4 z-20 pointer-events-auto bg-slate-900/85 dark:bg-slate-950/90 text-white backdrop-blur-md pl-2.5 pr-1.5 py-0.5 rounded-full shadow-md border border-sky-500/30 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200 max-w-[85vw] sm:max-w-sm">
-        <div class="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0 animate-pulse"></div>
-        <div class="text-[11px] font-medium flex items-center gap-1.5 truncate">
-          <span class="text-sky-300 text-[10px]">Lọc:</span>
-          <span id="route-filter-banner-name" class="font-bold truncate max-w-[110px] sm:max-w-[160px]">Lộ trình</span>
-          <span id="route-filter-banner-count" class="text-[10px] text-slate-300 px-1 py-0.2 rounded-full bg-white/10 shrink-0 font-medium">0 điểm</span>
-        </div>
-        <button onclick="clearMapRouteFilter()" class="w-4.5 h-4.5 rounded-full bg-white/15 hover:bg-rose-500 hover:text-white text-slate-300 text-[9px] transition flex items-center justify-center shrink-0" title="Bỏ lọc, hiện tất cả kỷ niệm">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
       </div>
 
       <!-- GẠO MAPS 3D LUXURY WELCOME SPLASH (High Contrast, 3D Dynamic Motion, Floating Glass Plaque, Tap to Dismiss) -->
@@ -1082,23 +1100,6 @@
         <!-- Fit Vietnam Bounds -->
         <button onclick="fitVietnamBounds()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/80 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-90 text-xs sm:text-sm" title="Toàn cảnh Việt Nam">
           <i class="fa-solid fa-earth-asia text-slate-600 dark:text-slate-300"></i>
-        </button>
-      </div>
-
-      <!-- FLOATING BOTTOM ROUTE STATUS PILL (Ultra-compact & Minimal Map Obstruction) -->
-      <div id="floating-route-pill" class="hidden absolute bottom-16 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 bg-slate-900/80 dark:bg-slate-950/85 text-white backdrop-blur-md pl-3 pr-1.5 py-1 rounded-full shadow-lg border border-white/15 flex items-center gap-2 pointer-events-auto max-w-[92vw] transition-all duration-300">
-        <div class="flex items-center gap-1.5 truncate text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse"></span>
-          <span id="pill-distance" class="font-black text-white text-xs truncate">0 km</span>
-          <span class="text-slate-400 text-[10px]">•</span>
-          <span id="pill-time" class="text-[11px] font-medium text-slate-300 shrink-0">0 phút</span>
-        </div>
-        <button onclick="switchTab('route'); openSidebar();" class="text-[11px] font-bold bg-sky-500/90 hover:bg-sky-400 text-white px-2.5 py-0.5 rounded-full shrink-0 transition flex items-center gap-1">
-          <span>Xem</span>
-          <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        </button>
-        <button onclick="document.getElementById('floating-route-pill').classList.add('hidden')" class="w-5 h-5 rounded-full hover:bg-white/20 text-slate-400 hover:text-white text-[10px] flex items-center justify-center transition shrink-0" title="Ẩn thông báo lộ trình">
-          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
@@ -4386,8 +4387,10 @@
           }
         }
         banner.classList.remove('hidden');
+        banner.classList.add('flex');
       } else {
         banner.classList.add('hidden');
+        banner.classList.remove('flex');
       }
     }
 
@@ -6391,7 +6394,11 @@
             // Floating pill
             document.getElementById('pill-distance').textContent = `${totalKm} km`;
             document.getElementById('pill-time').textContent = timeStr;
-            document.getElementById('floating-route-pill').classList.remove('hidden');
+            const pill = document.getElementById('floating-route-pill');
+            if (pill) {
+              pill.classList.remove('hidden');
+              pill.classList.add('flex');
+            }
 
             updateStatistics();
             showToast(`Lộ trình "${active.name}": ${totalKm} km (${timeStr})`, 'info');
@@ -6444,7 +6451,11 @@
 
       document.getElementById('pill-distance').textContent = `${totalKm} km`;
       document.getElementById('pill-time').textContent = timeStr;
-      document.getElementById('floating-route-pill').classList.remove('hidden');
+      const pillFallback = document.getElementById('floating-route-pill');
+      if (pillFallback) {
+        pillFallback.classList.remove('hidden');
+        pillFallback.classList.add('flex');
+      }
 
       updateStatistics();
     }
@@ -6453,7 +6464,11 @@
       currentRouteCoordinates = [];
       document.getElementById('summary-total-dist').textContent = '0.0 km';
       document.getElementById('summary-total-time').textContent = '0 phút';
-      document.getElementById('floating-route-pill').classList.add('hidden');
+      const pill = document.getElementById('floating-route-pill');
+      if (pill) {
+        pill.classList.add('hidden');
+        pill.classList.remove('flex');
+      }
     }
 
     function formatTravelTime(totalSeconds) {
