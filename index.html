@@ -549,171 +549,162 @@
         </div>
       </div>
 
-      <!-- Tab Content 2: Route Planner (Khoa học, Gọn gàng & Công thái học) -->
+      <!-- Tab Content 2: Route Planner (Siêu Gọn Gàng, Trực Quan & Đa Lộ Trình) -->
       <div id="tab-route" class="hidden flex-1 flex-col min-h-0 overflow-hidden bg-slate-50 dark:bg-slate-900/50">
         
         <!-- Compact Control Bar -->
-        <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2.5 shrink-0 shadow-xs">
+        <div class="p-2.5 sm:p-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2 shrink-0 shadow-xs">
           
-          <!-- 1. Header: Chọn Lộ Trình + Nút Tạo/Quản Lý -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-route text-indigo-500"></i> Chọn Lộ trình
-              </span>
-              <div class="flex items-center gap-1">
-                <button onclick="openManageRoutesModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1 transition" title="Quản lý danh sách lộ trình">
-                  <i class="fa-solid fa-list-check text-indigo-500"></i> <span>Quản lý</span>
-                </button>
-                <button onclick="openCreateRouteModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 flex items-center gap-1 transition" title="Tạo chuyến đi mới">
-                  <i class="fa-solid fa-plus"></i> <span>Tạo mới</span>
-                </button>
-              </div>
+          <!-- 1. Header: Selector + All Actions in 1 Row -->
+          <div class="flex items-center gap-1.5">
+            <!-- Route Selector Dropdown -->
+            <div class="relative flex-1 min-w-0">
+              <select id="route-selector-dropdown" onchange="handleSelectRoute(this.value)" class="w-full pl-7 pr-6 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer truncate" title="Chọn lộ trình để xem và chỉnh sửa">
+                <!-- Populated dynamically -->
+              </select>
+              <span id="active-route-color-indicator" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-indigo-500 pointer-events-none ring-2 ring-white dark:ring-slate-800 shadow-xs"></span>
+              <i class="fa-solid fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[9px] pointer-events-none"></i>
             </div>
 
-            <!-- Route Dropdown Row with Color Pill & Action Tools -->
-            <div class="flex items-center gap-1.5">
-              <div class="relative flex-1 min-w-0">
-                <select id="route-selector-dropdown" onchange="handleSelectRoute(this.value)" class="w-full pl-8 pr-7 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer truncate">
-                  <!-- Populated dynamically -->
-                </select>
-                <span id="active-route-color-indicator" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-indigo-500 pointer-events-none ring-2 ring-white dark:ring-slate-800 shadow-xs"></span>
-                <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
-              </div>
-
-              <!-- Quick Action Icon Buttons: Share, Edit, Delete -->
-              <div class="flex items-center gap-1 shrink-0">
-                <button onclick="openShareRouteModal()" class="h-8 px-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-xs flex items-center gap-1 transition active:scale-95" title="Chia sẻ liên kết lộ trình">
-                  <i class="fa-solid fa-share-nodes"></i>
-                  <span class="hidden sm:inline">Chia sẻ</span>
-                </button>
-                <button onclick="openEditActiveRouteModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-xs transition" title="Đổi tên / Ghi chú">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button onclick="openDeleteRouteConfirmModal(activeRouteId)" class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/80 flex items-center justify-center text-xs transition" title="Xóa lộ trình này">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Route Description Note (Editable) -->
-            <p id="active-route-desc" class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 italic px-0.5"></p>
-
-            <!-- Map View Filter Pill (Show all memories vs Only active route) -->
-            <div class="grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold border border-slate-200/60 dark:border-slate-700/60 mt-1">
-              <button id="btn-display-all-pins" onclick="handleFilterByRoute('all')" class="py-1 px-2 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900" title="Hiển thị toàn bộ kỷ niệm trên bản đồ">
-                <i class="fa-solid fa-globe text-[10px] text-sky-500"></i> <span>Tất cả kỷ niệm</span>
+            <!-- Quick Action Icon Tools (Create, Manage, Share, Edit, Delete) -->
+            <div class="flex items-center gap-1 shrink-0">
+              <button onclick="openCreateRouteModal()" class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 flex items-center justify-center text-xs transition active:scale-95 shadow-2xs" title="Tạo lộ trình mới">
+                <i class="fa-solid fa-plus"></i>
               </button>
-              <button id="btn-display-route-pins" onclick="handleFilterByRoute(activeRouteId)" class="py-1 px-2 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900" title="Chỉ hiển thị các kỷ niệm của lộ trình này">
-                <i class="fa-solid fa-filter text-[10px] text-indigo-500"></i> <span>Chỉ lộ trình này</span>
+              <button onclick="openManageRoutesModal()" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-xs transition" title="Quản lý danh sách lộ trình">
+                <i class="fa-solid fa-list-check text-indigo-500"></i>
+              </button>
+              <button onclick="openShareRouteModal()" class="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 hover:bg-sky-100 flex items-center justify-center text-xs transition" title="Chia sẻ liên kết lộ trình">
+                <i class="fa-solid fa-share-nodes"></i>
+              </button>
+              <button onclick="openEditActiveRouteModal()" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 flex items-center justify-center text-xs transition" title="Đổi tên / Ghi chú">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="openDeleteRouteConfirmModal(activeRouteId)" class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 flex items-center justify-center text-xs transition" title="Xóa lộ trình này">
+                <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
           </div>
 
-          <!-- 2. Integrated Controls Row: Mode Selector + TSP Optimization -->
-          <div class="flex items-center gap-2 pt-0.5">
-            <!-- Travel Mode Toggle (Driving / Walking) -->
-            <div class="flex-1 grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium border border-slate-200/60 dark:border-slate-700/60">
-              <button id="mode-driving" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-1.5 transition text-[11px]" onclick="setTravelMode('driving')">
-                <i class="fa-solid fa-car-side"></i> <span>Ô tô / Xe máy</span>
-              </button>
-              <button id="mode-walking" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition text-[11px]" onclick="setTravelMode('walking')">
-                <i class="fa-solid fa-person-walking"></i> <span>Đi bộ</span>
-              </button>
-            </div>
+          <!-- Hidden helper desc text to preserve bindings -->
+          <p id="active-route-desc" class="hidden"></p>
 
-            <!-- Optimize Order Button -->
-            <button onclick="optimizeRouteOrder()" class="py-1.5 px-3 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-indigo-950/60 dark:to-sky-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 text-[11px] font-bold hover:bg-indigo-100 flex items-center justify-center gap-1.5 shrink-0 transition shadow-xs" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất (TSP)">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-              <span>Tối ưu</span>
+          <!-- 2. View Mode Segmented Control: [Tuyến này | Hiện tất cả tuyến | Tất cả điểm] -->
+          <div class="grid grid-cols-3 p-0.5 bg-slate-100 dark:bg-slate-800/90 rounded-xl text-xs font-semibold border border-slate-200/60 dark:border-slate-700/60">
+            <button id="btn-view-active-route" onclick="setDisplayViewMode('active')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-2xs" title="Chỉ hiển thị lộ trình đang chọn">
+              <i class="fa-solid fa-crosshairs text-[10px] text-indigo-500"></i>
+              <span class="truncate">Tuyến này</span>
+            </button>
+            <button id="btn-view-all-routes" onclick="setDisplayViewMode('all_routes')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" title="Hiển thị đồng thời tất cả các lộ trình trên cùng 1 bản đồ">
+              <i class="fa-solid fa-layer-group text-[10px] text-emerald-500"></i>
+              <span class="truncate">Tất cả tuyến (<span id="view-routes-count-badge">0</span>)</span>
+            </button>
+            <button id="btn-view-all-pins" onclick="setDisplayViewMode('all_pins')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" title="Hiển thị toàn bộ các điểm kỷ niệm">
+              <i class="fa-solid fa-globe text-[10px] text-sky-500"></i>
+              <span class="truncate">Tất cả điểm</span>
             </button>
           </div>
 
-          <!-- 3. Collapsible / Compact Route Styling & Dragging Tools -->
-          <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <i class="fa-solid fa-palette text-indigo-500"></i> Màu tuyến
-                </span>
-                <!-- Mini Color Swatches -->
-                <div class="flex items-center gap-1.5" id="route-color-presets">
-                  <button type="button" onclick="setRouteColor('#6366f1')" data-color="#6366f1" class="route-color-chip w-5 h-5 rounded-md bg-indigo-500 shadow-xs ring-2 ring-indigo-400 ring-offset-1 transition hover:scale-110" title="Chàm Indigo"></button>
-                  <button type="button" onclick="setRouteColor('#0ea5e9')" data-color="#0ea5e9" class="route-color-chip w-5 h-5 rounded-md bg-sky-500 shadow-xs transition hover:scale-110" title="Xanh Da Trời"></button>
-                  <button type="button" onclick="setRouteColor('#10b981')" data-color="#10b981" class="route-color-chip w-5 h-5 rounded-md bg-emerald-500 shadow-xs transition hover:scale-110" title="Xanh Ngọc"></button>
-                  <button type="button" onclick="setRouteColor('#f43f5e')" data-color="#f43f5e" class="route-color-chip w-5 h-5 rounded-md bg-rose-500 shadow-xs transition hover:scale-110" title="Đỏ Hồng"></button>
-                  <button type="button" onclick="setRouteColor('#f59e0b')" data-color="#f59e0b" class="route-color-chip w-5 h-5 rounded-md bg-amber-500 shadow-xs transition hover:scale-110" title="Vàng Cam"></button>
-                  <button type="button" onclick="setRouteColor('#8b5cf6')" data-color="#8b5cf6" class="route-color-chip w-5 h-5 rounded-md bg-purple-500 shadow-xs transition hover:scale-110" title="Tím"></button>
-                </div>
-              </div>
+          <!-- Hidden legacy buttons to preserve any external listeners -->
+          <div class="hidden">
+            <button id="btn-display-all-pins"></button>
+            <button id="btn-display-route-pins"></button>
+          </div>
 
-              <!-- Color picker input -->
-              <label for="route-color-input" class="text-[11px] text-slate-500 cursor-pointer hover:text-indigo-500 flex items-center gap-1 shrink-0">
-                <input type="color" id="route-color-input" value="#6366f1" onchange="setRouteColor(this.value)" class="w-5 h-5 rounded-md cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" title="Chọn màu tùy biến khác" />
-              </label>
+          <!-- 3. Compact Mode Selector & Smart Quick Actions Strip -->
+          <div class="flex items-center gap-1.5">
+            <!-- Travel Mode (Car / Walk) -->
+            <div class="grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium border border-slate-200/60 dark:border-slate-700/60 shrink-0">
+              <button id="mode-driving" class="py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 transition text-[11px]" onclick="setTravelMode('driving')" title="Đi bằng Ô tô / Xe máy">
+                <i class="fa-solid fa-car-side text-[10px]"></i> <span>Xe</span>
+              </button>
+              <button id="mode-walking" class="py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px]" onclick="setTravelMode('walking')" title="Đi bộ">
+                <i class="fa-solid fa-person-walking text-[10px]"></i> <span>Bộ</span>
+              </button>
             </div>
 
-            <!-- Route Drag Tip Banner (Compact) -->
-            <div class="px-2.5 py-1.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
-              <span class="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 truncate">
-                <i class="fa-solid fa-bezier-curve text-indigo-500 shrink-0"></i>
-                <span class="truncate">Kéo đường đi trên bản đồ để uốn lộ trình</span>
-              </span>
-              <button onclick="resetRouteWaypoints()" class="px-2 py-0.5 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold text-[10px] border border-slate-200 dark:border-slate-600 shrink-0 transition ml-2" title="Khôi phục đường đi trực tiếp giữa các điểm">
-                <i class="fa-solid fa-rotate-left"></i> Đặt lại
+            <!-- Smart Quick Tools -->
+            <div class="flex-1 flex items-center justify-end gap-1 min-w-0">
+              <button onclick="optimizeRouteOrder()" class="h-7 px-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 text-[11px] font-bold hover:bg-indigo-100 flex items-center gap-1 transition shrink-0" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất (TSP)">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
+                <span>Tối ưu</span>
+              </button>
+              <button onclick="openRouteDeadEndCleanerModal()" class="h-7 px-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 text-[11px] font-bold hover:bg-amber-100 flex items-center gap-1 transition shrink-0" title="Dự đoán & Cắt tỉa đoạn đường thừa, cụt">
+                <i class="fa-solid fa-scissors text-amber-500 text-[10px]"></i>
+                <span>Lọc cụt</span>
+              </button>
+              <button id="btn-toggle-route-tools" onclick="toggleRouteToolsDrawer()" class="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border border-slate-200/60 dark:border-slate-700/60 text-xs flex items-center justify-center transition shrink-0" title="Màu sắc tuyến & Uốn đường đi">
+                <i class="fa-solid fa-palette text-indigo-500"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Collapsible Mini Styling & Curve Tools Drawer -->
+          <div id="route-tools-drawer" class="hidden p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 space-y-1.5 text-[11px]">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px]">Màu:</span>
+                <div class="flex items-center gap-1" id="route-color-presets">
+                  <button type="button" onclick="setRouteColor('#6366f1')" data-color="#6366f1" class="route-color-chip w-4.5 h-4.5 rounded-md bg-indigo-500 shadow-xs ring-2 ring-indigo-400 ring-offset-1 transition hover:scale-110" title="Chàm Indigo"></button>
+                  <button type="button" onclick="setRouteColor('#0ea5e9')" data-color="#0ea5e9" class="route-color-chip w-4.5 h-4.5 rounded-md bg-sky-500 shadow-xs transition hover:scale-110" title="Xanh Da Trời"></button>
+                  <button type="button" onclick="setRouteColor('#10b981')" data-color="#10b981" class="route-color-chip w-4.5 h-4.5 rounded-md bg-emerald-500 shadow-xs transition hover:scale-110" title="Xanh Ngọc"></button>
+                  <button type="button" onclick="setRouteColor('#f43f5e')" data-color="#f43f5e" class="route-color-chip w-4.5 h-4.5 rounded-md bg-rose-500 shadow-xs transition hover:scale-110" title="Đỏ Hồng"></button>
+                  <button type="button" onclick="setRouteColor('#f59e0b')" data-color="#f59e0b" class="route-color-chip w-4.5 h-4.5 rounded-md bg-amber-500 shadow-xs transition hover:scale-110" title="Vàng Cam"></button>
+                  <button type="button" onclick="setRouteColor('#8b5cf6')" data-color="#8b5cf6" class="route-color-chip w-4.5 h-4.5 rounded-md bg-purple-500 shadow-xs transition hover:scale-110" title="Tím"></button>
+                </div>
+                <input type="color" id="route-color-input" value="#6366f1" onchange="setRouteColor(this.value)" class="w-4.5 h-4.5 rounded-md cursor-pointer border border-slate-300 dark:border-slate-700 bg-transparent p-0" title="Chọn màu tùy biến khác" />
+              </div>
+              <button onclick="resetRouteWaypoints()" class="px-2 py-0.5 rounded bg-white dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold text-[10px] border border-slate-200 dark:border-slate-600 transition shrink-0" title="Khôi phục đường đi chuẩn">
+                <i class="fa-solid fa-rotate-left"></i> Đặt lại đường
               </button>
             </div>
           </div>
         </div>
 
-        <!-- 4. Route Metrics Telemetry Bar (Scientific, Crisp & Clear) -->
-        <div id="route-summary-box" class="mx-3 mt-3 p-3 rounded-2xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 border border-indigo-500/20 text-white shadow-md shrink-0">
-          <div class="grid grid-cols-3 divide-x divide-white/10 text-center">
-            <div class="px-1">
-              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Quãng đường</span>
-              <p id="summary-total-dist" class="text-base sm:text-lg font-black text-white mt-0.5 tracking-tight">0.0 km</p>
-              <span class="text-[9px] text-sky-300/80 block truncate">Thực tế OSRM</span>
+        <!-- 5. Compact Route Telemetry Strip (Quãng đường, Thời gian, Điểm dừng) -->
+        <div id="route-summary-box" class="mx-2.5 sm:mx-3 mt-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 text-white shadow-xs shrink-0">
+          <div class="flex items-center justify-between text-center divide-x divide-white/10">
+            <div class="flex-1 px-1">
+              <span class="text-[9px] text-slate-400 uppercase font-medium block">Quãng đường</span>
+              <p id="summary-total-dist" class="text-xs sm:text-sm font-black text-white tracking-tight">0.0 km</p>
             </div>
-            <div class="px-1">
-              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Thời gian</span>
-              <p id="summary-total-time" class="text-base sm:text-lg font-black text-amber-300 mt-0.5 tracking-tight">0 phút</p>
-              <span class="text-[9px] text-sky-300/80 block truncate" id="summary-speed-label">Tốc độ xe</span>
+            <div class="flex-1 px-1">
+              <span class="text-[9px] text-slate-400 uppercase font-medium block">Thời gian</span>
+              <p id="summary-total-time" class="text-xs sm:text-sm font-black text-amber-300 tracking-tight">0 phút</p>
             </div>
-            <div class="px-1">
-              <span class="text-[10px] text-sky-200 uppercase tracking-wider font-semibold block">Điểm dừng</span>
-              <p class="text-base sm:text-lg font-black text-emerald-400 mt-0.5 tracking-tight"><span id="route-stops-count-badge">0</span> điểm</p>
-              <span class="text-[9px] text-sky-300/80 block truncate">Đã kết nối</span>
+            <div class="flex-1 px-1">
+              <span class="text-[9px] text-slate-400 uppercase font-medium block">Điểm dừng</span>
+              <p class="text-xs sm:text-sm font-black text-emerald-400 tracking-tight"><span id="route-stops-count-badge">0</span> điểm</p>
             </div>
           </div>
+          <span id="summary-speed-label" class="hidden"></span>
         </div>
 
-        <!-- 4.5. Action Buttons: Live GPS Navigation (Google Maps Style) & Simulation/Media Export Studio -->
-        <div class="mx-3 mt-2 grid grid-cols-2 gap-2 shrink-0">
-          <button onclick="startGpsNavigation()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition active:scale-95 group" title="Bắt đầu dẫn đường theo vị trí GPS thực tế như Google Maps">
-            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs group-hover:rotate-45 transition-transform duration-300">
-              <i class="fa-solid fa-location-arrow text-emerald-100"></i>
-            </div>
+        <!-- 6. Compact GPS Navigation & Cinema Export Actions -->
+        <div class="mx-2.5 sm:mx-3 mt-1.5 grid grid-cols-2 gap-1.5 shrink-0">
+          <button onclick="startGpsNavigation()" class="py-1.5 sm:py-2 px-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition active:scale-95" title="Bắt đầu dẫn đường GPS như Google Maps">
+            <i class="fa-solid fa-location-arrow text-emerald-100 text-[11px]"></i>
             <span>Dẫn đường GPS</span>
           </button>
-          <button onclick="openRouteCinemaModal()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 transition active:scale-95" title="Mô phỏng lộ trình xe chạy và xuất ảnh Poster / Video kỷ niệm">
-            <i class="fa-solid fa-film text-purple-200"></i>
+          <button onclick="openRouteCinemaModal()" class="py-1.5 sm:py-2 px-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition active:scale-95" title="Mô phỏng 3D & Xuất video/ảnh kỷ niệm">
+            <i class="fa-solid fa-film text-purple-200 text-[11px]"></i>
             <span>Mô phỏng & Xuất</span>
           </button>
         </div>
 
-        <!-- 5. Route Stops List Section -->
-        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
-          <div class="flex items-center justify-between px-1 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+        <!-- 7. Route Stops List Section (Spacious & Clean) -->
+        <div class="flex-1 overflow-y-auto px-2.5 sm:px-3 py-2 space-y-1.5 min-h-0">
+          <div class="flex items-center justify-between px-0.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             <span>Danh sách điểm dừng (<span id="route-stops-count">0</span>)</span>
             <span class="text-[10px] lowercase text-slate-400 font-normal">Kéo/chuyển thứ tự</span>
           </div>
 
-          <div id="route-stops-list" class="space-y-2">
+          <div id="route-stops-list" class="space-y-1.5">
             <!-- Rendered dynamically -->
           </div>
 
-          <div id="route-empty-prompt" class="p-6 text-center text-slate-400">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-400 mx-auto flex items-center justify-center text-xl mb-2">
+          <div id="route-empty-prompt" class="p-5 text-center text-slate-400">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-400 mx-auto flex items-center justify-center text-lg mb-1.5">
               <i class="fa-solid fa-route"></i>
             </div>
             <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Chưa có điểm nào trong lộ trình</p>
@@ -2375,7 +2366,103 @@
       </div>
     </div>
 
-    <!-- ==================== QUICK GUIDE & AUTHOR COPYRIGHT MODAL ==================== -->
+    <!-- ==================== SMART DEAD-END & REDUNDANCY ROUTE CLEANER MODAL ==================== -->
+    <div id="route-dead-end-cleaner-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closeRouteDeadEndCleanerModal()">
+      <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="p-4 sm:p-5 bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 text-white flex items-center justify-between shrink-0 shadow-md">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-inner">
+              <i class="fa-solid fa-scissors"></i>
+            </div>
+            <div>
+              <h3 class="font-black text-base flex items-center gap-2">
+                <span>Dự Đoán Đoạn Đường Thừa & Cụt</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/25 text-white">AI / Thuật toán</span>
+              </h3>
+              <p class="text-xs text-amber-100 mt-0.5">Tự động phát hiện nhánh cụt, zic-zắc ngược hướng và cho phép xóa bỏ</p>
+            </div>
+          </div>
+          <button onclick="closeRouteDeadEndCleanerModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition" title="Đóng">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Route Selector Bar -->
+        <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0">
+          <label class="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5 shrink-0">
+            <i class="fa-solid fa-route text-amber-500"></i> Lộ trình:
+          </label>
+          <select id="cleaner-route-selector" onchange="handleCleanerRouteChange(this.value)" class="flex-1 max-w-xs pl-3 pr-7 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none cursor-pointer truncate shadow-xs">
+            <!-- Dynamically populated -->
+          </select>
+          <button onclick="runCleanerAnalysis()" class="px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-amber-500 hover:text-white text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1 shrink-0" title="Quét lại phân tích">
+            <i class="fa-solid fa-rotate-right text-[11px]"></i> <span class="hidden sm:inline">Quét lại</span>
+          </button>
+        </div>
+
+        <!-- Telemetry Summary Cards (3 Columns) -->
+        <div class="px-4 pt-4 pb-2 shrink-0">
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+              <span class="text-[10px] text-amber-700 dark:text-amber-300 uppercase tracking-wider font-bold block">Phát hiện</span>
+              <p id="cleaner-stat-issues-count" class="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">0 đoạn</p>
+              <span class="text-[9px] text-slate-400 block truncate">Thừa / Cụt / Lặp</span>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+              <span class="text-[10px] text-emerald-700 dark:text-emerald-300 uppercase tracking-wider font-bold block">Tiết kiệm cự ly</span>
+              <p id="cleaner-stat-dist-saved" class="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">0.0 km</p>
+              <span class="text-[9px] text-slate-400 block truncate">Quãng đường bớt đi</span>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-sky-500/10 border border-sky-500/20">
+              <span class="text-[10px] text-sky-700 dark:text-sky-300 uppercase tracking-wider font-bold block">Tiết kiệm giờ</span>
+              <p id="cleaner-stat-time-saved" class="text-lg font-black text-sky-600 dark:text-sky-400 mt-0.5">0 phút</p>
+              <span class="text-[9px] text-slate-400 block truncate">Thời gian di chuyển</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Issues Scrollable List Body -->
+        <div class="p-4 overflow-y-auto flex-1 custom-scrollbar space-y-3 min-h-[160px]">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-amber-500"></i> Danh sách đoạn đường thừa & cụt
+            </span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="toggleAllCleanerIssues(true)" class="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Chọn hết</button>
+              <span class="text-slate-300 dark:text-slate-700">•</span>
+              <button type="button" onclick="toggleAllCleanerIssues(false)" class="text-[11px] font-bold text-slate-500 hover:underline">Bỏ chọn</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Container for Issue Cards -->
+          <div id="cleaner-issues-container" class="space-y-2.5">
+            <!-- Dynamically populated or empty state -->
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 gap-2">
+          <button onclick="closeRouteDeadEndCleanerModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold transition">
+            Đóng
+          </button>
+          
+          <div class="flex items-center gap-2">
+            <button id="btn-cleaner-apply-tsp" onclick="closeRouteDeadEndCleanerModal(); optimizeRouteOrder();" class="hidden px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-indigo-500 hover:text-white text-slate-700 dark:text-slate-200 text-xs font-bold transition items-center gap-1.5" title="Thay vì xóa, tự động xếp lại thứ tự tối ưu">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+              <span class="hidden sm:inline">Xếp lại thứ tự (TSP)</span>
+            </button>
+
+            <button id="btn-cleaner-apply-prune" onclick="executePruneSelectedIssues()" class="px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 via-amber-600 to-orange-600 hover:from-rose-600 hover:to-orange-700 text-white text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-trash-can"></i>
+              <span id="cleaner-prune-btn-text">Xóa các đoạn đã chọn</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
     <div id="quick-guide-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closeQuickGuideModal()">
       <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
         
@@ -2507,6 +2594,11 @@
     let routeColor = '#6366f1';
     let customRouteWaypoints = null;
     let activeTravelMode = 'driving'; // 'driving' or 'walking'
+    
+    // Multi-Route Simultaneous Display on Map State
+    let showAllRoutesOnMap = false;
+    let allRoutesLayerGroup = null;
+    const routeGeometryCache = new Map();
     
     let routingControl = null;
     let currentBase64Photo = '';
@@ -3516,6 +3608,9 @@
       let displayPins = pins;
       if (activeFilterRouteId === 'none') {
         displayPins = pins.filter(p => !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id)));
+      } else if (activeFilterRouteId === 'all_routes' || showAllRoutesOnMap) {
+        displayPins = pins.filter(p => routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id)));
+        if (displayPins.length === 0) displayPins = pins; // fallback if no routes have pins yet
       } else if (activeFilterRouteId && activeFilterRouteId !== 'all') {
         const targetRoute = routes.find(r => r.id === activeFilterRouteId);
         if (targetRoute && Array.isArray(targetRoute.pinIds)) {
@@ -3672,6 +3767,11 @@
                 <button onclick="openEditMemoryModal('${pin.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5" title="Chỉnh sửa chi tiết">
                   <i class="fa-solid fa-pen-to-square text-sky-500"></i> <span>Chỉnh sửa</span>
                 </button>
+                ${Array.isArray(routePinIds) && routePinIds.includes(pin.id) ? `
+                  <button onclick="pruneSingleDeadEnd('${pin.id}')" class="py-1.5 px-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-amber-700 dark:text-amber-300 text-xs font-bold transition flex items-center gap-1 shrink-0" title="Cắt bỏ điểm này khỏi lộ trình để nối thẳng đường">
+                    <i class="fa-solid fa-scissors text-amber-500"></i> <span>Cắt khỏi tuyến</span>
+                  </button>
+                ` : ''}
                 <button onclick="openDeletePinConfirmModal('${pin.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs transition" title="Xóa kỷ niệm">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
@@ -4370,16 +4470,216 @@
     }
 
     function updateRouteFilterPills() {
-      const allBtn = document.getElementById('btn-display-all-pins');
-      const routeBtn = document.getElementById('btn-display-route-pins');
-      if (!allBtn || !routeBtn) return;
+      const countBadge = document.getElementById('view-routes-count-badge');
+      if (countBadge) {
+        countBadge.textContent = routes.length;
+      }
 
-      if (activeFilterRouteId === 'all') {
-        allBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs flex items-center justify-center gap-1.5 transition';
-        routeBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
+      const activeBtn = document.getElementById('btn-view-active-route');
+      const allRoutesBtn = document.getElementById('btn-view-all-routes');
+      const allPinsBtn = document.getElementById('btn-view-all-pins');
+
+      const baseInactive = 'py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200';
+
+      if (activeBtn) activeBtn.className = baseInactive;
+      if (allRoutesBtn) allRoutesBtn.className = baseInactive;
+      if (allPinsBtn) allPinsBtn.className = baseInactive;
+
+      if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
+        if (allRoutesBtn) allRoutesBtn.className = 'py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-2xs';
+      } else if (activeFilterRouteId === 'all') {
+        if (allPinsBtn) allPinsBtn.className = 'py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs';
       } else {
-        routeBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs flex items-center justify-center gap-1.5 transition';
-        allBtn.className = 'py-1 px-2 rounded-lg text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
+        if (activeBtn) activeBtn.className = 'py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-2xs';
+      }
+    }
+
+    function setDisplayViewMode(mode) {
+      if (mode === 'all_routes') {
+        showAllRoutesOnMap = true;
+        activeFilterRouteId = 'all_routes';
+        showToast(`Đang hiển thị đồng thời toàn bộ ${routes.length} lộ trình trên cùng bản đồ!`, 'info');
+      } else if (mode === 'all_pins' || mode === 'all') {
+        showAllRoutesOnMap = false;
+        activeFilterRouteId = 'all';
+        showToast('Đang hiển thị tất cả các điểm kỷ niệm trên bản đồ', 'info');
+      } else {
+        // 'active' - single selected route
+        showAllRoutesOnMap = false;
+        activeFilterRouteId = activeRouteId;
+        const activeR = getActiveRoute();
+        if (activeR) {
+          showToast(`Đang chỉ hiển thị lộ trình: "${activeR.name}"`, 'info');
+        }
+      }
+
+      updateRouteFilterDropdown();
+      populateRouteSelectorDropdown();
+      updateRouteFilterBanner();
+      updateRouteFilterPills();
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+      renderAllRoutesOnMap();
+
+      if (mode === 'all_routes') {
+        fitAllRoutesBounds();
+      }
+    }
+
+    function toggleRouteToolsDrawer() {
+      const drawer = document.getElementById('route-tools-drawer');
+      const btn = document.getElementById('btn-toggle-route-tools');
+      if (!drawer) return;
+      const isHidden = drawer.classList.contains('hidden');
+      if (isHidden) {
+        drawer.classList.remove('hidden');
+        if (btn) btn.classList.add('bg-indigo-100', 'dark:bg-indigo-950', 'text-indigo-600', 'border-indigo-300');
+      } else {
+        drawer.classList.add('hidden');
+        if (btn) btn.classList.remove('bg-indigo-100', 'dark:bg-indigo-950', 'text-indigo-600', 'border-indigo-300');
+      }
+    }
+
+    function getAllRoutesLayerGroup() {
+      if (!allRoutesLayerGroup && typeof map !== 'undefined' && map) {
+        allRoutesLayerGroup = L.layerGroup().addTo(map);
+      }
+      return allRoutesLayerGroup;
+    }
+
+    async function renderAllRoutesOnMap() {
+      const group = getAllRoutesLayerGroup();
+      if (!group) return;
+      group.clearLayers();
+
+      if (!showAllRoutesOnMap) return;
+
+      const otherRoutes = (routes || []).filter(r => r.id !== activeRouteId && Array.isArray(r.pinIds) && r.pinIds.length >= 2);
+      if (otherRoutes.length === 0) return;
+
+      for (const r of otherRoutes) {
+        const rColor = r.color || '#0ea5e9';
+        let waypoints = [];
+        if (Array.isArray(r.customWaypoints) && r.customWaypoints.length >= 2) {
+          waypoints = r.customWaypoints.map(wp => [wp.lat, wp.lng]);
+        } else {
+          waypoints = r.pinIds.map(id => {
+            const p = pins.find(pin => pin.id === id);
+            return p ? [p.lat, p.lng] : null;
+          }).filter(Boolean);
+        }
+
+        if (waypoints.length < 2) continue;
+
+        // Draw soft glow/shadow line + vibrant dashed route polyline
+        const shadowLine = L.polyline(waypoints, {
+          color: '#0f172a',
+          weight: 6,
+          opacity: 0.15,
+          lineCap: 'round',
+          lineJoin: 'round'
+        });
+
+        const mainLine = L.polyline(waypoints, {
+          color: rColor,
+          weight: 4.5,
+          opacity: 0.85,
+          dashArray: '6, 6',
+          lineCap: 'round',
+          lineJoin: 'round'
+        });
+
+        const popupHtml = `
+          <div class="p-2 text-slate-800 dark:text-slate-100 font-sans min-w-[190px]">
+            <div class="flex items-center gap-2 font-bold text-xs">
+              <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${rColor}"></span>
+              <span class="truncate">${escapeHtml(r.name)}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center justify-between">
+              <span><i class="fa-solid fa-location-dot text-indigo-500 mr-1"></i>${(r.pinIds && r.pinIds.length) || 0} điểm</span>
+              ${r.distanceKm ? `<span><i class="fa-solid fa-road text-sky-500 mr-1"></i>${r.distanceKm} km</span>` : ''}
+            </div>
+            <button onclick="handleSelectRoute('${r.id}')" class="mt-2 w-full py-1.5 px-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrow-pointer text-[10px]"></i> <span>Chuyển sang tuyến này</span>
+            </button>
+          </div>
+        `;
+
+        mainLine.bindPopup(popupHtml);
+        mainLine.bindTooltip(`<b>${escapeHtml(r.name)}</b> (${(r.pinIds && r.pinIds.length) || 0} điểm${r.distanceKm ? ' • ' + r.distanceKm + ' km' : ''})`, {
+          sticky: true,
+          direction: 'top',
+          opacity: 0.95,
+          className: 'bg-slate-900 text-white rounded-lg px-2 py-1 text-xs border border-white/20 shadow-md font-sans'
+        });
+
+        // Interactive hover
+        mainLine.on('mouseover', function() {
+          this.setStyle({ weight: 7, opacity: 1 });
+          this.bringToFront();
+        });
+        mainLine.on('mouseout', function() {
+          this.setStyle({ weight: 4.5, opacity: 0.85 });
+        });
+        mainLine.on('click', function() {
+          this.openPopup();
+        });
+
+        group.addLayer(shadowLine);
+        group.addLayer(mainLine);
+
+        // Fetch high-fidelity OSRM real road coordinates
+        const cacheKey = `${r.id}_${r.travelMode || 'driving'}_${waypoints.map(w => w.join(',')).join('|')}`;
+        if (routeGeometryCache.has(cacheKey)) {
+          const cachedCoords = routeGeometryCache.get(cacheKey);
+          if (cachedCoords && cachedCoords.length > 0) {
+            shadowLine.setLatLngs(cachedCoords);
+            mainLine.setLatLngs(cachedCoords);
+          }
+        } else {
+          try {
+            const coordsString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+            const serviceUrl = (r.travelMode === 'walking')
+              ? `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`
+              : `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+
+            fetch(serviceUrl)
+              .then(res => res.json())
+              .then(data => {
+                if (data && data.routes && data.routes.length > 0 && data.routes[0].geometry) {
+                  const geoCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                  if (geoCoords.length > 0) {
+                    routeGeometryCache.set(cacheKey, geoCoords);
+                    shadowLine.setLatLngs(geoCoords);
+                    mainLine.setLatLngs(geoCoords);
+                  }
+                }
+              })
+              .catch(() => {});
+          } catch(e) {}
+        }
+      }
+    }
+
+    function fitAllRoutesBounds() {
+      if (!map) return;
+      const allPoints = [];
+      routes.forEach(r => {
+        if (Array.isArray(r.customWaypoints) && r.customWaypoints.length > 0) {
+          r.customWaypoints.forEach(wp => allPoints.push([wp.lat, wp.lng]));
+        } else if (Array.isArray(r.pinIds)) {
+          r.pinIds.forEach(id => {
+            const p = pins.find(pin => pin.id === id);
+            if (p) allPoints.push([p.lat, p.lng]);
+          });
+        }
+      });
+
+      if (allPoints.length >= 2) {
+        const bounds = L.latLngBounds(allPoints);
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
       }
     }
 
@@ -4621,6 +4921,9 @@
               </button>
               <button onclick="duplicateRoute('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 flex items-center justify-center text-xs transition" title="Nhân bản">
                 <i class="fa-solid fa-copy"></i>
+              </button>
+              <button onclick="closeManageRoutesModal(); openRouteDeadEndCleanerModal('${r.id}');" class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 hover:bg-amber-100 flex items-center justify-center text-xs transition" title="Dự đoán & Cắt tỉa đoạn đường thừa, cụt">
+                <i class="fa-solid fa-scissors"></i>
               </button>
               <button onclick="openEditRouteModal('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-amber-600 flex items-center justify-center text-xs transition" title="Chỉnh sửa tên / màu sắc">
                 <i class="fa-solid fa-pen"></i>
@@ -6234,7 +6537,35 @@
 
       emptyPrompt.classList.add('hidden');
 
-      list.innerHTML = routePinIds.map((pinId, index) => {
+      let deadEndBannerHtml = '';
+      if (typeof analyzeRouteRedundancyAndDeadEnds === 'function' && routePinIds.length >= 3) {
+        const analysis = analyzeRouteRedundancyAndDeadEnds(routePinIds);
+        if (analysis && analysis.issues && analysis.issues.length > 0) {
+          deadEndBannerHtml = `
+            <div class="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center justify-between gap-2.5 text-xs shadow-xs animate-in fade-in">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 text-xs shadow-sm">
+                  <i class="fa-solid fa-scissors"></i>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-amber-900 dark:text-amber-200 truncate flex items-center gap-1">
+                    <span>Phát hiện ${analysis.issues.length} đoạn thừa/cụt</span>
+                  </p>
+                  <p class="text-[10px] text-amber-700 dark:text-amber-400 truncate">
+                    Tiết kiệm ~${analysis.totalSavedKm.toFixed(1)} km (${analysis.totalSavedMin} phút)
+                  </p>
+                </div>
+              </div>
+              <button onclick="openRouteDeadEndCleanerModal()" class="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-[11px] transition shrink-0 shadow-xs flex items-center gap-1">
+                <span>Cắt tỉa</span>
+                <i class="fa-solid fa-chevron-right text-[9px]"></i>
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      const stopsCardsHtml = routePinIds.map((pinId, index) => {
         const pin = pins.find(p => p.id === pinId);
         if (!pin) return '';
 
@@ -6274,6 +6605,8 @@
           </div>
         `;
       }).join('');
+
+      list.innerHTML = deadEndBannerHtml + stopsCardsHtml;
     }
 
     // Call OSRM real-road routing engine with Draggable Line & Custom Color
@@ -6282,6 +6615,8 @@
         map.removeControl(routingControl);
         routingControl = null;
       }
+
+      renderAllRoutesOnMap();
 
       if (routePinIds.length < 2) {
         hideRouteSummaryStats();
@@ -9750,6 +10085,531 @@
           }
         }, 550);
       }
+    }
+
+    // ==========================================
+    // SMART ROUTE DEAD-END & REDUNDANCY PREDICTION & CLEANER
+    // ==========================================
+    let activeCleanerRouteId = '';
+    let currentCleanerAnalysis = { issues: [], totalSavedKm: 0, totalSavedMin: 0, totalOriginalKm: 0 };
+    let cleanerSelectedIssueIds = new Set();
+    let deadEndPreviewLayerGroup = null;
+
+    function getCleanerPreviewLayer() {
+      if (!deadEndPreviewLayerGroup && typeof map !== 'undefined' && map) {
+        deadEndPreviewLayerGroup = L.layerGroup().addTo(map);
+      }
+      return deadEndPreviewLayerGroup;
+    }
+
+    function clearDeadEndPreviewLayer() {
+      if (deadEndPreviewLayerGroup && typeof map !== 'undefined' && map) {
+        deadEndPreviewLayerGroup.clearLayers();
+      }
+    }
+
+    // Predictive Analysis Algorithm
+    function analyzeRouteRedundancyAndDeadEnds(routeOrPinIds) {
+      let targetPins = [];
+      let targetRoute = null;
+
+      if (typeof routeOrPinIds === 'string') {
+        targetRoute = routes.find(r => r.id === routeOrPinIds);
+        if (targetRoute && Array.isArray(targetRoute.pinIds)) {
+          targetPins = targetRoute.pinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+        }
+      } else if (Array.isArray(routeOrPinIds)) {
+        targetPins = routeOrPinIds.map(id => typeof id === 'string' ? pins.find(p => p.id === id) : id).filter(Boolean);
+      } else if (routeOrPinIds && Array.isArray(routeOrPinIds.pinIds)) {
+        targetPins = routeOrPinIds.pinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      }
+
+      if (targetPins.length < 3) {
+        return { issues: [], totalSavedKm: 0, totalSavedMin: 0, totalOriginalKm: 0 };
+      }
+
+      let totalOriginalKm = 0;
+      for (let i = 0; i < targetPins.length - 1; i++) {
+        totalOriginalKm += haversineDistanceKm(targetPins[i].lat, targetPins[i].lng, targetPins[i + 1].lat, targetPins[i + 1].lng);
+      }
+
+      const issues = [];
+      const n = targetPins.length;
+      const flaggedPinIds = new Set();
+
+      // 1. Consecutive Duplicate / Near-identical location points (< 50m)
+      for (let i = 0; i < n - 1; i++) {
+        const p1 = targetPins[i];
+        const p2 = targetPins[i + 1];
+        const distM = haversineDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng) * 1000;
+        if (p1.id === p2.id || distM < 50) {
+          flaggedPinIds.add(p2.id);
+          issues.push({
+            id: `dup-${p2.id}-${i + 1}`,
+            type: 'duplicate',
+            typeName: 'Điểm trùng lặp / Sát nhau',
+            severity: 'medium',
+            pinId: p2.id,
+            pinIndex: i + 1,
+            pin: p2,
+            prevPin: p1,
+            nextPin: targetPins[i + 2] || null,
+            distSavedKm: (distM / 1000),
+            timeSavedMin: 1,
+            reason: `Điểm "${p2.title}" nằm sát điểm trước (${Math.round(distM)}m) hoặc bị chọn trùng lặp.`,
+            icon: 'fa-clone',
+            colorBadgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+          });
+        }
+      }
+
+      // 2. Dead-End Detour Spurs (Đi vào nhánh cụt rồi quay ngược ra cùng đường) & Acute Zigzags
+      for (let i = 1; i < n - 1; i++) {
+        const prev = targetPins[i - 1];
+        const curr = targetPins[i];
+        const next = targetPins[i + 1];
+
+        if (flaggedPinIds.has(curr.id)) continue;
+
+        const dIn = haversineDistanceKm(prev.lat, prev.lng, curr.lat, curr.lng);
+        const dOut = haversineDistanceKm(curr.lat, curr.lng, next.lat, next.lng);
+        const dDirect = haversineDistanceKm(prev.lat, prev.lng, next.lat, next.lng);
+
+        // Vector 1: prev -> curr
+        const dy1 = curr.lat - prev.lat;
+        const dx1 = (curr.lng - prev.lng) * Math.cos(curr.lat * Math.PI / 180);
+        // Vector 2: curr -> next
+        const dy2 = next.lat - curr.lat;
+        const dx2 = (next.lng - curr.lng) * Math.cos(curr.lat * Math.PI / 180);
+
+        const dot = dx1 * dx2 + dy1 * dy2;
+        const mag1 = Math.hypot(dx1, dy1);
+        const mag2 = Math.hypot(dx2, dy2);
+
+        let angleDeg = 0;
+        if (mag1 > 0 && mag2 > 0) {
+          const cosTheta = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+          angleDeg = Math.acos(cosTheta) * (180 / Math.PI);
+        }
+
+        const distSaved = Math.max(0, (dIn + dOut) - dDirect);
+
+        // U-turn branch: angle >= 120° and detour savings > 0.5 km
+        if (angleDeg >= 120 && (distSaved > 0.5 || (dDirect < 0.3 && dIn > 0.3))) {
+          flaggedPinIds.add(curr.id);
+          issues.push({
+            id: `deadend-${curr.id}-${i}`,
+            type: 'dead_end',
+            typeName: 'Nhánh cụt đi vào rồi quay đầu',
+            severity: distSaved > 5 ? 'high' : 'medium',
+            pinId: curr.id,
+            pinIndex: i,
+            pin: curr,
+            prevPin: prev,
+            nextPin: next,
+            angleDeg: Math.round(angleDeg),
+            distSavedKm: distSaved,
+            timeSavedMin: Math.max(2, Math.round(distSaved * 1.6)),
+            reason: `Góc quay đầu ${Math.round(angleDeg)}°. Nhánh rẽ đi vào điểm "${curr.title}" (${dIn.toFixed(1)} km) rồi quay ngược lại, khiến bạn tốn thêm ${distSaved.toFixed(1)} km đường đi.`,
+            icon: 'fa-arrow-turn-down',
+            colorBadgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+          });
+        } else if (angleDeg >= 95 && distSaved >= 2.5 && (dIn + dOut) > 2.5 * dDirect) {
+          // Sharp Zigzag detour
+          flaggedPinIds.add(curr.id);
+          issues.push({
+            id: `zigzag-${curr.id}-${i}`,
+            type: 'backtrack',
+            typeName: 'Đoạn thừa zic-zắc ngược hướng',
+            severity: distSaved > 8 ? 'high' : 'medium',
+            pinId: curr.id,
+            pinIndex: i,
+            pin: curr,
+            prevPin: prev,
+            nextPin: next,
+            angleDeg: Math.round(angleDeg),
+            distSavedKm: distSaved,
+            timeSavedMin: Math.max(2, Math.round(distSaved * 1.5)),
+            reason: `Điểm "${curr.title}" làm lộ trình bị uốn cong gấp khúc. Cắt bỏ điểm này giúp đường đi thẳng đều và tiết kiệm ${distSaved.toFixed(1)} km.`,
+            icon: 'fa-shuffle',
+            colorBadgeClass: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'
+          });
+        }
+      }
+
+      // 3. 2-Stop Dead-End Loop (Cụm 2 điểm nhánh rẽ cụt ngoài tuyến)
+      for (let i = 1; i < n - 2; i++) {
+        const pPrev = targetPins[i - 1];
+        const p1 = targetPins[i];
+        const p2 = targetPins[i + 1];
+        const pNext = targetPins[i + 2];
+
+        if (flaggedPinIds.has(p1.id) || flaggedPinIds.has(p2.id)) continue;
+
+        const dBranch = haversineDistanceKm(pPrev.lat, pPrev.lng, p1.lat, p1.lng)
+          + haversineDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng)
+          + haversineDistanceKm(p2.lat, p2.lng, pNext.lat, pNext.lng);
+        const dDirect = haversineDistanceKm(pPrev.lat, pPrev.lng, pNext.lat, pNext.lng);
+
+        const saved = dBranch - dDirect;
+        if (saved > 2.0 && dDirect < dBranch * 0.35) {
+          flaggedPinIds.add(p1.id);
+          flaggedPinIds.add(p2.id);
+          issues.push({
+            id: `spur2-${p1.id}-${p2.id}`,
+            type: 'spur_loop',
+            typeName: 'Cụm 2 điểm rẽ cụt ngoài tuyến',
+            severity: 'high',
+            pinId: p1.id,
+            secondaryPinId: p2.id,
+            pinIndex: i,
+            pin: p1,
+            secondaryPin: p2,
+            prevPin: pPrev,
+            nextPin: pNext,
+            distSavedKm: saved,
+            timeSavedMin: Math.round(saved * 1.6),
+            reason: `Cặp điểm "${p1.title}" và "${p2.title}" tạo thành vòng rẽ cụt sâu ngoài tuyến chính, gây tốn thêm ${saved.toFixed(1)} km.`,
+            icon: 'fa-code-branch',
+            colorBadgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+          });
+        }
+      }
+
+      let totalSavedKm = 0;
+      let totalSavedMin = 0;
+      issues.forEach(iss => {
+        totalSavedKm += (iss.distSavedKm || 0);
+        totalSavedMin += (iss.timeSavedMin || 0);
+      });
+
+      return {
+        issues,
+        totalSavedKm,
+        totalSavedMin,
+        totalOriginalKm
+      };
+    }
+
+    function openRouteDeadEndCleanerModal(routeId = null) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể chỉnh sửa lộ trình chia sẻ.', 'info');
+        return;
+      }
+
+      activeCleanerRouteId = routeId || activeRouteId || (routes[0] ? routes[0].id : '');
+
+      // Populate Route Selector
+      const selector = document.getElementById('cleaner-route-selector');
+      if (selector) {
+        selector.innerHTML = routes.map(r => {
+          const count = (r.pinIds || []).length;
+          return `<option value="${r.id}" ${r.id === activeCleanerRouteId ? 'selected' : ''}>${escapeHtml(r.name)} (${count} điểm)</option>`;
+        }).join('');
+      }
+
+      runCleanerAnalysis();
+
+      const modal = document.getElementById('route-dead-end-cleaner-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeRouteDeadEndCleanerModal() {
+      const modal = document.getElementById('route-dead-end-cleaner-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      clearDeadEndPreviewLayer();
+    }
+
+    function handleCleanerRouteChange(routeId) {
+      activeCleanerRouteId = routeId;
+      clearDeadEndPreviewLayer();
+      runCleanerAnalysis();
+    }
+
+    function runCleanerAnalysis() {
+      const targetRoute = routes.find(r => r.id === activeCleanerRouteId) || getActiveRoute();
+      if (!targetRoute) return;
+
+      currentCleanerAnalysis = analyzeRouteRedundancyAndDeadEnds(targetRoute);
+      cleanerSelectedIssueIds = new Set(currentCleanerAnalysis.issues.map(iss => iss.id));
+
+      renderCleanerIssuesList();
+    }
+
+    function renderCleanerIssuesList() {
+      const container = document.getElementById('cleaner-issues-container');
+      const statCount = document.getElementById('cleaner-stat-issues-count');
+      const statDist = document.getElementById('cleaner-stat-dist-saved');
+      const statTime = document.getElementById('cleaner-stat-time-saved');
+      const pruneBtn = document.getElementById('btn-cleaner-apply-prune');
+      const tspBtn = document.getElementById('btn-cleaner-apply-tsp');
+
+      const issues = currentCleanerAnalysis.issues;
+
+      // Update Top Stats
+      let selectedSavedKm = 0;
+      let selectedSavedMin = 0;
+      let selectedCount = 0;
+
+      issues.forEach(iss => {
+        if (cleanerSelectedIssueIds.has(iss.id)) {
+          selectedSavedKm += iss.distSavedKm || 0;
+          selectedSavedMin += iss.timeSavedMin || 0;
+          selectedCount++;
+        }
+      });
+
+      if (statCount) statCount.textContent = `${issues.length} đoạn`;
+      if (statDist) statDist.textContent = `+${selectedSavedKm.toFixed(1)} km`;
+      if (statTime) statTime.textContent = `~${selectedSavedMin} phút`;
+
+      if (tspBtn) {
+        if (issues.length > 0) {
+          tspBtn.classList.remove('hidden');
+          tspBtn.classList.add('flex');
+        } else {
+          tspBtn.classList.add('hidden');
+          tspBtn.classList.remove('flex');
+        }
+      }
+
+      if (pruneBtn) {
+        if (selectedCount === 0) {
+          pruneBtn.disabled = true;
+          pruneBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          const btnText = document.getElementById('cleaner-prune-btn-text');
+          if (btnText) btnText.textContent = 'Chưa chọn đoạn nào';
+        } else {
+          pruneBtn.disabled = false;
+          pruneBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          const btnText = document.getElementById('cleaner-prune-btn-text');
+          if (btnText) btnText.textContent = `Xóa ${selectedCount} đoạn đã chọn (Tiết kiệm ${selectedSavedKm.toFixed(1)} km)`;
+        }
+      }
+
+      if (!container) return;
+
+      if (issues.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+            <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mx-auto mb-3 shadow-inner">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">Lộ trình rất khoa học & liền mạch!</h4>
+            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+              Không phát hiện thấy nhánh rẽ cụt, đoạn zic-zắc quay đầu hay điểm trùng lặp nào trong lộ trình này.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = issues.map((iss, index) => {
+        const isChecked = cleanerSelectedIssueIds.has(iss.id);
+        const pin = iss.pin;
+
+        return `
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border ${isChecked ? 'border-amber-400/80 dark:border-amber-500/80 shadow-md ring-1 ring-amber-400/20' : 'border-slate-200 dark:border-slate-700 shadow-xs'} transition-all flex flex-col gap-2.5">
+            
+            <!-- Top Row: Checkbox + Title + Badges -->
+            <div class="flex items-start justify-between gap-2.5">
+              <label class="flex items-start gap-2.5 cursor-pointer flex-1 min-w-0">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCleanerIssue('${iss.id}')" class="w-4 h-4 mt-0.5 rounded text-amber-600 focus:ring-amber-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0" />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${iss.colorBadgeClass} flex items-center gap-1">
+                      <i class="fa-solid ${iss.icon}"></i> ${iss.typeName}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-semibold">Điểm #${iss.pinIndex + 1}</span>
+                  </div>
+                  <h4 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 mt-1 truncate">
+                    ${escapeHtml(pin ? pin.title : 'Điểm dừng')}
+                    ${iss.secondaryPin ? ` & ${escapeHtml(iss.secondaryPin.title)}` : ''}
+                  </h4>
+                </div>
+              </label>
+
+              <!-- Saved distance badge -->
+              <div class="text-right shrink-0">
+                <span class="inline-block px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 font-black text-xs">
+                  -${iss.distSavedKm.toFixed(1)} km
+                </span>
+                <span class="block text-[10px] text-slate-400 mt-0.5">~${iss.timeSavedMin} phút</span>
+              </div>
+            </div>
+
+            <!-- Reason Description -->
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60 leading-relaxed">
+              <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>${iss.reason}
+            </p>
+
+            <!-- Bottom Actions -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+              <button onclick="previewDeadEndIssueOnMap('${iss.id}')" class="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 flex items-center gap-1 transition">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>Xem trên bản đồ</span>
+              </button>
+
+              <button onclick="pruneSingleDeadEnd('${iss.pinId}', '${iss.secondaryPinId || ''}')" class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-600 dark:text-rose-400 text-[11px] font-bold transition flex items-center gap-1 active:scale-95" title="Xóa bỏ điểm cụt này ngay">
+                <i class="fa-solid fa-trash-can text-[10px]"></i>
+                <span>Xóa đoạn này</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCleanerIssue(issueId) {
+      if (cleanerSelectedIssueIds.has(issueId)) {
+        cleanerSelectedIssueIds.delete(issueId);
+      } else {
+        cleanerSelectedIssueIds.add(issueId);
+      }
+      renderCleanerIssuesList();
+    }
+
+    function toggleAllCleanerIssues(checked) {
+      if (checked) {
+        cleanerSelectedIssueIds = new Set(currentCleanerAnalysis.issues.map(iss => iss.id));
+      } else {
+        cleanerSelectedIssueIds.clear();
+      }
+      renderCleanerIssuesList();
+    }
+
+    // Preview on Map with highlighted detour branch in red and bypass shortcut in green
+    function previewDeadEndIssueOnMap(issueId) {
+      const issue = currentCleanerAnalysis.issues.find(iss => iss.id === issueId);
+      if (!issue || typeof map === 'undefined' || !map) return;
+
+      const layer = getCleanerPreviewLayer();
+      layer.clearLayers();
+
+      const prev = issue.prevPin;
+      const curr = issue.pin;
+      const next = issue.nextPin;
+
+      if (!curr) return;
+
+      // 1. Draw Red Dashed Detour Line
+      if (prev && next) {
+        const detourCoords = [
+          [prev.lat, prev.lng],
+          [curr.lat, curr.lng],
+          ...(issue.secondaryPin ? [[issue.secondaryPin.lat, issue.secondaryPin.lng]] : []),
+          [next.lat, next.lng]
+        ];
+        L.polyline(detourCoords, {
+          color: '#ef4444',
+          weight: 5,
+          dashArray: '8, 8',
+          opacity: 0.95
+        }).addTo(layer);
+
+        // 2. Draw Emerald Shortcut Line
+        const bypassCoords = [
+          [prev.lat, prev.lng],
+          [next.lat, next.lng]
+        ];
+        L.polyline(bypassCoords, {
+          color: '#10b981',
+          weight: 4,
+          opacity: 0.9
+        }).addTo(layer);
+
+        // Fit map bounds
+        map.fitBounds(L.latLngBounds(detourCoords), { padding: [80, 80], maxZoom: 15 });
+      } else {
+        map.flyTo([curr.lat, curr.lng], 14);
+      }
+
+      // Highlight Pulsing Marker on the redundant point
+      const alertIcon = L.divIcon({
+        className: 'dead-end-alert-marker',
+        html: `
+          <div class="relative flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-lg animate-bounce ring-4 ring-rose-300">
+              <i class="fa-solid fa-scissors"></i>
+            </div>
+          </div>
+        `
+      });
+      L.marker([curr.lat, curr.lng], { icon: alertIcon }).addTo(layer);
+
+      showToast(`Đang hiển thị đoạn thừa: "${curr.title}" (Đỏ nét đứt: Nhánh cụt, Xanh lá: Đường thẳng)`, 'info');
+    }
+
+    // 1-Click Prune Single Redundant Stop
+    function pruneSingleDeadEnd(pinId, secondaryPinId = '') {
+      const targetRoute = routes.find(r => r.id === activeCleanerRouteId) || getActiveRoute();
+      if (!targetRoute || !Array.isArray(targetRoute.pinIds)) return;
+
+      const removeIds = new Set([pinId]);
+      if (secondaryPinId) removeIds.add(secondaryPinId);
+
+      targetRoute.pinIds = targetRoute.pinIds.filter(id => !removeIds.has(id));
+      targetRoute.updatedAt = new Date().toISOString();
+
+      if (activeRouteId === targetRoute.id) {
+        routePinIds = [...targetRoute.pinIds];
+        customRouteWaypoints = null;
+      }
+
+      saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+
+      clearDeadEndPreviewLayer();
+      runCleanerAnalysis();
+
+      showToast('Đã xóa thành công đoạn đường cụt / thừa khỏi lộ trình!', 'success');
+    }
+
+    // Batch Prune All Selected Issues
+    function executePruneSelectedIssues() {
+      const targetRoute = routes.find(r => r.id === activeCleanerRouteId) || getActiveRoute();
+      if (!targetRoute || !Array.isArray(targetRoute.pinIds)) return;
+
+      const selectedIssues = currentCleanerAnalysis.issues.filter(iss => cleanerSelectedIssueIds.has(iss.id));
+      if (selectedIssues.length === 0) {
+        showToast('Vui lòng chọn ít nhất 1 đoạn thừa để xóa.', 'info');
+        return;
+      }
+
+      const removeIds = new Set();
+      let savedKm = 0;
+      selectedIssues.forEach(iss => {
+        removeIds.add(iss.pinId);
+        if (iss.secondaryPinId) removeIds.add(iss.secondaryPinId);
+        savedKm += (iss.distSavedKm || 0);
+      });
+
+      targetRoute.pinIds = targetRoute.pinIds.filter(id => !removeIds.has(id));
+      targetRoute.updatedAt = new Date().toISOString();
+
+      if (activeRouteId === targetRoute.id) {
+        routePinIds = [...targetRoute.pinIds];
+        customRouteWaypoints = null;
+      }
+
+      saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+
+      clearDeadEndPreviewLayer();
+      closeRouteDeadEndCleanerModal();
+
+      showToast(`🎉 Đã dọn dẹp sạch ${selectedIssues.length} đoạn đường cụt! Tiết kiệm ${savedKm.toFixed(1)} km.`, 'success');
     }
 
     function openQuickGuideModal() {
