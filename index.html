@@ -2215,6 +2215,16 @@
 
         <!-- 2. Responsive Camera & Map Controls Strip -->
         <div class="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-slate-800/80 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar shrink-0">
+          <!-- Journey Mode (Roundtrip vs Outbound vs Return) -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-emerald-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Chế độ mô phỏng hành trình (Điểm 1 là nơi xuất phát và về đích khi khứ hồi)">
+            <i class="fa-solid fa-arrows-spin text-[11px] sm:text-xs text-emerald-400 shrink-0"></i>
+            <select id="cinema-journey-select" onchange="changeCinemaJourneyMode(this.value)" class="bg-transparent text-[11px] sm:text-xs font-black text-emerald-300 outline-none cursor-pointer">
+              <option value="roundtrip" class="bg-slate-900 text-emerald-400" selected>🌟 Khứ hồi (Đi & Về đích điểm 1)</option>
+              <option value="outbound" class="bg-slate-900 text-white">🏁 Chiều đi (1 ➔ N)</option>
+              <option value="return" class="bg-slate-900 text-white">🔄 Chiều về (N ➔ 1)</option>
+            </select>
+          </div>
+
           <!-- Camera Mode Selector -->
           <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
             <i class="fa-solid fa-video text-[11px] sm:text-xs text-indigo-400 shrink-0"></i>
@@ -3493,10 +3503,16 @@
       }
 
       const routeIndex = options.routeIndex !== undefined ? options.routeIndex : null;
+      const isFirst = options.isFirst === true;
+      const isLast = options.isLast === true;
 
       let innerContent = `<i class="fa-solid ${icon} custom-marker-icon"></i>`;
       if (routeIndex !== null) {
-        innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
+        if (isFirst) {
+          innerContent = `<span class="custom-marker-number font-black text-[11px] text-white flex items-center justify-center gap-0.5">🏁1</span>`;
+        } else {
+          innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
+        }
       }
 
       // Border style based on text/bg color
@@ -3505,9 +3521,24 @@
         borderStyle = 'border: 1px solid rgba(0, 0, 0, 0.2);';
       }
 
+      let labelTextPrefix = '';
+      if (isFirst) {
+        labelTextPrefix = '🏁 1. ';
+      } else if (routeIndex !== null) {
+        labelTextPrefix = `${routeIndex}. `;
+      }
+
+      let labelSubtitleBadge = '';
+      if (isFirst) {
+        labelSubtitleBadge = `<span class="block text-[8.5px] font-bold text-emerald-300 tracking-tight">Xuất phát & Về đích</span>`;
+      } else if (isLast) {
+        labelSubtitleBadge = `<span class="block text-[8.5px] font-bold text-rose-300 tracking-tight">Điểm quay đầu</span>`;
+      }
+
       const labelHtml = title ? `
-        <div class="custom-marker-label shadow-md" style="background-color: ${labelBgColor}; color: ${labelTextColor}; ${borderStyle}" title="${escapeHtml(title)}">
-          <span class="custom-marker-label-text" style="color: ${labelTextColor};">${escapeHtml(title)}</span>
+        <div class="custom-marker-label shadow-md ${isFirst ? 'ring-2 ring-emerald-400/80' : ''}" style="background-color: ${labelBgColor}; color: ${labelTextColor}; ${borderStyle}" title="${escapeHtml(title)}${isFirst ? ' (Điểm xuất phát & Về đích khứ hồi)' : ''}">
+          <span class="custom-marker-label-text" style="color: ${labelTextColor};">${labelTextPrefix}${escapeHtml(title)}</span>
+          ${labelSubtitleBadge}
         </div>
       ` : '';
 
@@ -3722,6 +3753,8 @@
         </div>
       `;
 
+      const isStartFinishOfActive = (Array.isArray(routePinIds) && routePinIds.length > 0 && routePinIds[0] === pin.id);
+
       return `
         <div class="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
           ${pin.photo ? `
@@ -3731,7 +3764,7 @@
               <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md text-white flex items-center gap-1.5 backdrop-blur-xs" style="background-color: ${currentPinColor};">
                 <i class="fa-solid ${cat.icon}"></i> ${cat.name}
               </span>
-              <span class="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100">
+              <span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100">
                 <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
               </span>
             </div>
@@ -3745,6 +3778,13 @@
           `}
 
           <div class="p-3.5 space-y-2">
+            ${isStartFinishOfActive ? `
+              <div class="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-flag-checkered text-emerald-500"></i>
+                <span>Điểm số 1: Xuất phát & Về đích khứ hồi</span>
+              </div>
+            ` : ''}
+
             <div class="flex items-start justify-between gap-2">
               <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">${escapeHtml(pin.title)}</h4>
             </div>
@@ -6989,12 +7029,15 @@
           <div class="relative p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-3 group">
             <!-- Step Number Badge -->
             <div class="w-8 h-8 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold'} flex items-center justify-center text-xs shrink-0 shadow-sm">
-              ${index + 1}
+              ${isFirst ? '<i class="fa-solid fa-flag-checkered text-xs"></i>' : (index + 1)}
             </div>
 
             <!-- Stop Info -->
             <div class="flex-1 min-w-0 cursor-pointer" onclick="focusPin('${pin.id}')">
-              <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(pin.title)}</h5>
+              <div class="flex items-center gap-1.5">
+                <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(pin.title)}</h5>
+                ${isFirst ? '<span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-[9px] font-black shrink-0">Xuất phát & Về đích</span>' : ''}
+              </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                 <span class="${cat.textClass} font-semibold"><i class="fa-solid ${cat.icon}"></i> ${cat.name}</span>
                 <span>•</span>
@@ -7018,7 +7061,25 @@
         `;
       }).join('');
 
-      list.innerHTML = deadEndBannerHtml + stopsCardsHtml;
+      let roundTripEndCardHtml = '';
+      if (routePinIds.length >= 2 && activeTripDirection === 'roundtrip') {
+        const firstPin = pins.find(p => p.id === routePinIds[0]);
+        roundTripEndCardHtml = `
+          <div class="p-2.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-dashed border-emerald-300 dark:border-emerald-700/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs shrink-0">
+                <i class="fa-solid fa-flag-checkered"></i>
+              </div>
+              <div class="min-w-0 truncate">
+                <span class="font-bold text-[11px]">Vòng về đích (Điểm #1: ${escapeHtml(firstPin ? firstPin.title : 'Xuất phát')})</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full shrink-0 ml-2">Khứ hồi</span>
+          </div>
+        `;
+      }
+
+      list.innerHTML = deadEndBannerHtml + stopsCardsHtml + roundTripEndCardHtml;
     }
 
     // Call OSRM real-road routing engine with Draggable Line & Custom Color
