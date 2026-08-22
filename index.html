@@ -2018,10 +2018,14 @@
               <div id="share-all-routes-pills" class="flex flex-wrap gap-1.5 pt-0.5 max-h-24 overflow-y-auto custom-scrollbar">
                 <!-- Populated with colored badges of all routes -->
               </div>
-              <button onclick="openRouteCinemaModal('all')" type="button" class="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-film text-[11px]"></i>
-                <span>Mô phỏng & Xuất Video Trọn bộ tất cả các tuyến</span>
-              </button>
+              <div class="pt-1 text-center">
+                <span class="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold block mb-1">
+                  <i class="fa-solid fa-video text-purple-500"></i> Xuất video từng lộ trình (chất lượng cao & không lag máy):
+                </span>
+                <div class="flex flex-wrap gap-1.5 justify-center" id="share-export-single-routes-btns">
+                  <!-- Populated dynamically with individual route export buttons -->
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2428,6 +2432,41 @@
           <div id="cinema-rec-badge" class="hidden absolute top-2.5 right-2.5 sm:top-4 sm:right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-rose-600/95 text-white text-[10px] sm:text-xs font-black flex items-center gap-1.5 sm:gap-2 shadow-2xl border border-white/20 z-10">
             <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white animate-ping"></span>
             <span>REC • ĐANG GHI VIDEO</span>
+          </div>
+
+          <!-- Video Export Dedicated Overlay (Smooth rendering, Live progress, Cancel button) -->
+          <div id="cinema-export-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center z-30 animate-in fade-in duration-200">
+            <div class="w-full max-w-sm p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-orange-500 text-white flex items-center justify-center text-xl mx-auto shadow-lg shadow-rose-500/30">
+                <i class="fa-solid fa-video animate-pulse"></i>
+              </div>
+              <div>
+                <h4 class="font-black text-sm text-white" id="cinema-export-status-title">Đang Xuất Video Tuyến Đường</h4>
+                <p class="text-xs text-rose-300 font-bold mt-0.5 truncate" id="cinema-export-route-name">Lộ trình</p>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                  <span id="cinema-export-stage-text">Đang quay khung hình...</span>
+                  <span id="cinema-export-pct-text" class="text-rose-400 font-extrabold">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-white/10">
+                  <div id="cinema-export-bar-fill" class="h-full bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 transition-all duration-100" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+                <span>Chuẩn 1080p • 30 FPS siêu mượt</span>
+                <span id="cinema-export-time-est">Không lag/đơ máy</span>
+              </div>
+
+              <!-- Cancel Button -->
+              <button type="button" onclick="cancelVideoExport()" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-rose-400 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700">
+                <i class="fa-solid fa-xmark text-[11px]"></i>
+                <span>Hủy xuất video</span>
+              </button>
+            </div>
           </div>
 
           <!-- Progress Bar on Canvas Bottom -->
@@ -5592,6 +5631,18 @@
         }).join('');
       }
 
+      const singleExportBtnsWrap = document.getElementById('share-export-single-routes-btns');
+      if (singleExportBtnsWrap) {
+        singleExportBtnsWrap.innerHTML = routes.map(r => {
+          return `
+            <button type="button" onclick="closeShareRouteModal(); openRouteCinemaModal('${r.id}');" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold shadow-xs active:scale-95 transition" title="Xuất video cho tuyến ${escapeHtml(r.name)}">
+              <i class="fa-solid fa-video text-[10px]"></i>
+              <span class="truncate max-w-[110px]">${escapeHtml(r.name)}</span>
+            </button>
+          `;
+        }).join('');
+      }
+
       // Update scope tabs UI state
       updateShareScopeUI();
 
@@ -6030,24 +6081,17 @@
       // Update Video Export Button Label to explicitly indicate selected route
       const shareVideoLabel = document.getElementById('share-export-video-btn-label');
       if (shareVideoLabel) {
-        if (currentShareScope === 'all') {
-          shareVideoLabel.textContent = `🎬 Xuất Video: Trọn bộ ${routes.length} tuyến (Full HD 60fps)`;
-        } else {
-          const targetR = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
-          const targetName = targetR ? targetR.name : 'Lộ trình';
-          const truncatedName = targetName.length > 24 ? targetName.substring(0, 24) + '...' : targetName;
-          shareVideoLabel.textContent = `🎬 Xuất Video: ${truncatedName} (Full HD 60fps)`;
-        }
+        const targetR = (currentShareScope === 'single' ? routes.find(r => r.id === currentShareRouteId) : null) || getActiveRoute() || routes[0];
+        const targetName = targetR ? targetR.name : 'Lộ trình';
+        const truncatedName = targetName.length > 24 ? targetName.substring(0, 24) + '...' : targetName;
+        shareVideoLabel.textContent = `🎬 Xuất Video: ${truncatedName} (Full HD)`;
       }
     }
 
     function triggerShareModalVideoExport() {
       closeShareRouteModal();
-      if (currentShareScope === 'all') {
-        openRouteCinemaModal('all');
-      } else {
-        openRouteCinemaModal(currentShareRouteId);
-      }
+      const targetId = (currentShareScope === 'single' ? currentShareRouteId : null) || activeRouteId || (routes[0] && routes[0].id);
+      openRouteCinemaModal(targetId);
     }
 
     function closeShareRouteModal() {
@@ -9347,7 +9391,7 @@
         cinemaSmoothedHeading += diff * 0.18; // Smooth rotational lerp
       }
 
-      const tileRadius = cinemaTiltAngle > 0 ? 6 : 4;
+      const tileRadius = cinemaTiltAngle > 0 ? 3 : 2;
       const centerTx = Math.floor(centerWorld.x / 256);
       const centerTy = Math.floor(centerWorld.y / 256);
 
@@ -9385,13 +9429,13 @@
         const zoom = getEffectiveCinemaZoom(pathCoords, canvasW, canvasH);
         const tileKeySet = new Set();
 
-        const step = Math.max(1, Math.floor(pathCoords.length / 120));
+        const step = Math.max(1, Math.floor(pathCoords.length / 80));
         for (let i = 0; i < pathCoords.length; i += step) {
           const pt = pathCoords[i];
           const wPt = latLngToMercatorWorld(pt.lat, pt.lng, zoom);
           const centerTx = Math.floor(wPt.x / 256);
           const centerTy = Math.floor(wPt.y / 256);
-          const r = cinemaTiltAngle > 0 ? 4 : 3;
+          const r = cinemaTiltAngle > 0 ? 2 : 1;
           for (let dx = -r; dx <= r; dx++) {
             for (let dy = -r; dy <= r; dy++) {
               tileKeySet.add(`${centerTx + dx},${centerTy + dy}`);
@@ -9427,7 +9471,7 @@
         if (pending === 0) {
           finish();
         } else {
-          setTimeout(finish, 2200); // 2.2s safe fallback
+          setTimeout(finish, 1800); // 1.8s fast fallback
         }
       });
     }
@@ -9447,7 +9491,6 @@
             const distStr = r.distKm ? ` - ${r.distKm.toFixed(1)}km` : '';
             return `<option value="${rId}" ${rId === selectedId ? 'selected' : ''}>${escapeHtml(r.name || 'Tuyến')} (${stopCnt} điểm${distStr})</option>`;
           }).join('');
-          optionsHtml += `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>🌟 Trọn bộ tất cả (${sharedRoutePayload.stops.length} điểm)</option>`;
         } else {
           optionsHtml = `<option value="shared_single" selected>${escapeHtml(sharedRoutePayload.name || 'Lộ trình chia sẻ')} (${sharedRoutePayload.stops.length} điểm)</option>`;
         }
@@ -9458,17 +9501,13 @@
             const distStr = r.distanceKm ? ` - ${r.distanceKm.toFixed(1)}km` : '';
             return `<option value="${r.id}" ${r.id === selectedId ? 'selected' : ''}>${escapeHtml(r.name || 'Lộ trình')} (${pinCnt} điểm${distStr})</option>`;
           }).join('');
-
-          if (routes.length > 1) {
-            optionsHtml += `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>🌟 Trọn bộ tất cả (${routes.length} tuyến)</option>`;
-          }
         } else {
           optionsHtml = `<option value="">Chưa có lộ trình</option>`;
         }
       }
 
       selectEl.innerHTML = optionsHtml;
-      if (selectedId) {
+      if (selectedId && selectedId !== 'all') {
         selectEl.value = selectedId;
       }
     }
@@ -9587,15 +9626,15 @@
     async function openRouteCinemaModal(targetRouteId = null) {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
 
-      // Determine target route ID
-      if (targetRouteId) {
+      // Determine target route ID - STRICTLY INDIVIDUAL ROUTE ONLY
+      if (targetRouteId && targetRouteId !== 'all') {
         cinemaTargetRouteId = targetRouteId;
       } else if (isShared) {
         cinemaTargetRouteId = (sharedRoutePayload.isMultiRoute && sharedRoutePayload.routes && sharedRoutePayload.routes[0])
           ? (sharedRoutePayload.routes[0].id || sharedRoutePayload.routes[0].name)
           : 'shared_single';
       } else {
-        cinemaTargetRouteId = (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') ? 'all' : (activeRouteId || (routes[0] ? routes[0].id : null));
+        cinemaTargetRouteId = activeRouteId || (routes[0] ? routes[0].id : null);
       }
 
       populateCinemaRouteSelector(cinemaTargetRouteId);
@@ -9654,6 +9693,8 @@
       showToast(`Đang phát mô phỏng lộ trình bám đường bộ: ${active.name || 'Lộ trình'}`, 'success');
     }
 
+    let cinemaExportInterval = null;
+
     function closeRouteCinemaModal() {
       isCinemaPlaying = false;
       cinemaLastTimestamp = null;
@@ -9661,14 +9702,42 @@
         cancelAnimationFrame(cinemaAnimationId);
         cinemaAnimationId = null;
       }
-      if (isRecordingVideo && mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        isRecordingVideo = false;
-        document.getElementById('cinema-rec-badge').classList.add('hidden');
+      if (isRecordingVideo) {
+        cancelVideoExport();
       }
+
+      const overlay = document.getElementById('cinema-export-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      const recBadge = document.getElementById('cinema-rec-badge');
+      if (recBadge) recBadge.classList.add('hidden');
+      const btnText = document.getElementById('export-video-btn-text');
+      if (btnText) btnText.textContent = 'Ghi & Tải Video';
 
       const modal = document.getElementById('route-cinema-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    function cancelVideoExport() {
+      if (cinemaExportInterval) {
+        clearInterval(cinemaExportInterval);
+        cinemaExportInterval = null;
+      }
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try {
+          mediaRecorder.stop();
+        } catch (e) {
+          console.warn('Error stopping media recorder on cancel:', e);
+        }
+      }
+      isRecordingVideo = false;
+      recordedChunks = [];
+      const overlay = document.getElementById('cinema-export-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      const recBadge = document.getElementById('cinema-rec-badge');
+      if (recBadge) recBadge.classList.add('hidden');
+      const btnText = document.getElementById('export-video-btn-text');
+      if (btnText) btnText.textContent = 'Ghi & Tải Video';
+      showToast('Đã hủy quá trình xuất video', 'info');
     }
 
     function setCinemaSpeed(val) {
@@ -9730,8 +9799,10 @@
         cinemaProgress = 1.0;
         isCinemaPlaying = false;
         cinemaLastTimestamp = null;
-        document.getElementById('cinema-play-icon').className = 'fa-solid fa-rotate-left';
-        document.getElementById('cinema-play-text').textContent = 'Phát lại';
+        const playIcon = document.getElementById('cinema-play-icon');
+        const playText = document.getElementById('cinema-play-text');
+        if (playIcon) playIcon.className = 'fa-solid fa-rotate-left';
+        if (playText) playText.textContent = 'Phát lại';
 
         if (typeof confetti === 'function') {
           confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
@@ -9743,6 +9814,20 @@
       const progFill = document.getElementById('cinema-progress-fill');
       if (progFill) {
         progFill.style.width = `${(cinemaProgress * 100).toFixed(1)}%`;
+      }
+
+      // Smooth Live Export Progress Updates
+      if (isRecordingVideo) {
+        const expPct = document.getElementById('cinema-export-pct-text');
+        const expFill = document.getElementById('cinema-export-bar-fill');
+        const expEst = document.getElementById('cinema-export-time-est');
+        const pctVal = Math.min(100, Math.max(0, Math.round(cinemaProgress * 100)));
+        if (expPct) expPct.textContent = `${pctVal}%`;
+        if (expFill) expFill.style.width = `${pctVal}%`;
+        if (expEst) {
+          const remainSec = Math.max(1, Math.round((1.0 - cinemaProgress) * (16 / cinemaSpeed)));
+          expEst.textContent = `Còn ~${remainSec} giây`;
+        }
       }
 
       if (isCinemaPlaying) {
@@ -10604,7 +10689,7 @@
     }
 
     // ==========================================
-    // RECORD AND EXPORT ANIMATED ROUTE VIDEO (.webm) WITH MAP BACKGROUND
+    // RECORD AND EXPORT ANIMATED ROUTE VIDEO (.mp4 / .webm) WITH MAP BACKGROUND
     // ==========================================
     async function recordAndExportRouteVideo() {
       const canvas = document.getElementById('cinema-canvas');
@@ -10615,6 +10700,11 @@
         return;
       }
 
+      // Strictly single route validation
+      if (!cinemaTargetRouteId || cinemaTargetRouteId === 'all') {
+        cinemaTargetRouteId = activeRouteId || (routes[0] ? routes[0].id : null);
+      }
+
       const active = getCinemaSelectedRoute();
       const activePins = getCinemaSelectedPins();
 
@@ -10623,7 +10713,7 @@
         return;
       }
 
-      showToast('Đang đồng bộ đường chỉ dẫn thực tế & chuẩn bị bản đồ Full HD 1080p...', 'info');
+      showToast(`Đang chuẩn bị video cho tuyến "${active.name || 'Lộ trình'}"...`, 'info');
       const btnText = document.getElementById('export-video-btn-text');
       if (btnText) btnText.textContent = 'Đang nạp đường chỉ dẫn...';
 
@@ -10640,21 +10730,21 @@
 
       // Select supported high quality mime type
       const mimeCandidates = [
+        'video/mp4;codecs=avc1',
+        'video/mp4',
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp9',
         'video/webm;codecs=vp8',
-        'video/mp4;codecs=avc1',
-        'video/webm',
-        'video/mp4'
+        'video/webm'
       ];
       let selectedMime = mimeCandidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
 
-      // High frame-rate capture: 60 FPS stream
-      const stream = canvas.captureStream(60);
+      // High-compatibility, smooth & freeze-free 30 FPS stream with optimal 4.5 Mbps bitrate
+      const stream = canvas.captureStream(30);
       try {
         recordedChunks = [];
         const recorderOptions = {
-          videoBitsPerSecond: 10000000 // 10 Mbps for crystal clear 1080p
+          videoBitsPerSecond: 4500000 // 4.5 Mbps: Crystal clear 1080p without freezing device
         };
         if (selectedMime) {
           recorderOptions.mimeType = selectedMime;
@@ -10679,8 +10769,16 @@
       };
 
       mediaRecorder.onstop = function() {
+        if (cinemaExportInterval) {
+          clearInterval(cinemaExportInterval);
+          cinemaExportInterval = null;
+        }
         isRecordingVideo = false;
-        document.getElementById('cinema-rec-badge').classList.add('hidden');
+
+        const recBadge = document.getElementById('cinema-rec-badge');
+        if (recBadge) recBadge.classList.add('hidden');
+        const overlay = document.getElementById('cinema-export-overlay');
+        if (overlay) overlay.classList.add('hidden');
         if (btnText) btnText.textContent = 'Ghi & Tải Video';
 
         if (recordedChunks.length === 0) {
@@ -10695,23 +10793,37 @@
         a.href = url;
         const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
         const ext = isMp4 ? 'mp4' : 'webm';
-        a.download = `gaomaps-1080p-video-${safeName}-${Date.now()}.${ext}`;
+        a.download = `gaomaps-video-${safeName}-${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-        showToast('🎉 Đã xuất và tải video hành trình Full HD 60fps mượt mà thành công!', 'success');
+        showToast(`🎉 Đã xuất thành công video lộ trình: "${active.name || 'Lộ trình'}" (1080p, siêu mượt)`, 'success');
       };
+
+      // Show Export Progress Overlay
+      const overlay = document.getElementById('cinema-export-overlay');
+      const routeNameEl = document.getElementById('cinema-export-route-name');
+      const barFill = document.getElementById('cinema-export-bar-fill');
+      const pctText = document.getElementById('cinema-export-pct-text');
+      const stageText = document.getElementById('cinema-export-stage-text');
+
+      if (routeNameEl) routeNameEl.textContent = `Tuyến: ${active.name || 'Lộ trình'}`;
+      if (barFill) barFill.style.width = '0%';
+      if (pctText) pctText.textContent = '0%';
+      if (stageText) stageText.textContent = 'Đang quay khung hình mượt mà...';
+      if (overlay) overlay.classList.remove('hidden');
 
       // Start recording
       isRecordingVideo = true;
       mediaRecorder.start(100); // collect in 100ms slices
 
-      document.getElementById('cinema-rec-badge').classList.remove('hidden');
-      if (btnText) btnText.textContent = 'Đang ghi video 60 FPS...';
+      const recBadge = document.getElementById('cinema-rec-badge');
+      if (recBadge) recBadge.classList.remove('hidden');
+      if (btnText) btnText.textContent = 'Đang ghi video 30 FPS...';
 
-      // Restart cinema simulation from beginning at optimal recording speed (1.5x)
+      // Restart cinema simulation from beginning at smooth recording speed (1.5x)
       cinemaProgress = 0.0;
       cinemaLastTimestamp = null;
       cinemaSmoothedHeading = null;
@@ -10722,18 +10834,21 @@
       requestAnimationFrame(runCinemaLoop);
 
       // Auto-stop recording when progress finishes
-      const checkFinishedTimer = setInterval(() => {
+      if (cinemaExportInterval) clearInterval(cinemaExportInterval);
+      cinemaExportInterval = setInterval(() => {
         if (cinemaProgress >= 1.0) {
-          clearInterval(checkFinishedTimer);
+          if (cinemaExportInterval) {
+            clearInterval(cinemaExportInterval);
+            cinemaExportInterval = null;
+          }
+          if (stageText) stageText.textContent = 'Đang đóng gói file video...';
           setTimeout(() => {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
               mediaRecorder.stop();
             }
-          }, 500);
+          }, 350);
         }
-      }, 200);
-
-      showToast('Đang quay video độ phân giải Full HD (60 FPS)...', 'info');
+      }, 150);
     }
 
     // ==========================================
