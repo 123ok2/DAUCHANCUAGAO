@@ -2926,6 +2926,9 @@
           
           // Auto sync initial state
           scheduleFirebaseSync();
+
+          // Check if there is an incoming shared route to load
+          checkSharedRouteFromUrl();
         } else {
           updateCloudStatusUI('offline', 'Chế độ Cục bộ');
         }
@@ -5815,27 +5818,32 @@
         };
       }
 
-      // Generate Full Base64 URL parameter (for Copy & Social Share)
-      let shareUrl = window.location.origin + window.location.pathname;
+      // Generate Short Cloud Share Identifier (eliminates URI_TOO_LONG completely)
+      const sharePrefix = (currentShareScope === 'all') ? 'all_' : 'rt_';
+      const shareId = sharePrefix + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+
+      // Save payload locally as cache
       try {
-        const jsonStr = JSON.stringify(sharePayload);
-        const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
-        shareUrl += `?share_route=${encoded}`;
-      } catch (e) {
-        shareUrl += `?route_name=${encodeURIComponent(displayTitle)}`;
+        localStorage.setItem('memomap_share_' + shareId, JSON.stringify(sharePayload));
+      } catch (e) {}
+
+      // Asynchronously publish rich route data to Firebase Firestore
+      if (firebaseDb && isFirebaseReady) {
+        try {
+          firebaseDb.collection('memomap_shared_routes').doc(shareId).set(sharePayload).catch(err => {
+            console.warn('Firestore share route write error:', err);
+          });
+        } catch (e) {
+          console.warn('Firestore share route exception:', e);
+        }
       }
 
+      // Generate Clean Lightweight URL
+      const shareUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
       input.value = shareUrl;
 
-      // Generate Compact QR URL
-      let qrUrl = window.location.origin + window.location.pathname;
-      try {
-        const compactJsonStr = JSON.stringify(compactQrPayload);
-        const compactEncoded = encodeURIComponent(btoa(unescape(encodeURIComponent(compactJsonStr))));
-        qrUrl += `?sr=${compactEncoded}`;
-      } catch (err) {
-        qrUrl = shareUrl;
-      }
+      // QR Code uses concise URL (ultra-sharp, high-contrast, lightning-fast scan)
+      const qrUrl = shareUrl;
 
       // Render High-Definition Vector/Canvas QR Code
       const qrCanvas = document.getElementById('share-qrcode-canvas');
@@ -5980,7 +5988,7 @@
       input.select();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(input.value).then(() => {
-          showToast('Đã sao chép link lộ trình kèm ảnh vào bộ nhớ tạm!', 'success');
+          showToast('Đã sao chép link lộ trình vào bộ nhớ tạm!', 'success');
         }).catch(() => {
           document.execCommand('copy');
           showToast('Đã sao chép link lộ trình!', 'success');
@@ -5988,22 +5996,6 @@
       } else {
         document.execCommand('copy');
         showToast('Đã sao chép link lộ trình!', 'success');
-      }
-    }
-
-    function triggerNativeShare() {
-      const input = document.getElementById('share-link-input');
-      const active = getActiveRoute();
-      if (navigator.share && input) {
-        navigator.share({
-          title: `Lộ trình: ${active.name} - Gạo Maps`,
-          text: `Xem lộ trình "${active.name}" kèm toàn bộ hình ảnh và các điểm tham quan trên Gạo Maps Việt Nam:`,
-          url: input.value
-        }).catch(err => {
-          if (err.name !== 'AbortError') copyShareLink();
-        });
-      } else {
-        copyShareLink();
       }
     }
 
@@ -6616,13 +6608,75 @@
     }
 
     // Parse and Hydrate Shared Route from incoming URL
-    function checkSharedRouteFromUrl() {
+    let lastHydratedShareId = null;
+
+    async function checkSharedRouteFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
+      const shareId = urlParams.get('s') || urlParams.get('share_id') || urlParams.get('id');
       const shareParam = urlParams.get('share_route');
       const compactParam = urlParams.get('sr');
 
-      if (!shareParam && !compactParam) return;
+      if (!shareId && !shareParam && !compactParam) return;
 
+      if (shareId) {
+        if (lastHydratedShareId === shareId && isSharedViewMode) return;
+
+        // 1. Try local cache first for instantaneous rendering
+        let localData = null;
+        try {
+          const cached = localStorage.getItem('memomap_share_' + shareId);
+          if (cached) localData = JSON.parse(cached);
+        } catch (e) {}
+
+        if (localData && Array.isArray(localData.stops) && localData.stops.length > 0) {
+          lastHydratedShareId = shareId;
+          hydrateSharedRouteExperience(localData);
+          showToast(`Đang hiển thị lộ trình: "${localData.name}"`, 'success');
+        }
+
+        // 2. Fetch from Firebase Cloud
+        const loadFromCloud = async () => {
+          if (firebaseDb && isFirebaseReady) {
+            try {
+              const doc = await firebaseDb.collection('memomap_shared_routes').doc(shareId).get();
+              if (doc.exists) {
+                const cloudData = doc.data();
+                if (cloudData && Array.isArray(cloudData.stops) && cloudData.stops.length > 0) {
+                  try {
+                    localStorage.setItem('memomap_share_' + shareId, JSON.stringify(cloudData));
+                  } catch (e) {}
+                  lastHydratedShareId = shareId;
+                  hydrateSharedRouteExperience(cloudData);
+                  showToast(`Đã đồng bộ lộ trình từ Cloud: "${cloudData.name}"`, 'success');
+                  return true;
+                }
+              }
+            } catch (err) {
+              console.warn('Error fetching shared route from firestore:', err);
+            }
+          }
+          return false;
+        };
+
+        const success = await loadFromCloud();
+        if (!success && !localData) {
+          let retries = 0;
+          const retryTimer = setInterval(async () => {
+            retries++;
+            if (firebaseDb && isFirebaseReady) {
+              const ok = await loadFromCloud();
+              if (ok || retries >= 8) {
+                clearInterval(retryTimer);
+              }
+            } else if (retries >= 8) {
+              clearInterval(retryTimer);
+            }
+          }, 600);
+        }
+        return;
+      }
+
+      // Legacy fallback for old parameter formats
       try {
         let sharedData = null;
         if (shareParam) {
