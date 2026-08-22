@@ -1992,17 +1992,21 @@
             </div>
 
             <!-- Designated Route Picker (Visible when scope is 'single') -->
-            <div id="share-single-route-picker-wrap" class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap flex items-center gap-1.5">
+            <div id="share-single-route-picker-wrap" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap flex items-center gap-1.5 shrink-0">
                 <i class="fa-solid fa-location-arrow text-indigo-500"></i> Tuyến cần share:
               </label>
               <select id="share-designated-route-select" onchange="onSelectDesignatedShareRoute(this.value)" class="flex-1 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 outline-none focus:border-indigo-500 cursor-pointer shadow-2xs">
                 <!-- Dynamically populated -->
               </select>
+              <button onclick="openRouteCinemaModal(currentShareRouteId)" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white text-xs font-bold shrink-0 transition flex items-center justify-center gap-1.5 shadow-xs" title="Mô phỏng & Xuất video cho tuyến này">
+                <i class="fa-solid fa-video text-[11px]"></i>
+                <span>Xuất Video</span>
+              </button>
             </div>
 
             <!-- All Routes Summary Card (Visible when scope is 'all') -->
-            <div id="share-all-routes-tags-wrap" class="hidden p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2">
+            <div id="share-all-routes-tags-wrap" class="hidden p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2.5">
               <div class="flex items-center justify-between text-xs">
                 <span class="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
                   <i class="fa-solid fa-map-location-dot text-emerald-600 dark:text-emerald-400"></i> Gói trọn bộ hành trình đa tuyến
@@ -2014,6 +2018,10 @@
               <div id="share-all-routes-pills" class="flex flex-wrap gap-1.5 pt-0.5 max-h-24 overflow-y-auto custom-scrollbar">
                 <!-- Populated with colored badges of all routes -->
               </div>
+              <button onclick="openRouteCinemaModal('all')" type="button" class="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-film text-[11px]"></i>
+                <span>Mô phỏng & Xuất Video Trọn bộ tất cả các tuyến</span>
+              </button>
             </div>
           </div>
 
@@ -2126,12 +2134,18 @@
               </div>
 
               <div class="space-y-2">
-                <button onclick="triggerNativeShare()" class="w-full py-3 px-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
+                <!-- Video Export Action -->
+                <button onclick="triggerShareModalVideoExport()" class="w-full py-3 px-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-500 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-purple-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
+                  <i class="fa-solid fa-video text-sm"></i>
+                  <span id="share-export-video-btn-label">Xuất Video Lộ Trình (Full HD 60fps)</span>
+                </button>
+
+                <button onclick="triggerNativeShare()" class="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
                   <i class="fa-solid fa-paper-plane text-sm"></i>
                   <span>Gửi qua Zalo / Messenger / Mail</span>
                 </button>
                 
-                <button onclick="exportRoutePosterCard()" class="w-full py-3 px-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition shadow-xs">
+                <button onclick="exportRoutePosterCard()" class="w-full py-2.5 px-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition shadow-xs">
                   <i class="fa-solid fa-image text-emerald-500 text-sm"></i>
                   <span>Xuất Ảnh HD (Kèm hình ảnh & Chi tiết)</span>
                 </button>
@@ -2328,6 +2342,15 @@
 
         <!-- 2. Responsive Camera & Map Controls Strip -->
         <div class="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-slate-800/80 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar shrink-0">
+          <!-- Route Selector (Choose Which Route to Simulate & Export Video) -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-purple-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Chọn lộ trình để mô phỏng & xuất video">
+            <i class="fa-solid fa-route text-[11px] sm:text-xs text-purple-400 shrink-0"></i>
+            <span class="text-[10px] sm:text-[11px] font-bold text-purple-300 hidden xs:inline">Tuyến:</span>
+            <select id="cinema-route-select" onchange="changeCinemaRoute(this.value)" class="bg-transparent text-[11px] sm:text-xs font-black text-purple-200 outline-none cursor-pointer max-w-[150px] xs:max-w-[190px] sm:max-w-[240px] truncate">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
           <!-- Journey Mode (Roundtrip vs Outbound vs Return) -->
           <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-emerald-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Chế độ mô phỏng hành trình (Điểm 1 là nơi xuất phát và về đích khi khứ hồi)">
             <i class="fa-solid fa-arrows-spin text-[11px] sm:text-xs text-emerald-400 shrink-0"></i>
@@ -5189,8 +5212,11 @@
                   Chọn
                 </button>
               ` : ''}
-              <button onclick="openShareRouteModal('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-sky-600 flex items-center justify-center text-xs transition" title="Chia sẻ liên kết">
+              <button onclick="openShareRouteModal('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-sky-600 flex items-center justify-center text-xs transition" title="Chia sẻ liên kết & QR">
                 <i class="fa-solid fa-share-nodes"></i>
+              </button>
+              <button onclick="closeManageRoutesModal(); openRouteCinemaModal('${r.id}');" class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 hover:bg-purple-100 flex items-center justify-center text-xs transition" title="Mô phỏng 3D & Xuất video cho tuyến này">
+                <i class="fa-solid fa-video"></i>
               </button>
               <button onclick="duplicateRoute('${r.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 flex items-center justify-center text-xs transition" title="Nhân bản">
                 <i class="fa-solid fa-copy"></i>
@@ -5999,6 +6025,28 @@
           qrZoomImg.classList.remove('hidden');
           qrZoomImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=6&data=${encodeURIComponent(qrUrl)}`;
         }
+      }
+
+      // Update Video Export Button Label to explicitly indicate selected route
+      const shareVideoLabel = document.getElementById('share-export-video-btn-label');
+      if (shareVideoLabel) {
+        if (currentShareScope === 'all') {
+          shareVideoLabel.textContent = `🎬 Xuất Video: Trọn bộ ${routes.length} tuyến (Full HD 60fps)`;
+        } else {
+          const targetR = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+          const targetName = targetR ? targetR.name : 'Lộ trình';
+          const truncatedName = targetName.length > 24 ? targetName.substring(0, 24) + '...' : targetName;
+          shareVideoLabel.textContent = `🎬 Xuất Video: ${truncatedName} (Full HD 60fps)`;
+        }
+      }
+    }
+
+    function triggerShareModalVideoExport() {
+      closeShareRouteModal();
+      if (currentShareScope === 'all') {
+        openRouteCinemaModal('all');
+      } else {
+        openRouteCinemaModal(currentShareRouteId);
       }
     }
 
@@ -8831,32 +8879,77 @@
       }
     }
 
-    function getInterpolatedRouteCoords() {
-      if (Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
-        return currentRouteCoordinates.map(c => ({
-          lat: typeof c.lat === 'number' ? c.lat : c[0],
-          lng: typeof c.lng === 'number' ? c.lng : c[1]
-        }));
+    let cinemaTargetRouteId = null; // null (use active), 'all' (all routes composite), or routeId string
+    let cinemaJourneyMode = 'roundtrip'; // 'roundtrip', 'outbound', 'return'
+
+    function getCinemaSelectedRoute() {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      if (isShared) {
+        if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes)) {
+          if (cinemaTargetRouteId && cinemaTargetRouteId !== 'all') {
+            const found = sharedRoutePayload.routes.find(r => r.id === cinemaTargetRouteId || r.name === cinemaTargetRouteId);
+            if (found) return found;
+          }
+          return sharedRoutePayload;
+        }
+        return sharedRoutePayload;
       }
 
-      // Fallback: interpolate between route waypoints or stop pins
+      if (cinemaTargetRouteId === 'all') {
+        const agg = calculateAllRoutesAggregateMetrics();
+        const allStops = routes.flatMap(r => (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean));
+        return {
+          id: 'all',
+          name: `Trọn bộ ${routes.length} Tuyến Lộ Trình`,
+          color: '#10b981',
+          travelMode: 'driving',
+          stops: allStops,
+          distanceKm: agg.totalRoundTripKm
+        };
+      }
+
+      if (cinemaTargetRouteId) {
+        const found = routes.find(r => r.id === cinemaTargetRouteId);
+        if (found) return found;
+      }
+
+      return getActiveRoute();
+    }
+
+    function getCinemaSelectedPins() {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const active = isShared ? sharedRoutePayload : getActiveRoute();
-      
-      const customWps = isShared
-        ? (sharedRoutePayload.waypoints && sharedRoutePayload.waypoints.length >= 2 ? sharedRoutePayload.waypoints : null)
-        : (customRouteWaypoints || (active && active.customWaypoints && active.customWaypoints.length >= 2 ? active.customWaypoints : null));
+      if (isShared) {
+        if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes)) {
+          if (cinemaTargetRouteId && cinemaTargetRouteId !== 'all') {
+            const found = sharedRoutePayload.routes.find(r => r.id === cinemaTargetRouteId || r.name === cinemaTargetRouteId);
+            if (found && Array.isArray(found.stops)) return found.stops;
+          }
+        }
+        return sharedRoutePayload.stops || [];
+      }
 
-      const waypointsToUse = customWps || (isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean));
+      if (cinemaTargetRouteId === 'all') {
+        const allPins = [];
+        routes.forEach(r => {
+          (r.pinIds || []).forEach(id => {
+            const p = pins.find(pin => pin.id === id);
+            if (p) allPins.push(p);
+          });
+        });
+        return allPins;
+      }
 
-      if (!waypointsToUse || waypointsToUse.length < 2) return [];
+      const targetRoute = getCinemaSelectedRoute();
+      if (!targetRoute) return [];
+      return (targetRoute.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+    }
 
+    function interpolateBetweenPoints(ptList) {
+      if (!Array.isArray(ptList) || ptList.length < 2) return [];
       const points = [];
-      for (let i = 0; i < waypointsToUse.length - 1; i++) {
-        const p1 = waypointsToUse[i];
-        const p2 = waypointsToUse[i + 1];
+      for (let i = 0; i < ptList.length - 1; i++) {
+        const p1 = ptList[i];
+        const p2 = ptList[i + 1];
         const steps = 30;
         for (let s = 0; s <= steps; s++) {
           const t = s / steps;
@@ -8867,6 +8960,70 @@
         }
       }
       return points;
+    }
+
+    function getInterpolatedRouteCoords() {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      let baseCoords = [];
+
+      if (isShared) {
+        if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes) && cinemaTargetRouteId && cinemaTargetRouteId !== 'all') {
+          const found = sharedRoutePayload.routes.find(r => r.id === cinemaTargetRouteId || r.name === cinemaTargetRouteId);
+          if (found) {
+            if (Array.isArray(found.waypoints) && found.waypoints.length >= 2) {
+              baseCoords = found.waypoints.map(c => ({ lat: c.lat || c[0], lng: c.lng || c[1] }));
+            } else if (Array.isArray(found.stops) && found.stops.length >= 2) {
+              baseCoords = interpolateBetweenPoints(found.stops);
+            }
+          }
+        } else if (Array.isArray(sharedRoutePayload.waypoints) && sharedRoutePayload.waypoints.length >= 2) {
+          baseCoords = sharedRoutePayload.waypoints.map(c => ({ lat: c.lat || c[0], lng: c.lng || c[1] }));
+        } else if (Array.isArray(sharedRoutePayload.stops) && sharedRoutePayload.stops.length >= 2) {
+          baseCoords = interpolateBetweenPoints(sharedRoutePayload.stops);
+        }
+      } else if (cinemaTargetRouteId === 'all') {
+        const allCoords = [];
+        routes.forEach(r => {
+          if (Array.isArray(r.customWaypoints) && r.customWaypoints.length >= 2) {
+            r.customWaypoints.forEach(wp => allCoords.push({ lat: wp.lat || wp[0], lng: wp.lng || wp[1] }));
+          } else {
+            const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+            if (rPins.length >= 2) {
+              const interpolated = interpolateBetweenPoints(rPins);
+              interpolated.forEach(pt => allCoords.push(pt));
+            }
+          }
+        });
+        baseCoords = allCoords;
+      } else {
+        const targetRoute = getCinemaSelectedRoute();
+        if (targetRoute) {
+          if (targetRoute.id === activeRouteId && Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
+            baseCoords = currentRouteCoordinates.map(c => ({
+              lat: typeof c.lat === 'number' ? c.lat : c[0],
+              lng: typeof c.lng === 'number' ? c.lng : c[1]
+            }));
+          } else if (Array.isArray(targetRoute.customWaypoints) && targetRoute.customWaypoints.length >= 2) {
+            baseCoords = targetRoute.customWaypoints.map(c => ({ lat: c.lat || c[0], lng: c.lng || c[1] }));
+          } else {
+            const targetPins = (targetRoute.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+            if (targetPins.length >= 2) {
+              baseCoords = interpolateBetweenPoints(targetPins);
+            }
+          }
+        }
+      }
+
+      if (baseCoords.length < 2) return [];
+
+      // Apply cinemaJourneyMode ('outbound', 'return', 'roundtrip')
+      if (cinemaJourneyMode === 'return') {
+        return [...baseCoords].reverse();
+      } else if (cinemaJourneyMode === 'roundtrip') {
+        const reversed = [...baseCoords].reverse().slice(1);
+        return baseCoords.concat(reversed);
+      }
+      return baseCoords;
     }
 
     // ==========================================
@@ -9151,6 +9308,94 @@
       });
     }
 
+    function populateCinemaRouteSelector(selectedId = null) {
+      const selectEl = document.getElementById('cinema-route-select');
+      if (!selectEl) return;
+
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      let optionsHtml = '';
+
+      if (isShared) {
+        if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes) && sharedRoutePayload.routes.length > 0) {
+          optionsHtml = sharedRoutePayload.routes.map((r, idx) => {
+            const rId = r.id || r.name || `shared_rt_${idx}`;
+            const stopCnt = (r.stops || []).length;
+            const distStr = r.distKm ? ` - ${r.distKm.toFixed(1)}km` : '';
+            return `<option value="${rId}" ${rId === selectedId ? 'selected' : ''}>${escapeHtml(r.name || 'Tuyến')} (${stopCnt} điểm${distStr})</option>`;
+          }).join('');
+          optionsHtml += `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>🌟 Trọn bộ tất cả (${sharedRoutePayload.stops.length} điểm)</option>`;
+        } else {
+          optionsHtml = `<option value="shared_single" selected>${escapeHtml(sharedRoutePayload.name || 'Lộ trình chia sẻ')} (${sharedRoutePayload.stops.length} điểm)</option>`;
+        }
+      } else {
+        if (routes && routes.length > 0) {
+          optionsHtml = routes.map(r => {
+            const pinCnt = (r.pinIds || []).length;
+            const distStr = r.distanceKm ? ` - ${r.distanceKm.toFixed(1)}km` : '';
+            return `<option value="${r.id}" ${r.id === selectedId ? 'selected' : ''}>${escapeHtml(r.name || 'Lộ trình')} (${pinCnt} điểm${distStr})</option>`;
+          }).join('');
+
+          if (routes.length > 1) {
+            optionsHtml += `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>🌟 Trọn bộ tất cả (${routes.length} tuyến)</option>`;
+          }
+        } else {
+          optionsHtml = `<option value="">Chưa có lộ trình</option>`;
+        }
+      }
+
+      selectEl.innerHTML = optionsHtml;
+      if (selectedId) {
+        selectEl.value = selectedId;
+      }
+    }
+
+    function changeCinemaRoute(routeId) {
+      cinemaTargetRouteId = routeId;
+      cinemaProgress = 0.0;
+      cinemaLastTimestamp = null;
+      cinemaSmoothedHeading = null;
+      isCinemaPlaying = true;
+
+      const titleEl = document.getElementById('cinema-route-title');
+      const selectedRoute = getCinemaSelectedRoute();
+      if (titleEl && selectedRoute) {
+        titleEl.textContent = `Mô Phỏng: ${selectedRoute.name || 'Lộ trình'}`;
+      }
+
+      const canvas = document.getElementById('cinema-canvas');
+      const pathCoords = getInterpolatedRouteCoords();
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      showToast(`Đã chuyển sang mô phỏng lộ trình: ${selectedRoute ? selectedRoute.name : 'Lộ trình'}`, 'info');
+      requestAnimationFrame(runCinemaLoop);
+    }
+
+    function changeCinemaJourneyMode(mode) {
+      cinemaJourneyMode = mode || 'roundtrip';
+      cinemaProgress = 0.0;
+      cinemaLastTimestamp = null;
+      cinemaSmoothedHeading = null;
+      isCinemaPlaying = true;
+
+      const canvas = document.getElementById('cinema-canvas');
+      const pathCoords = getInterpolatedRouteCoords();
+      if (canvas && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      const modeNames = {
+        roundtrip: '🌟 Khứ hồi (Đi & Về đích điểm 1)',
+        outbound: '🏁 Chiều đi (1 ➔ N)',
+        return: '🔄 Chiều về (N ➔ 1)'
+      };
+      showToast(`Chế độ hành trình: ${modeNames[cinemaJourneyMode] || mode}`, 'info');
+      requestAnimationFrame(runCinemaLoop);
+    }
+
     function changeCinemaTiltAngle(val) {
       cinemaTiltAngle = parseInt(val, 10) || 0;
       const pathCoords = getInterpolatedRouteCoords();
@@ -9213,12 +9458,24 @@
       showToast(`Đã chuyển nền bản đồ video sang: ${styleNames[style] || style}`, 'info');
     }
 
-    function openRouteCinemaModal() {
+    function openRouteCinemaModal(targetRouteId = null) {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const active = isShared ? sharedRoutePayload : getActiveRoute();
-      const activePins = isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+      // Determine target route ID
+      if (targetRouteId) {
+        cinemaTargetRouteId = targetRouteId;
+      } else if (isShared) {
+        cinemaTargetRouteId = (sharedRoutePayload.isMultiRoute && sharedRoutePayload.routes && sharedRoutePayload.routes[0])
+          ? (sharedRoutePayload.routes[0].id || sharedRoutePayload.routes[0].name)
+          : 'shared_single';
+      } else {
+        cinemaTargetRouteId = (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') ? 'all' : (activeRouteId || (routes[0] ? routes[0].id : null));
+      }
+
+      populateCinemaRouteSelector(cinemaTargetRouteId);
+
+      const active = getCinemaSelectedRoute();
+      const activePins = getCinemaSelectedPins();
 
       if (!active || activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để phát mô phỏng và xuất video!', 'error');
@@ -9245,6 +9502,9 @@
       const tiltSelect = document.getElementById('cinema-tilt-select');
       if (tiltSelect) tiltSelect.value = cinemaTiltAngle.toString();
 
+      const journeySelect = document.getElementById('cinema-journey-select');
+      if (journeySelect) journeySelect.value = cinemaJourneyMode;
+
       cinemaProgress = 0.0;
       cinemaLastTimestamp = null;
       cinemaSmoothedHeading = null;
@@ -9261,7 +9521,7 @@
       }
 
       requestAnimationFrame(runCinemaLoop);
-      showToast('Đang phát mô phỏng mượt mà 60 FPS trên nền bản đồ...', 'info');
+      showToast(`Đang phát mô phỏng lộ trình: ${active.name || 'Lộ trình'}...`, 'info');
     }
 
     function closeRouteCinemaModal() {
@@ -9528,10 +9788,7 @@
       }
 
       // 5. Draw Billboarded Stop Badges (Upright, High-Contrast)
-      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const activePins = isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      const activePins = getCinemaSelectedPins();
       let closestStop = null;
       let closestDist = 9999;
 
@@ -9547,7 +9804,7 @@
           closestStop = pin;
         }
 
-        const isPassed = (index / (activePins.length - 1)) <= (progress + 0.05);
+        const isPassed = activePins.length > 1 ? ((index / (activePins.length - 1)) <= (progress + 0.05)) : false;
 
         // Only draw if inside or near canvas
         if (pt.x >= -100 && pt.x <= w + 100 && pt.y >= 20 && pt.y <= h + 100) {
@@ -9593,7 +9850,7 @@
         if (popupEl) {
           popupEl.classList.remove('hidden');
           const stopIdx = activePins.findIndex(p => p.id === closestStop.id);
-          document.getElementById('cinema-popup-num').textContent = `${stopIdx + 1}`;
+          document.getElementById('cinema-popup-num').textContent = `${stopIdx >= 0 ? stopIdx + 1 : 1}`;
           document.getElementById('cinema-popup-title').textContent = closestStop.title;
 
           const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
@@ -9736,10 +9993,9 @@
       }
 
       // 8. Watermark and Top-Left Metadata Branding Box
-      const isSharedRoute = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const isMultiCinema = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
-      const active = isSharedRoute ? sharedRoutePayload : getActiveRoute();
-      const brandW = 420 * uiScale;
+      const active = getCinemaSelectedRoute();
+      const isMultiCinema = cinemaTargetRouteId === 'all';
+      const brandW = 430 * uiScale;
       const brandH = 68 * uiScale;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
@@ -9754,18 +10010,19 @@
 
       const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
       const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
-      const routeDisplayName = isMultiCinema ? `Tổng hợp ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
+      const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
+      const routeDisplayName = isMultiCinema ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
       ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
-      ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-      ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})`, 34 * uiScale, 68 * uiScale);
+      ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
+      ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 68 * uiScale);
 
       // 9. Top-Right Real-time Telemetry HUD (Outbound, Return, Roundtrip & Provinces)
       const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
       const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
-      const cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : 0);
-      const cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : 0);
-      const cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : 0);
-      const cSec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : 0);
+      const cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : (active && active.distanceKm ? active.distanceKm : 0));
+      const cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : (active && active.distanceKm ? active.distanceKm : 0));
+      const cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : (active && active.distanceKm ? active.distanceKm * 2 : 0));
+      const cSec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
       const cTimeStr = formatTravelTime(cSec);
       const cProvInfo = getProvincesForPins(activePins);
       const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
@@ -10221,11 +10478,8 @@
         return;
       }
 
-      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
-      const active = isShared ? sharedRoutePayload : getActiveRoute();
-      const activePins = isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      const active = getCinemaSelectedRoute();
+      const activePins = getCinemaSelectedPins();
 
       if (!active || activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để quay video!', 'error');
