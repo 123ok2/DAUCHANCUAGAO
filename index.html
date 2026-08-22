@@ -4703,6 +4703,121 @@
       }
     }
 
+    // ==========================================
+    // ROBUST OSRM ROAD GEOMETRY ENGINE (REAL HIGHWAY & STREET ROUTING)
+    // ==========================================
+    async function fetchOsrmRoadGeometry(points, travelMode = 'driving') {
+      if (!points || points.length < 2) return null;
+
+      // Standardize input points to [[lat, lng], ...]
+      const latLngs = points.map(p => {
+        if (Array.isArray(p)) return [Number(p[0]), Number(p[1])];
+        if (p && typeof p.lat === 'number' && typeof p.lng === 'number') return [Number(p.lat), Number(p.lng)];
+        return null;
+      }).filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
+
+      if (latLngs.length < 2) return null;
+
+      const cacheKey = `${travelMode}_${latLngs.map(pt => `${pt[0].toFixed(5)},${pt[1].toFixed(5)}`).join('|')}`;
+      if (routeGeometryCache.has(cacheKey)) {
+        return routeGeometryCache.get(cacheKey);
+      }
+
+      const CHUNK_SIZE = 20;
+      let allCoords = [];
+      let totalMeters = 0;
+      let totalDuration = 0;
+
+      async function fetchChunk(chunkPoints) {
+        const coordsString = chunkPoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+        const isWalking = (travelMode === 'walking');
+
+        const endpoints = isWalking ? [
+          `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`,
+          `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`
+        ] : [
+          `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`,
+          `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`
+        ];
+
+        for (const url of endpoints) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.routes && data.routes.length > 0) {
+                const r = data.routes[0];
+                let coords = [];
+                if (r.geometry && Array.isArray(r.geometry.coordinates)) {
+                  coords = r.geometry.coordinates.map(c => [c[1], c[0]]); // [lat, lng]
+                }
+                if (coords.length > 0) {
+                  return {
+                    coords: coords,
+                    distance: r.distance || 0,
+                    duration: r.duration || 0
+                  };
+                }
+              }
+            }
+          } catch (e) {
+            // fallback to next endpoint
+          }
+        }
+        return null;
+      }
+
+      try {
+        if (latLngs.length <= CHUNK_SIZE) {
+          const res = await fetchChunk(latLngs);
+          if (res && res.coords && res.coords.length > 0) {
+            allCoords = res.coords;
+            totalMeters = res.distance;
+            totalDuration = res.duration;
+          }
+        } else {
+          for (let i = 0; i < latLngs.length - 1; i += (CHUNK_SIZE - 1)) {
+            const chunk = latLngs.slice(i, Math.min(i + CHUNK_SIZE, latLngs.length));
+            if (chunk.length < 2) break;
+            const res = await fetchChunk(chunk);
+            if (res && res.coords && res.coords.length > 0) {
+              if (allCoords.length > 0) {
+                allCoords.push(...res.coords.slice(1));
+              } else {
+                allCoords.push(...res.coords);
+              }
+              totalMeters += res.distance;
+              totalDuration += res.duration;
+            } else {
+              if (allCoords.length > 0) {
+                allCoords.push(...chunk.slice(1));
+              } else {
+                allCoords.push(...chunk);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching OSRM road geometry:', err);
+      }
+
+      if (allCoords.length > 0) {
+        const result = {
+          coordinates: allCoords,
+          distanceKm: parseFloat((totalMeters / 1000).toFixed(1)),
+          durationSeconds: totalDuration
+        };
+        routeGeometryCache.set(cacheKey, result);
+        return result;
+      }
+
+      return null;
+    }
+
     function getAllRoutesLayerGroup() {
       if (!allRoutesLayerGroup && typeof map !== 'undefined' && map) {
         allRoutesLayerGroup = L.layerGroup().addTo(map);
@@ -4792,56 +4907,32 @@
         group.addLayer(mainLine);
 
         // Fetch high-fidelity OSRM real road coordinates
-        const cacheKey = `${r.id}_${r.travelMode || 'driving'}_${waypoints.map(w => w.join(',')).join('|')}`;
-        if (routeGeometryCache.has(cacheKey)) {
-          const cachedCoords = routeGeometryCache.get(cacheKey);
-          if (cachedCoords && cachedCoords.length > 0) {
-            shadowLine.setLatLngs(cachedCoords);
-            mainLine.setLatLngs(cachedCoords);
+        fetchOsrmRoadGeometry(waypoints, r.travelMode || 'driving').then(geo => {
+          if (geo && geo.coordinates && geo.coordinates.length > 0) {
+            shadowLine.setLatLngs(geo.coordinates);
+            mainLine.setLatLngs(geo.coordinates);
+
+            if (geo.distanceKm && !r.distanceKm) {
+              r.distanceKm = geo.distanceKm;
+              r.returnDistanceKm = geo.distanceKm;
+            }
+            if (geo.durationSeconds && !r.durationSeconds) {
+              r.durationSeconds = geo.durationSeconds;
+              r.returnDurationSeconds = geo.durationSeconds;
+            }
+
+            mainLine.bindTooltip(`<b>${escapeHtml(r.name)}</b> (${(r.pinIds && r.pinIds.length) || 0} điểm${r.distanceKm ? ' • ' + r.distanceKm + ' km' : ''})`, {
+              sticky: true,
+              direction: 'top',
+              opacity: 0.95,
+              className: 'bg-slate-900 text-white rounded-lg px-2 py-1 text-xs border border-white/20 shadow-md font-sans'
+            });
+
+            if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
+              updateRouteSummaryUI();
+            }
           }
-        } else {
-          try {
-            const coordsString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
-            const serviceUrl = (r.travelMode === 'walking')
-              ? `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`
-              : `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
-
-            fetch(serviceUrl)
-              .then(res => res.json())
-              .then(data => {
-                if (data && data.routes && data.routes.length > 0) {
-                  if (data.routes[0].geometry) {
-                    const geoCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                    if (geoCoords.length > 0) {
-                      routeGeometryCache.set(cacheKey, geoCoords);
-                      shadowLine.setLatLngs(geoCoords);
-                      mainLine.setLatLngs(geoCoords);
-                    }
-                  }
-                  if (typeof data.routes[0].distance === 'number') {
-                    r.distanceKm = parseFloat((data.routes[0].distance / 1000).toFixed(1));
-                  }
-                  if (typeof data.routes[0].duration === 'number') {
-                    r.durationSeconds = data.routes[0].duration;
-                  }
-                  r.returnDistanceKm = r.distanceKm;
-                  r.returnDurationSeconds = r.durationSeconds;
-
-                  mainLine.bindTooltip(`<b>${escapeHtml(r.name)}</b> (${(r.pinIds && r.pinIds.length) || 0} điểm${r.distanceKm ? ' • ' + r.distanceKm + ' km' : ''})`, {
-                    sticky: true,
-                    direction: 'top',
-                    opacity: 0.95,
-                    className: 'bg-slate-900 text-white rounded-lg px-2 py-1 text-xs border border-white/20 shadow-md font-sans'
-                  });
-
-                  if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
-                    updateRouteSummaryUI();
-                  }
-                }
-              })
-              .catch(() => {});
-          } catch(e) {}
-        }
+        });
       }
     }
 
@@ -6847,8 +6938,8 @@
 
               const glowLine = L.polyline(polyPoints, {
                 color: '#0f172a',
-                opacity: 0.3,
-                weight: 8,
+                opacity: 0.25,
+                weight: 7,
                 lineCap: 'round',
                 lineJoin: 'round'
               }).addTo(map);
@@ -6856,13 +6947,54 @@
               const mainLine = L.polyline(polyPoints, {
                 color: rColor,
                 opacity: 0.95,
-                weight: 5,
+                weight: 4.5,
                 lineCap: 'round',
                 lineJoin: 'round'
               }).addTo(map);
 
+              mainLine.bindTooltip(`<b>#${rIdx + 1} ${escapeHtml(r.name || 'Tuyến đường')}</b> (${rStops.length} điểm${r.distKm ? ' • ' + r.distKm + ' km' : ''})`, {
+                sticky: true,
+                direction: 'top',
+                opacity: 0.95,
+                className: 'bg-slate-900 text-white rounded-lg px-2.5 py-1 text-xs border border-white/20 shadow-md font-sans'
+              });
+
+              mainLine.on('mouseover', function() {
+                this.setStyle({ weight: 7, opacity: 1 });
+                this.bringToFront();
+              });
+              mainLine.on('mouseout', function() {
+                this.setStyle({ weight: 4.5, opacity: 0.95 });
+              });
+
               sharedRouteMultiLayers.push(glowLine);
               sharedRouteMultiLayers.push(mainLine);
+
+              // Asynchronously fetch high-fidelity OSRM real curved highway & road geometry
+              fetchOsrmRoadGeometry(polyPoints, r.travelMode || 'driving').then(geo => {
+                if (geo && geo.coordinates && geo.coordinates.length > 0) {
+                  glowLine.setLatLngs(geo.coordinates);
+                  mainLine.setLatLngs(geo.coordinates);
+
+                  // Update currentRouteCoordinates for journey simulation with true road curves
+                  let combinedCurvedCoords = [];
+                  (sharedData.routes || []).forEach(subR => {
+                    const subPoints = (subR.waypoints && subR.waypoints.length >= 2) 
+                      ? subR.waypoints.map(wp => [wp.lat, wp.lng]) 
+                      : (subR.stops || []).map(s => [s.lat, s.lng]);
+                    const key = `${subR.travelMode || 'driving'}_${subPoints.map(pt => `${Number(pt[0]).toFixed(5)},${Number(pt[1]).toFixed(5)}`).join('|')}`;
+                    const cached = routeGeometryCache.get(key);
+                    if (cached && cached.coordinates && cached.coordinates.length > 0) {
+                      cached.coordinates.forEach(pt => combinedCurvedCoords.push({ lat: pt[0], lng: pt[1] }));
+                    } else {
+                      subPoints.forEach(pt => combinedCurvedCoords.push({ lat: pt[0], lng: pt[1] }));
+                    }
+                  });
+                  if (combinedCurvedCoords.length > 0) {
+                    currentRouteCoordinates = combinedCurvedCoords;
+                  }
+                }
+              });
 
               polyPoints.forEach(pt => allCoordsForSim.push({ lat: pt[0], lng: pt[1] }));
             }
