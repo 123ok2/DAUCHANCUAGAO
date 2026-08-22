@@ -56,6 +56,9 @@
   <!-- Canvas Confetti for Celebration FX -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
+  <!-- High Definition Client-Side QR Code Generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1975,28 +1978,67 @@
         <!-- Scrollable Modal Body -->
         <div class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
           
+          <!-- Share Scope Selector (Designated Route vs All Routes) -->
+          <div class="space-y-2.5">
+            <div class="p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-inner">
+              <button id="btn-share-scope-single" onclick="setShareScope('single')" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300">
+                <i class="fa-solid fa-route text-indigo-500"></i>
+                <span id="share-scope-single-label">Tuyến chỉ định</span>
+              </button>
+              <button id="btn-share-scope-all" onclick="setShareScope('all')" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <i class="fa-solid fa-layer-group text-emerald-500"></i>
+                <span id="share-scope-all-label">Tất cả các tuyến</span>
+              </button>
+            </div>
+
+            <!-- Designated Route Picker (Visible when scope is 'single') -->
+            <div id="share-single-route-picker-wrap" class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap flex items-center gap-1.5">
+                <i class="fa-solid fa-location-arrow text-indigo-500"></i> Tuyến cần share:
+              </label>
+              <select id="share-designated-route-select" onchange="onSelectDesignatedShareRoute(this.value)" class="flex-1 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 outline-none focus:border-indigo-500 cursor-pointer shadow-2xs">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <!-- All Routes Summary Card (Visible when scope is 'all') -->
+            <div id="share-all-routes-tags-wrap" class="hidden p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-map-location-dot text-emerald-600 dark:text-emerald-400"></i> Gói trọn bộ hành trình đa tuyến
+                </span>
+                <span id="share-all-routes-count-badge" class="px-2 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-black text-[10px]">
+                  0 tuyến • 0 điểm
+                </span>
+              </div>
+              <div id="share-all-routes-pills" class="flex flex-wrap gap-1.5 pt-0.5 max-h-24 overflow-y-auto custom-scrollbar">
+                <!-- Populated with colored badges of all routes -->
+              </div>
+            </div>
+          </div>
+
           <!-- Route Metrics & Telemetry Card -->
           <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 dark:from-slate-800/80 dark:to-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-3">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span id="share-route-color-dot" class="w-3 h-3 rounded-full bg-indigo-500 shrink-0"></span>
-                <h4 id="share-modal-route-name" class="font-black text-slate-800 dark:text-slate-100 text-base truncate">Lộ trình du lịch</h4>
+              <div class="flex items-center gap-2 min-w-0">
+                <span id="share-route-color-dot" class="w-3.5 h-3.5 rounded-full bg-indigo-500 shrink-0 shadow-xs"></span>
+                <h4 id="share-modal-route-name" class="font-black text-slate-800 dark:text-slate-100 text-sm sm:text-base truncate">Lộ trình du lịch</h4>
               </div>
-              <span id="share-route-mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Ô tô / Xe máy</span>
+              <span id="share-route-mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0">Ô tô / Xe máy</span>
             </div>
 
             <!-- 3 Telemetry Pillars -->
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-indigo-100 dark:border-indigo-900/40 text-center">
               <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
-                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Tổng quãng đường</span>
+                <span id="share-metric-dist-label" class="text-[10px] text-slate-400 block font-semibold uppercase">Tổng quãng đường</span>
                 <span id="share-modal-dist" class="font-black text-sky-600 dark:text-sky-400 text-sm sm:text-base">0.0 km</span>
               </div>
               <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
-                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Thời gian dự tính</span>
+                <span id="share-metric-time-label" class="text-[10px] text-slate-400 block font-semibold uppercase">Thời gian dự tính</span>
                 <span id="share-modal-time" class="font-black text-amber-600 dark:text-amber-400 text-sm sm:text-base">0 phút</span>
               </div>
               <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-800/60 shadow-xs">
-                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Điểm dừng</span>
+                <span id="share-metric-stops-label" class="text-[10px] text-slate-400 block font-semibold uppercase">Điểm dừng</span>
                 <span id="share-modal-stops-count" class="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">0 điểm</span>
               </div>
             </div>
@@ -2033,29 +2075,67 @@
           </div>
 
           <!-- Action Grid: Poster Export, QR Code, Social Share -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800 items-center">
-            <!-- QR Code -->
-            <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <div class="w-20 h-20 bg-white p-1.5 rounded-xl shadow-inner flex items-center justify-center shrink-0">
-                <img id="share-qrcode-img" src="" alt="QR Lộ Trình" class="w-full h-full object-contain" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-3 border-t border-slate-200 dark:border-slate-800 items-stretch">
+            <!-- QR Code Section (Prominent, High Contrast & Easy-to-Scan) -->
+            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 flex flex-col items-center text-center gap-2.5">
+              <div class="flex items-center justify-between w-full">
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <i class="fa-solid fa-qrcode text-indigo-500"></i> Mã QR Quét Nhanh
+                </span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-300 text-[10px] font-black">
+                  ⚡ Siêu nét & Siêu nhạy
+                </span>
               </div>
-              <div class="space-y-1 text-xs">
-                <span class="font-bold text-slate-800 dark:text-slate-200 block">Quét mã QR</span>
-                <p class="text-[11px] text-slate-400 leading-tight">Dùng camera quét để mở ngay trên điện thoại</p>
+              
+              <!-- QR Image / Canvas Container (Click to Zoom) -->
+              <div onclick="openQrZoomModal()" class="group relative w-40 h-40 sm:w-44 sm:h-44 bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-600 cursor-pointer flex items-center justify-center transition transform hover:scale-[1.03] active:scale-95" title="Nhấn để phóng to toàn màn hình">
+                <canvas id="share-qrcode-canvas" class="w-full h-full object-contain hidden"></canvas>
+                <img id="share-qrcode-img" src="" alt="QR Lộ Trình" class="w-full h-full object-contain rounded-xl" style="image-rendering: pixelated;" />
+                <div class="absolute inset-0 bg-indigo-950/50 backdrop-blur-[2px] rounded-2xl opacity-0 group-hover:opacity-100 transition duration-200 flex flex-col items-center justify-center text-white text-xs font-bold gap-1.5 shadow-lg">
+                  <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                  </div>
+                  <span>Chạm để phóng to</span>
+                </div>
+              </div>
+
+              <div class="space-y-1.5 w-full">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  Dùng Camera điện thoại hoặc Zalo quét để mở ngay
+                </p>
+                <div class="flex items-center justify-center gap-2 pt-0.5">
+                  <button type="button" onclick="openQrZoomModal()" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-[11px] font-bold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-expand"></i> Phóng to
+                  </button>
+                  <button type="button" onclick="downloadQrCodeImage()" class="px-2.5 py-1.5 rounded-xl bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 text-[11px] font-bold flex items-center gap-1 transition" title="Tải ảnh mã QR về máy">
+                    <i class="fa-solid fa-download"></i> Tải ảnh QR
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- Social Share & Poster Buttons -->
-            <div class="space-y-2">
-              <button onclick="triggerNativeShare()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
-                <i class="fa-solid fa-paper-plane"></i>
-                <span>Gửi qua Zalo / Messenger / Mail</span>
-              </button>
-              
-              <button onclick="exportRoutePosterCard()" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition">
-                <i class="fa-solid fa-image text-emerald-500"></i>
-                <span>Xuất Ảnh HD (Kèm hình ảnh)</span>
-              </button>
+            <div class="flex flex-col justify-between gap-2.5">
+              <div class="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-1">
+                <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-paper-plane text-sky-500"></i> Gửi bạn bè & mạng xã hội
+                </span>
+                <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Gửi link qua Zalo, Messenger, AirDrop hoặc sao chép để mọi người mở trên mọi thiết bị.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <button onclick="triggerNativeShare()" class="w-full py-3 px-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-95 transition">
+                  <i class="fa-solid fa-paper-plane text-sm"></i>
+                  <span>Gửi qua Zalo / Messenger / Mail</span>
+                </button>
+                
+                <button onclick="exportRoutePosterCard()" class="w-full py-3 px-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition shadow-xs">
+                  <i class="fa-solid fa-image text-emerald-500 text-sm"></i>
+                  <span>Xuất Ảnh HD (Kèm hình ảnh & Chi tiết)</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2067,6 +2147,39 @@
           </button>
           <button onclick="closeShareRouteModal()" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold hover:bg-slate-300 transition">
             Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DEDICATED QR ZOOM LIGHTBOX MODAL ==================== -->
+    <div id="qr-zoom-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto" onclick="if(event.target === this) closeQrZoomModal();">
+      <div class="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-200">
+        
+        <button onclick="closeQrZoomModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition" title="Đóng">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+
+        <div class="space-y-1">
+          <span class="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 text-xs font-bold inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-qrcode"></i> Mã QR Siêu Nét
+          </span>
+          <h4 id="qr-zoom-route-title" class="font-black text-slate-800 dark:text-slate-100 text-base pt-1 truncate max-w-[280px]">Lộ trình Gạo Maps</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Hướng camera điện thoại hoặc Zalo vào mã để quét</p>
+        </div>
+
+        <!-- Big Crisp Canvas / Image Box (300x300 - 360x360) -->
+        <div class="w-64 h-64 sm:w-72 sm:h-72 bg-white p-3 rounded-3xl shadow-xl border-2 border-indigo-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+          <canvas id="qr-zoom-canvas" class="w-full h-full object-contain hidden"></canvas>
+          <img id="qr-zoom-img" src="" alt="Mã QR Phóng To" class="w-full h-full object-contain rounded-2xl" style="image-rendering: pixelated;" />
+        </div>
+
+        <div class="w-full flex gap-2">
+          <button onclick="downloadQrCodeImage()" class="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/25 transition active:scale-95">
+            <i class="fa-solid fa-download"></i> Tải ảnh QR
+          </button>
+          <button onclick="copyShareLink()" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i class="fa-regular fa-copy"></i> Sao chép link
           </button>
         </div>
       </div>
@@ -5305,9 +5418,119 @@
       });
     }
 
-    async function openShareRouteModal(routeId = null) {
-      const targetRoute = routeId ? (routes.find(r => r.id === routeId) || getActiveRoute()) : getActiveRoute();
+    let currentShareScope = 'single'; // 'single' | 'all'
+    let currentShareRouteId = null;
+
+    async function openShareRouteModal(routeId = null, initialScope = null) {
       const modal = document.getElementById('share-route-modal');
+      if (!modal) return;
+
+      // Determine initial scope
+      if (initialScope) {
+        currentShareScope = initialScope;
+      } else if (routeId) {
+        currentShareScope = 'single';
+      } else if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
+        currentShareScope = 'all';
+      } else {
+        currentShareScope = 'single';
+      }
+
+      currentShareRouteId = routeId || activeRouteId || (routes[0] ? routes[0].id : null);
+
+      // Populate designated route select dropdown
+      const selectEl = document.getElementById('share-designated-route-select');
+      if (selectEl) {
+        selectEl.innerHTML = routes.map(r => {
+          const pinCount = (r.pinIds || []).length;
+          const distStr = r.distanceKm ? ` - ${r.distanceKm.toFixed(1)}km` : '';
+          return `<option value="${r.id}" ${r.id === currentShareRouteId ? 'selected' : ''}>${escapeHtml(r.name || 'Lộ trình')} (${pinCount} điểm${distStr})</option>`;
+        }).join('');
+      }
+
+      // Populate All Routes summary pills & count
+      const totalRoutesCount = routes.length;
+      let totalAllStopsCount = 0;
+      routes.forEach(r => { totalAllStopsCount += (r.pinIds || []).length; });
+
+      const allCountBadge = document.getElementById('share-all-routes-count-badge');
+      if (allCountBadge) {
+        allCountBadge.textContent = `${totalRoutesCount} tuyến • ${totalAllStopsCount} điểm dừng`;
+      }
+
+      const allPillsWrap = document.getElementById('share-all-routes-pills');
+      if (allPillsWrap) {
+        allPillsWrap.innerHTML = routes.map(r => {
+          const cnt = (r.pinIds || []).length;
+          return `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xs">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'}"></span>
+              <span class="truncate max-w-[120px] text-slate-800 dark:text-slate-200">${escapeHtml(r.name)}</span>
+              <span class="text-[10px] text-slate-400 font-mono">(${cnt})</span>
+            </span>
+          `;
+        }).join('');
+      }
+
+      // Update scope tabs UI state
+      updateShareScopeUI();
+
+      // Render content, link & QR code
+      await updateShareModalContent();
+
+      modal.classList.remove('hidden');
+    }
+
+    function setShareScope(scope) {
+      currentShareScope = scope;
+      updateShareScopeUI();
+      updateShareModalContent();
+    }
+
+    function updateShareScopeUI() {
+      const btnSingle = document.getElementById('btn-share-scope-single');
+      const btnAll = document.getElementById('btn-share-scope-all');
+      const singlePicker = document.getElementById('share-single-route-picker-wrap');
+      const allTags = document.getElementById('share-all-routes-tags-wrap');
+      const singleLabel = document.getElementById('share-scope-single-label');
+      const allLabel = document.getElementById('share-scope-all-label');
+
+      if (singleLabel) {
+        const activeR = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+        singleLabel.textContent = activeR ? `Tuyến: ${activeR.name.substring(0, 18)}${activeR.name.length > 18 ? '...' : ''}` : 'Tuyến chỉ định';
+      }
+      if (allLabel) {
+        allLabel.textContent = `Tất cả (${routes.length} tuyến)`;
+      }
+
+      if (currentShareScope === 'single') {
+        if (btnSingle) {
+          btnSingle.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300';
+        }
+        if (btnAll) {
+          btnAll.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+        }
+        if (singlePicker) singlePicker.classList.remove('hidden');
+        if (allTags) allTags.classList.add('hidden');
+      } else {
+        if (btnSingle) {
+          btnSingle.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+        }
+        if (btnAll) {
+          btnAll.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs bg-emerald-600 text-white dark:bg-emerald-600';
+        }
+        if (singlePicker) singlePicker.classList.add('hidden');
+        if (allTags) allTags.classList.remove('hidden');
+      }
+    }
+
+    function onSelectDesignatedShareRoute(routeId) {
+      currentShareRouteId = routeId;
+      updateShareScopeUI();
+      updateShareModalContent();
+    }
+
+    async function updateShareModalContent() {
       const title = document.getElementById('share-modal-route-name');
       const distEl = document.getElementById('share-modal-dist');
       const timeEl = document.getElementById('share-modal-time');
@@ -5316,121 +5539,438 @@
       const colorDot = document.getElementById('share-route-color-dot');
       const modeBadge = document.getElementById('share-route-mode-badge');
       const input = document.getElementById('share-link-input');
-      const qrImg = document.getElementById('share-qrcode-img');
       const previewList = document.getElementById('share-modal-stops-preview-list');
+      const qrZoomTitle = document.getElementById('qr-zoom-route-title');
 
-      if (!modal || !input) return;
+      const distLabel = document.getElementById('share-metric-dist-label');
+      const timeLabel = document.getElementById('share-metric-time-label');
+      const stopsLabel = document.getElementById('share-metric-stops-label');
 
-      const activePins = (targetRoute.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
-      
-      const totalKm = calculateRouteDistanceKm(targetRoute);
-      const estTimeStr = targetRoute.distanceKm 
-        ? formatTravelTime(targetRoute.distanceKm * 1000 / (targetRoute.travelMode === 'walking' ? 1.2 : 12))
-        : `${activePins.length * 25} phút`;
+      if (!input) return;
 
-      // Update Header & Telemetry UI
-      if (title) title.textContent = targetRoute.name || 'Lộ trình Chuyến đi';
-      if (distEl) distEl.textContent = `${totalKm} km`;
-      if (timeEl) timeEl.textContent = estTimeStr;
-      if (countEl) countEl.textContent = `${activePins.length} điểm`;
-      if (colorDot) colorDot.style.backgroundColor = targetRoute.color || '#6366f1';
-      if (modeBadge) modeBadge.textContent = targetRoute.travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
+      let sharePayload = null;
+      let compactQrPayload = null;
+      let displayTitle = '';
 
-      const photoCount = activePins.filter(p => !!p.photo).length;
-      if (photosCountEl) photosCountEl.textContent = `${photoCount} ảnh`;
+      if (currentShareScope === 'all') {
+        // MULTI-ROUTE SHARE LOGIC
+        displayTitle = `Trọn bộ ${routes.length} Tuyến Lộ Trình`;
+        if (distLabel) distLabel.textContent = 'Tổng Quãng Đường';
+        if (timeLabel) timeLabel.textContent = 'Tổng Thời Gian';
+        if (stopsLabel) stopsLabel.textContent = 'Tổng Điểm Dừng';
 
-      // Render mini stops preview cards
-      if (previewList) {
-        if (activePins.length === 0) {
-          previewList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic">Chưa có điểm dừng nào trong lộ trình này.</div>`;
-        } else {
-          previewList.innerHTML = activePins.map((p, idx) => {
-            const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
-            return `
-              <div class="flex-shrink-0 w-44 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col gap-2">
-                <div class="relative w-full h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                  ${p.photo ? `
-                    <img src="${p.photo}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-300" onclick="openImageLightbox('${p.photo}', '${escapeHtml(p.title)}')" />
-                    <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold"><i class="fa-solid fa-camera"></i></span>
-                  ` : `
-                    <div class="text-center p-2 text-slate-400 dark:text-slate-500">
-                      <i class="fa-solid ${cat.icon} text-2xl"></i>
-                      <span class="block text-[10px] mt-1 font-medium">${cat.name}</span>
-                    </div>
-                  `}
-                  <span class="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shadow-md">
-                    ${idx + 1}
-                  </span>
-                </div>
-                <div class="min-w-0">
-                  <h6 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(p.title)}</h6>
-                  <p class="text-[10px] text-sky-600 dark:text-sky-400 truncate mt-0.5">${escapeHtml(p.locationName || p.address || cat.name)}</p>
-                  <div class="text-[11px] text-amber-400 mt-1">${'★'.repeat(p.rating || 5)}</div>
-                </div>
-              </div>
-            `;
-          }).join('');
+        let totalCombinedKm = 0;
+        let totalStopsCount = 0;
+        let allDisplayStops = [];
+
+        // Build packaged routes payload
+        const packagedRoutes = await Promise.all(routes.map(async (r) => {
+          const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+          const rDistKm = calculateRouteDistanceKm(r);
+          totalCombinedKm += parseFloat(rDistKm) || 0;
+          totalStopsCount += rPins.length;
+
+          const rStopsPayload = await Promise.all(rPins.map(async (p, idx) => {
+            const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 220, 0.5) : '';
+            const stopObj = {
+              title: p.title,
+              locationName: p.locationName || p.address || '',
+              lat: p.lat,
+              lng: p.lng,
+              category: p.category || 'sightseeing',
+              rating: p.rating || 5,
+              notes: p.notes || '',
+              date: p.date || '',
+              photo: compressedPhoto,
+              routeName: r.name,
+              routeColor: r.color || '#6366f1',
+              routeIndex: idx + 1
+            };
+            allDisplayStops.push(stopObj);
+            return stopObj;
+          }));
+
+          const rEstTimeStr = r.distanceKm 
+            ? formatTravelTime(r.distanceKm * 1000 / (r.travelMode === 'walking' ? 1.2 : 12))
+            : `${rPins.length * 25} phút`;
+
+          return {
+            id: r.id,
+            name: r.name,
+            description: r.description || '',
+            color: r.color || '#6366f1',
+            travelMode: r.travelMode || 'driving',
+            distKm: rDistKm,
+            durationStr: rEstTimeStr,
+            stops: rStopsPayload,
+            waypoints: (r.id === activeRouteId && customRouteWaypoints && customRouteWaypoints.length >= 2)
+              ? customRouteWaypoints
+              : (r.customWaypoints && r.customWaypoints.length >= 2 ? r.customWaypoints : null)
+          };
+        }));
+
+        totalCombinedKm = Math.round(totalCombinedKm * 10) / 10;
+        const totalDurationStr = `~${Math.max(15, Math.round(totalCombinedKm / 45 * 60))} phút`;
+
+        if (title) title.textContent = `${routes.length} Tuyến đường (${totalStopsCount} điểm)`;
+        if (distEl) distEl.textContent = `${totalCombinedKm} km`;
+        if (timeEl) timeEl.textContent = totalDurationStr;
+        if (countEl) countEl.textContent = `${totalStopsCount} điểm`;
+        if (colorDot) colorDot.style.backgroundColor = '#10b981';
+        if (modeBadge) {
+          modeBadge.textContent = `🌐 ${routes.length} Tuyến Toàn Bộ`;
+          modeBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shrink-0';
         }
-      }
 
-      // Compress photos asynchronously for ultra-reliable URL transmission
-      const stopsPayload = await Promise.all(activePins.map(async (p) => {
-        const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 240, 0.55) : '';
-        return {
-          title: p.title,
-          locationName: p.locationName || p.address || '',
-          lat: p.lat,
-          lng: p.lng,
-          category: p.category || 'sightseeing',
-          rating: p.rating || 5,
-          notes: p.notes || '',
-          date: p.date || '',
-          photo: compressedPhoto
+        const photoCount = allDisplayStops.filter(p => !!p.photo).length;
+        if (photosCountEl) photosCountEl.textContent = `${photoCount} ảnh`;
+
+        // Render preview carousel for all stops
+        if (previewList) {
+          if (allDisplayStops.length === 0) {
+            previewList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic">Chưa có điểm dừng nào trong các tuyến.</div>`;
+          } else {
+            previewList.innerHTML = allDisplayStops.map((p) => {
+              const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
+              return `
+                <div class="flex-shrink-0 w-44 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col gap-2">
+                  <div class="relative w-full h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                    ${p.photo ? `
+                      <img src="${p.photo}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-300" onclick="openImageLightbox('${p.photo}', '${escapeHtml(p.title)}')" />
+                      <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold"><i class="fa-solid fa-camera"></i></span>
+                    ` : `
+                      <div class="text-center p-2 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid ${cat.icon} text-2xl"></i>
+                        <span class="block text-[10px] mt-1 font-medium">${cat.name}</span>
+                      </div>
+                    `}
+                    <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-white text-[9px] font-black flex items-center gap-1 shadow-md" style="background-color: ${p.routeColor || '#6366f1'}">
+                      <span>#${p.routeIndex}</span>
+                      <span class="max-w-[70px] truncate">${escapeHtml(p.routeName)}</span>
+                    </span>
+                  </div>
+                  <div class="min-w-0">
+                    <h6 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(p.title)}</h6>
+                    <p class="text-[10px] text-sky-600 dark:text-sky-400 truncate mt-0.5">${escapeHtml(p.locationName || cat.name)}</p>
+                    <div class="text-[11px] text-amber-400 mt-1">${'★'.repeat(p.rating || 5)}</div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        sharePayload = {
+          isMultiRoute: true,
+          name: `Trọn bộ ${routes.length} Tuyến Lộ Trình`,
+          desc: 'Tổng hợp các tuyến lộ trình du lịch trên Gạo Maps',
+          color: '#10b981',
+          mode: 'multi',
+          distKm: totalCombinedKm,
+          durationStr: totalDurationStr,
+          totalRoutes: routes.length,
+          routes: packagedRoutes,
+          stops: allDisplayStops,
+          created: new Date().toISOString()
         };
-      }));
 
-      // Ensure targetRoute has latest customWaypoints if it's the active route
-      if (targetRoute && targetRoute.id === activeRouteId && customRouteWaypoints) {
-        targetRoute.customWaypoints = customRouteWaypoints;
+        compactQrPayload = {
+          all: 1,
+          n: `Trọn bộ ${routes.length} Tuyến Lộ Trình`,
+          d: totalCombinedKm,
+          t: totalDurationStr,
+          c: '#10b981',
+          m: 'multi',
+          r: routes.map(r => {
+            const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+            return {
+              n: r.name,
+              c: r.color || '#6366f1',
+              m: r.travelMode || 'driving',
+              d: calculateRouteDistanceKm(r),
+              s: rPins.map(p => ({
+                t: p.title,
+                lat: Math.round(p.lat * 1000000) / 1000000,
+                lng: Math.round(p.lng * 1000000) / 1000000,
+                l: (p.locationName || p.address || '').substring(0, 40),
+                c: p.category || 'sightseeing',
+                r: p.rating || 5,
+                n: (p.notes || '').substring(0, 60),
+                d: p.date || ''
+              }))
+            };
+          })
+        };
+
+      } else {
+        // SINGLE DESIGNATED ROUTE SHARE LOGIC
+        const targetRoute = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+        displayTitle = targetRoute.name || 'Lộ trình Du Lịch';
+        if (distLabel) distLabel.textContent = 'Tổng Quãng Đường';
+        if (timeLabel) timeLabel.textContent = 'Thời Gian Dự Tính';
+        if (stopsLabel) stopsLabel.textContent = 'Điểm Dừng';
+
+        const activePins = (targetRoute.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
+        const totalKm = calculateRouteDistanceKm(targetRoute);
+        const estTimeStr = targetRoute.distanceKm 
+          ? formatTravelTime(targetRoute.distanceKm * 1000 / (targetRoute.travelMode === 'walking' ? 1.2 : 12))
+          : `${activePins.length * 25} phút`;
+
+        if (title) title.textContent = targetRoute.name || 'Lộ trình Chuyến đi';
+        if (distEl) distEl.textContent = `${totalKm} km`;
+        if (timeEl) timeEl.textContent = estTimeStr;
+        if (countEl) countEl.textContent = `${activePins.length} điểm`;
+        if (colorDot) colorDot.style.backgroundColor = targetRoute.color || '#6366f1';
+        if (modeBadge) {
+          modeBadge.textContent = targetRoute.travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
+          modeBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0';
+        }
+
+        const photoCount = activePins.filter(p => !!p.photo).length;
+        if (photosCountEl) photosCountEl.textContent = `${photoCount} ảnh`;
+
+        if (previewList) {
+          if (activePins.length === 0) {
+            previewList.innerHTML = `<div class="p-3 text-xs text-slate-400 italic">Chưa có điểm dừng nào trong tuyến này.</div>`;
+          } else {
+            previewList.innerHTML = activePins.map((p, idx) => {
+              const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
+              return `
+                <div class="flex-shrink-0 w-44 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col gap-2">
+                  <div class="relative w-full h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                    ${p.photo ? `
+                      <img src="${p.photo}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-300" onclick="openImageLightbox('${p.photo}', '${escapeHtml(p.title)}')" />
+                      <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold"><i class="fa-solid fa-camera"></i></span>
+                    ` : `
+                      <div class="text-center p-2 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid ${cat.icon} text-2xl"></i>
+                        <span class="block text-[10px] mt-1 font-medium">${cat.name}</span>
+                      </div>
+                    `}
+                    <span class="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shadow-md">
+                      ${idx + 1}
+                    </span>
+                  </div>
+                  <div class="min-w-0">
+                    <h6 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(p.title)}</h6>
+                    <p class="text-[10px] text-sky-600 dark:text-sky-400 truncate mt-0.5">${escapeHtml(p.locationName || p.address || cat.name)}</p>
+                    <div class="text-[11px] text-amber-400 mt-1">${'★'.repeat(p.rating || 5)}</div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        const stopsPayload = await Promise.all(activePins.map(async (p) => {
+          const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 240, 0.55) : '';
+          return {
+            title: p.title,
+            locationName: p.locationName || p.address || '',
+            lat: p.lat,
+            lng: p.lng,
+            category: p.category || 'sightseeing',
+            rating: p.rating || 5,
+            notes: p.notes || '',
+            date: p.date || '',
+            photo: compressedPhoto
+          };
+        }));
+
+        if (targetRoute && targetRoute.id === activeRouteId && customRouteWaypoints) {
+          targetRoute.customWaypoints = customRouteWaypoints;
+        }
+
+        sharePayload = {
+          isMultiRoute: false,
+          name: targetRoute.name,
+          desc: targetRoute.description || '',
+          color: targetRoute.color || '#6366f1',
+          mode: targetRoute.travelMode || 'driving',
+          distKm: totalKm,
+          durationStr: estTimeStr,
+          stops: stopsPayload,
+          waypoints: (targetRoute.customWaypoints && targetRoute.customWaypoints.length >= 2)
+            ? targetRoute.customWaypoints
+            : (targetRoute.id === activeRouteId && customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null),
+          created: targetRoute.createdAt || new Date().toISOString()
+        };
+
+        compactQrPayload = {
+          n: targetRoute.name,
+          d: totalKm,
+          t: estTimeStr,
+          c: targetRoute.color || '#6366f1',
+          m: targetRoute.travelMode || 'driving',
+          s: activePins.map(p => ({
+            t: p.title,
+            lat: Math.round(p.lat * 1000000) / 1000000,
+            lng: Math.round(p.lng * 1000000) / 1000000,
+            l: (p.locationName || p.address || '').substring(0, 50),
+            c: p.category || 'sightseeing',
+            r: p.rating || 5,
+            n: (p.notes || '').substring(0, 80),
+            d: p.date || ''
+          }))
+        };
       }
 
-      const sharePayload = {
-        name: targetRoute.name,
-        desc: targetRoute.description || '',
-        color: targetRoute.color || '#6366f1',
-        mode: targetRoute.travelMode || 'driving',
-        distKm: totalKm,
-        durationStr: estTimeStr,
-        stops: stopsPayload,
-        waypoints: (targetRoute.customWaypoints && targetRoute.customWaypoints.length >= 2)
-          ? targetRoute.customWaypoints
-          : (targetRoute.id === activeRouteId && customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null),
-        created: targetRoute.createdAt || new Date().toISOString()
-      };
-
-      // Generate Base64 URL parameter
+      // Generate Full Base64 URL parameter (for Copy & Social Share)
       let shareUrl = window.location.origin + window.location.pathname;
       try {
         const jsonStr = JSON.stringify(sharePayload);
         const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
         shareUrl += `?share_route=${encoded}`;
       } catch (e) {
-        shareUrl += `?route_name=${encodeURIComponent(targetRoute.name)}`;
+        shareUrl += `?route_name=${encodeURIComponent(displayTitle)}`;
       }
 
       input.value = shareUrl;
 
-      // QR Code via QuickChart
-      if (qrImg) {
-        qrImg.src = `https://quickchart.io/qr?text=${encodeURIComponent(shareUrl)}&size=220&margin=1`;
+      // Generate Compact QR URL
+      let qrUrl = window.location.origin + window.location.pathname;
+      try {
+        const compactJsonStr = JSON.stringify(compactQrPayload);
+        const compactEncoded = encodeURIComponent(btoa(unescape(encodeURIComponent(compactJsonStr))));
+        qrUrl += `?sr=${compactEncoded}`;
+      } catch (err) {
+        qrUrl = shareUrl;
       }
 
-      modal.classList.remove('hidden');
+      // Render High-Definition Vector/Canvas QR Code
+      const qrCanvas = document.getElementById('share-qrcode-canvas');
+      const qrImg = document.getElementById('share-qrcode-img');
+      const qrZoomCanvas = document.getElementById('qr-zoom-canvas');
+      const qrZoomImg = document.getElementById('qr-zoom-img');
+
+      if (qrZoomTitle) qrZoomTitle.textContent = displayTitle;
+
+      if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+        if (qrCanvas) {
+          qrCanvas.classList.remove('hidden');
+          if (qrImg) qrImg.classList.add('hidden');
+          QRCode.toCanvas(qrCanvas, qrUrl, {
+            width: 320,
+            margin: 2,
+            errorCorrectionLevel: 'M',
+            color: {
+              dark: '#0f172a',
+              light: '#ffffff'
+            }
+          }, function (err) {
+            if (err && qrImg) {
+              qrCanvas.classList.add('hidden');
+              qrImg.classList.remove('hidden');
+              qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=4&data=${encodeURIComponent(qrUrl)}`;
+            }
+          });
+        }
+
+        if (qrZoomCanvas) {
+          qrZoomCanvas.classList.remove('hidden');
+          if (qrZoomImg) qrZoomImg.classList.add('hidden');
+          QRCode.toCanvas(qrZoomCanvas, qrUrl, {
+            width: 440,
+            margin: 2,
+            errorCorrectionLevel: 'M',
+            color: {
+              dark: '#0f172a',
+              light: '#ffffff'
+            }
+          }, function (err) {
+            if (err && qrZoomImg) {
+              qrZoomCanvas.classList.add('hidden');
+              qrZoomImg.classList.remove('hidden');
+              qrZoomImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=4&data=${encodeURIComponent(qrUrl)}`;
+            }
+          });
+        }
+      } else {
+        // Fallback to high-res Web QR API
+        const fallbackQrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=6&data=${encodeURIComponent(qrUrl)}`;
+        if (qrImg) {
+          qrImg.classList.remove('hidden');
+          qrImg.src = fallbackQrSrc;
+        }
+        if (qrZoomImg) {
+          qrZoomImg.classList.remove('hidden');
+          qrZoomImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=6&data=${encodeURIComponent(qrUrl)}`;
+        }
+      }
     }
 
     function closeShareRouteModal() {
       const modal = document.getElementById('share-route-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    function openQrZoomModal() {
+      const modal = document.getElementById('qr-zoom-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeQrZoomModal() {
+      const modal = document.getElementById('qr-zoom-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function downloadQrCodeImage() {
+      let rawTitle = 'Lo_Trinh_Gao_Maps';
+      if (currentShareScope === 'all') {
+        rawTitle = `Tat_Ca_${routes.length}_Tuyen_Gao_Maps`;
+      } else {
+        const targetRoute = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+        rawTitle = (targetRoute && targetRoute.name) ? targetRoute.name : 'Lo_Trinh_Gao_Maps';
+      }
+      const cleanTitle = rawTitle.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]/g, '_');
+      const canvas = document.getElementById('qr-zoom-canvas') || document.getElementById('share-qrcode-canvas');
+      
+      if (canvas && !canvas.classList.contains('hidden') && canvas.toDataURL) {
+        const link = document.createElement('a');
+        link.download = `GaoMaps_QR_${cleanTitle}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Đã tải ảnh mã QR độ nét cao về máy!', 'success');
+      } else {
+        const img = document.getElementById('qr-zoom-img') || document.getElementById('share-qrcode-img');
+        if (img && img.src) {
+          const link = document.createElement('a');
+          link.download = `GaoMaps_QR_${cleanTitle}.png`;
+          link.href = img.src;
+          link.target = '_blank';
+          link.click();
+          showToast('Đã bắt đầu tải ảnh mã QR!', 'success');
+        }
+      }
+    }
+
+    function triggerNativeShare() {
+      const input = document.getElementById('share-link-input');
+      let shareTitle = 'Lộ trình du lịch - Gạo Maps';
+      let shareText = 'Xem lộ trình du lịch kèm toàn bộ hình ảnh và các điểm tham quan trên Gạo Maps Việt Nam:';
+
+      if (currentShareScope === 'all') {
+        shareTitle = `Trọn bộ ${routes.length} Tuyến lộ trình - Gạo Maps`;
+        shareText = `Khám phá trọn bộ ${routes.length} tuyến hành trình du lịch với các điểm tham quan thực tế trên Gạo Maps:`;
+      } else {
+        const targetRoute = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+        if (targetRoute && targetRoute.name) {
+          shareTitle = `Lộ trình: ${targetRoute.name} - Gạo Maps`;
+          shareText = `Xem lộ trình "${targetRoute.name}" kèm toàn bộ hình ảnh và các điểm tham quan trên Gạo Maps Việt Nam:`;
+        }
+      }
+
+      if (navigator.share && input) {
+        navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: input.value
+        }).catch(err => {
+          if (err.name !== 'AbortError') copyShareLink();
+        });
+      } else {
+        copyShareLink();
+      }
     }
 
     function copyShareLink() {
@@ -5641,7 +6181,11 @@
 
       if (titleEl) titleEl.textContent = sharedData.name || 'Chi tiết Lộ trình';
       if (statsEl) {
-        statsEl.textContent = `${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành (${footprint.coastalKm} km)`;
+        if (sharedData.isMultiRoute) {
+          statsEl.textContent = `${sharedData.totalRoutes || (sharedData.routes ? sharedData.routes.length : 1)} tuyến • ${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành`;
+        } else {
+          statsEl.textContent = `${sharedData.stops.length} điểm • ${totalKm} km • ${footprint.provinces.length} tỉnh thành (${footprint.coastalKm} km)`;
+        }
       }
 
       // 1. Tab 1: Stops list
@@ -5649,6 +6193,7 @@
         stopsContainer.innerHTML = sharedData.stops.map((s, idx) => {
           const cat = CATEGORIES[s.category] || CATEGORIES.sightseeing;
           const prov = detectProvinceForPin(s);
+          const routeBadgeColor = s.routeColor || '#6366f1';
           return `
             <div class="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-md flex gap-3 items-start group hover:border-indigo-500/50 transition">
               <!-- Stop Photo Thumbnail or Category Icon -->
@@ -5664,8 +6209,8 @@
                     <span class="block text-[9px] mt-0.5 truncate">${cat.name}</span>
                   </div>
                 `}
-                <span class="absolute top-1 left-1 w-5 h-5 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center shadow-md">
-                  ${idx + 1}
+                <span class="absolute top-1 left-1 w-5 h-5 rounded-full text-white font-black text-[10px] flex items-center justify-center shadow-md" style="background-color: ${routeBadgeColor};">
+                  ${s.routeIndex || (idx + 1)}
                 </span>
               </div>
 
@@ -5677,6 +6222,13 @@
                   </h5>
                   <span class="text-[10px] text-amber-400 shrink-0">${'★'.repeat(s.rating || 5)}</span>
                 </div>
+
+                ${s.routeName ? `
+                  <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 text-[10px] font-bold text-slate-200 mt-1">
+                    <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${routeBadgeColor}"></span>
+                    <span class="truncate max-w-[140px]">${escapeHtml(s.routeName)}</span>
+                  </div>
+                ` : ''}
 
                 ${s.locationName ? `
                   <p class="text-[11px] text-sky-400 font-medium truncate mt-0.5">
@@ -5962,55 +6514,144 @@
     // Preview Receiver Mode for the creator
     function previewSharedRouteReceiverMode() {
       closeShareRouteModal();
-      const active = getActiveRoute();
-      if (!active) return;
-      
-      if (customRouteWaypoints && customRouteWaypoints.length >= 2) {
-        active.customWaypoints = customRouteWaypoints;
+
+      if (currentShareScope === 'all') {
+        const validRoutes = routes.filter(r => Array.isArray(r.pinIds) && r.pinIds.length > 0);
+        if (validRoutes.length === 0) {
+          showToast('Không có tuyến đường nào để xem trước!', 'warning');
+          return;
+        }
+
+        let totalKmAll = 0;
+        let totalStopsAll = 0;
+        const packagedRoutes = validRoutes.map((r, rIdx) => {
+          const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+          const rKm = calculateRouteDistanceKm(r);
+          totalKmAll += rKm;
+          totalStopsAll += rPins.length;
+
+          return {
+            id: r.id,
+            name: r.name,
+            description: r.description || '',
+            color: r.color || '#6366f1',
+            travelMode: r.travelMode || 'driving',
+            distKm: rKm,
+            stops: rPins.map((p, sIdx) => ({
+              title: p.title,
+              locationName: p.locationName || p.address || '',
+              lat: p.lat,
+              lng: p.lng,
+              category: p.category || 'sightseeing',
+              rating: p.rating || 5,
+              notes: p.notes || '',
+              date: p.date || '',
+              photo: p.photo || '',
+              routeName: r.name,
+              routeColor: r.color || '#6366f1',
+              routeIndex: sIdx + 1
+            }))
+          };
+        });
+
+        const allStopsFlat = packagedRoutes.flatMap(r => r.stops);
+
+        const mockPayload = {
+          isMultiRoute: true,
+          name: `Trọn bộ ${packagedRoutes.length} Tuyến Đường (${totalStopsAll} điểm)`,
+          desc: 'Tổng hợp toàn bộ hành trình du lịch',
+          color: '#10b981',
+          mode: 'multi',
+          distKm: Math.round(totalKmAll * 10) / 10,
+          durationStr: `${Math.round(totalKmAll / 45 * 60)} phút`,
+          totalRoutes: packagedRoutes.length,
+          routes: packagedRoutes,
+          stops: allStopsFlat
+        };
+
+        hydrateSharedRouteExperience(mockPayload);
+        showToast('Đang bật chế độ xem trước người nhận (Toàn bộ tuyến)!', 'info');
+      } else {
+        const active = getActiveRoute();
+        if (!active) return;
+        
+        if (customRouteWaypoints && customRouteWaypoints.length >= 2) {
+          active.customWaypoints = customRouteWaypoints;
+        }
+
+        const activePins = (active.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
+        const totalKm = calculateRouteDistanceKm(active);
+        const estTimeStr = active.distanceKm 
+          ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
+          : `${activePins.length * 25} phút`;
+
+        const mockPayload = {
+          isMultiRoute: false,
+          name: active.name,
+          desc: active.description || '',
+          color: active.color || '#6366f1',
+          mode: active.travelMode || 'driving',
+          distKm: totalKm,
+          durationStr: estTimeStr,
+          stops: activePins.map((p, idx) => ({
+            title: p.title,
+            locationName: p.locationName || p.address || '',
+            lat: p.lat,
+            lng: p.lng,
+            category: p.category || 'sightseeing',
+            rating: p.rating || 5,
+            notes: p.notes || '',
+            date: p.date || '',
+            photo: p.photo || '',
+            routeIndex: idx + 1
+          })),
+          waypoints: (active.customWaypoints && active.customWaypoints.length >= 2)
+            ? active.customWaypoints
+            : (customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null)
+        };
+
+        hydrateSharedRouteExperience(mockPayload);
+        showToast('Đang bật chế độ xem trước người nhận (Receiver Preview Mode)!', 'info');
       }
-
-      const activePins = (active.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
-      const totalKm = calculateRouteDistanceKm(active);
-      const estTimeStr = active.distanceKm 
-        ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
-        : `${activePins.length * 25} phút`;
-
-      const mockPayload = {
-        name: active.name,
-        desc: active.description || '',
-        color: active.color || '#6366f1',
-        mode: active.travelMode || 'driving',
-        distKm: totalKm,
-        durationStr: estTimeStr,
-        stops: activePins.map(p => ({
-          title: p.title,
-          locationName: p.locationName || p.address || '',
-          lat: p.lat,
-          lng: p.lng,
-          category: p.category || 'sightseeing',
-          rating: p.rating || 5,
-          notes: p.notes || '',
-          date: p.date || '',
-          photo: p.photo || ''
-        })),
-        waypoints: (active.customWaypoints && active.customWaypoints.length >= 2)
-          ? active.customWaypoints
-          : (customRouteWaypoints && customRouteWaypoints.length >= 2 ? customRouteWaypoints : null)
-      };
-
-      hydrateSharedRouteExperience(mockPayload);
-      showToast('Đang bật chế độ xem trước người nhận (Receiver Preview Mode)!', 'info');
     }
 
     // Parse and Hydrate Shared Route from incoming URL
     function checkSharedRouteFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
       const shareParam = urlParams.get('share_route');
-      if (!shareParam) return;
+      const compactParam = urlParams.get('sr');
+
+      if (!shareParam && !compactParam) return;
 
       try {
-        const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
-        const sharedData = JSON.parse(decodedJson);
+        let sharedData = null;
+        if (shareParam) {
+          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
+          sharedData = JSON.parse(decodedJson);
+        } else if (compactParam) {
+          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(compactParam))));
+          const raw = JSON.parse(decodedJson);
+          sharedData = {
+            name: raw.n || 'Lộ trình du lịch',
+            desc: raw.desc || '',
+            color: raw.c || '#6366f1',
+            mode: raw.m || 'driving',
+            distKm: raw.d || 0,
+            durationStr: raw.t || '',
+            waypoints: raw.w || null,
+            stops: Array.isArray(raw.s) ? raw.s.map(s => ({
+              title: s.t || 'Điểm dừng',
+              locationName: s.l || '',
+              lat: s.lat,
+              lng: s.lng,
+              category: s.c || 'sightseeing',
+              rating: s.r || 5,
+              notes: s.n || '',
+              date: s.d || '',
+              photo: s.p || ''
+            })) : []
+          };
+        }
 
         if (sharedData && Array.isArray(sharedData.stops) && sharedData.stops.length > 0) {
           hydrateSharedRouteExperience(sharedData);
