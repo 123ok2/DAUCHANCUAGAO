@@ -2434,41 +2434,6 @@
             <span>REC • ĐANG GHI VIDEO</span>
           </div>
 
-          <!-- Video Export Dedicated Overlay (Smooth rendering, Live progress, Cancel button) -->
-          <div id="cinema-export-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center z-30 animate-in fade-in duration-200">
-            <div class="w-full max-w-sm p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-3.5">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-orange-500 text-white flex items-center justify-center text-xl mx-auto shadow-lg shadow-rose-500/30">
-                <i class="fa-solid fa-video animate-pulse"></i>
-              </div>
-              <div>
-                <h4 class="font-black text-sm text-white" id="cinema-export-status-title">Đang Xuất Video Tuyến Đường</h4>
-                <p class="text-xs text-rose-300 font-bold mt-0.5 truncate" id="cinema-export-route-name">Lộ trình</p>
-              </div>
-              
-              <!-- Progress Bar -->
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
-                  <span id="cinema-export-stage-text">Đang quay khung hình...</span>
-                  <span id="cinema-export-pct-text" class="text-rose-400 font-extrabold">0%</span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-white/10">
-                  <div id="cinema-export-bar-fill" class="h-full bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 transition-all duration-100" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
-                <span>Chuẩn 1080p • 30 FPS siêu mượt</span>
-                <span id="cinema-export-time-est">Không lag/đơ máy</span>
-              </div>
-
-              <!-- Cancel Button -->
-              <button type="button" onclick="cancelVideoExport()" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-rose-400 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700">
-                <i class="fa-solid fa-xmark text-[11px]"></i>
-                <span>Hủy xuất video</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Progress Bar on Canvas Bottom -->
           <div class="absolute bottom-2 left-3 right-3 sm:left-4 sm:right-4 bg-slate-800/80 backdrop-blur-md rounded-full h-1.5 sm:h-2 overflow-hidden border border-white/10 z-10">
             <div id="cinema-progress-fill" class="h-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 transition-all duration-100" style="width: 0%;"></div>
@@ -9217,13 +9182,13 @@
 
       if (style === 'voyager') {
         const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
-        return `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${wrappedTx}/${ty}.png`;
+        return `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${wrappedTx}/${ty}@2x.png`;
       } else if (style === 'dark') {
         const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
-        return `https://${sub}.basemaps.cartocdn.com/dark_all/${zoom}/${wrappedTx}/${ty}.png`;
+        return `https://${sub}.basemaps.cartocdn.com/dark_all/${zoom}/${wrappedTx}/${ty}@2x.png`;
       } else if (style === 'light') {
         const sub = ['a', 'b', 'c', 'd'][(wrappedTx + ty) % 4];
-        return `https://${sub}.basemaps.cartocdn.com/light_all/${zoom}/${wrappedTx}/${ty}.png`;
+        return `https://${sub}.basemaps.cartocdn.com/light_all/${zoom}/${wrappedTx}/${ty}@2x.png`;
       } else if (style === 'satellite') {
         return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${ty}/${wrappedTx}`;
       } else if (style === 'osm') {
@@ -9249,6 +9214,24 @@
           if (pathCoords && pathCoords.length >= 2) {
             drawCinemaFrame(cinemaProgress, pathCoords);
           }
+        }
+      };
+      img.onerror = () => {
+        // Fallback to standard 1x tile if @2x is unavailable
+        if (url.includes('@2x.png')) {
+          const fallbackUrl = url.replace('@2x.png', '.png');
+          const fallbackImg = new Image();
+          fallbackImg.crossOrigin = 'anonymous';
+          fallbackImg.src = fallbackUrl;
+          fallbackImg.onload = () => {
+            cinemaTileCache.set(cacheKey, fallbackImg);
+            if (!isCinemaPlaying) {
+              const pathCoords = getInterpolatedRouteCoords();
+              if (pathCoords && pathCoords.length >= 2) {
+                drawCinemaFrame(cinemaProgress, pathCoords);
+              }
+            }
+          };
         }
       };
       cinemaTileCache.set(cacheKey, img);
@@ -9293,7 +9276,6 @@
       }
 
       // In follow / cinematic mode:
-      // When 3D tilt is on, a slightly wider zoom allows dramatic long-distance horizon views!
       if (cinemaTiltAngle > 0) {
         if (maxSpan > 2.0) return 10; // Cross-country
         if (maxSpan > 0.5) return 12; // Inter-provincial
@@ -9391,14 +9373,16 @@
         cinemaSmoothedHeading += diff * 0.18; // Smooth rotational lerp
       }
 
-      const tileRadius = cinemaTiltAngle > 0 ? 3 : 2;
+      // Compute full canvas coverage radius to prevent cut-off or blank edges
+      const radX = Math.ceil((canvasW / 2) / 256) + 2;
+      const radY = Math.ceil((canvasH / 2) / 256) + (cinemaTiltAngle > 0 ? 5 : 2);
       const centerTx = Math.floor(centerWorld.x / 256);
       const centerTy = Math.floor(centerWorld.y / 256);
 
-      const minTx = centerTx - tileRadius;
-      const maxTx = centerTx + tileRadius;
-      const minTy = centerTy - tileRadius;
-      const maxTy = centerTy + tileRadius;
+      const minTx = centerTx - radX;
+      const maxTx = centerTx + radX;
+      const minTy = centerTy - radY;
+      const maxTy = centerTy + radY;
 
       return {
         zoom: currentZoom,
@@ -9429,15 +9413,17 @@
         const zoom = getEffectiveCinemaZoom(pathCoords, canvasW, canvasH);
         const tileKeySet = new Set();
 
+        const radX = Math.ceil((canvasW / 2) / 256) + 2;
+        const radY = Math.ceil((canvasH / 2) / 256) + (cinemaTiltAngle > 0 ? 5 : 2);
+
         const step = Math.max(1, Math.floor(pathCoords.length / 80));
         for (let i = 0; i < pathCoords.length; i += step) {
           const pt = pathCoords[i];
           const wPt = latLngToMercatorWorld(pt.lat, pt.lng, zoom);
           const centerTx = Math.floor(wPt.x / 256);
           const centerTy = Math.floor(wPt.y / 256);
-          const r = cinemaTiltAngle > 0 ? 2 : 1;
-          for (let dx = -r; dx <= r; dx++) {
-            for (let dy = -r; dy <= r; dy++) {
+          for (let dx = -radX; dx <= radX; dx++) {
+            for (let dy = -radY; dy <= radY; dy++) {
               tileKeySet.add(`${centerTx + dx},${centerTy + dy}`);
             }
           }
@@ -10296,9 +10282,27 @@
       return new Promise((resolve) => {
         if (!src) return resolve(null);
         const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
+        if (!src.startsWith('data:') && !src.startsWith('blob:')) {
+          img.crossOrigin = 'anonymous';
+        }
+        img.onload = () => {
+          if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+            resolve(img);
+          } else {
+            resolve(null);
+          }
+        };
+        img.onerror = () => {
+          // If CORS failed on external url, try loading without crossOrigin
+          if (img.crossOrigin) {
+            const retryImg = new Image();
+            retryImg.onload = () => resolve(retryImg);
+            retryImg.onerror = () => resolve(null);
+            retryImg.src = src;
+          } else {
+            resolve(null);
+          }
+        };
         img.src = src;
       });
     }
@@ -10306,6 +10310,8 @@
     function drawRoundedCoverImage(ctx, img, x, y, width, height, radius) {
       if (!img) return;
       ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.beginPath();
       roundRect(ctx, x, y, width, height, radius, false, false);
       ctx.clip();
@@ -10339,12 +10345,21 @@
     async function exportRoutePosterCard() {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
       const isMulti = !isShared && (showAllRoutesOnMap || activeFilterRouteId === 'all_routes');
-      const active = isShared ? sharedRoutePayload : getActiveRoute();
+      
+      // Determine active target route (prioritizing single selected route if active)
+      let active = null;
+      if (isShared) {
+        active = sharedRoutePayload;
+      } else if (cinemaTargetRouteId && cinemaTargetRouteId !== 'all') {
+        active = routes.find(r => r.id === cinemaTargetRouteId) || getActiveRoute();
+      } else {
+        active = getActiveRoute();
+      }
       
       let activePins = [];
       if (isShared) {
         activePins = sharedRoutePayload.stops;
-      } else if (isMulti) {
+      } else if (isMulti && (!cinemaTargetRouteId || cinemaTargetRouteId === 'all')) {
         // Multi-route mode: collect pins from all valid routes
         const pinSet = new Set();
         (routes || []).forEach(r => {
@@ -10356,6 +10371,8 @@
             }
           });
         });
+      } else if (active) {
+        activePins = (active.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
       } else {
         activePins = (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
       }
@@ -10365,7 +10382,7 @@
         return;
       }
 
-      showToast('Đang tạo thiết kế Ảnh Hành trình HD kèm đầy đủ thông số...', 'info');
+      showToast('Đang tạo thiết kế Ảnh Hành trình HD siêu nét kèm đầy đủ thông số...', 'info');
 
       // Preload all uploaded photos asynchronously
       const pinsWithImages = await Promise.all(activePins.map(async (pin) => {
@@ -10374,8 +10391,8 @@
       }));
 
       // Compute single / multi metrics
-      const agg = isMulti ? calculateAllRoutesAggregateMetrics() : null;
-      const singleM = (!isMulti && active) ? calculateSingleRouteMetrics(active) : null;
+      const agg = (isMulti && (!cinemaTargetRouteId || cinemaTargetRouteId === 'all')) ? calculateAllRoutesAggregateMetrics() : null;
+      const singleM = (!agg && active) ? calculateSingleRouteMetrics(active) : null;
 
       const outboundKm = agg ? agg.totalOutboundKm : (singleM ? singleM.outboundKm : 0);
       const returnKm = agg ? agg.totalReturnKm : (singleM ? singleM.returnKm : 0);
@@ -10385,13 +10402,13 @@
       const roundTripSec = agg ? agg.totalRoundTripSec : (singleM ? singleM.roundTripSec : 0);
 
       const provInfo = getProvincesForPins(activePins);
-      const posterTitle = isMulti
+      const posterTitle = agg
         ? `Tổng Hợp Toàn Bộ ${routes.length} Lộ Trình`
         : (active ? active.name : 'Hành Trình Kỷ Niệm');
-      const posterDesc = isMulti
+      const posterDesc = agg
         ? `Tổng hợp đầy đủ ${routes.length} tuyến đường với chiều đi, chiều về và khứ hồi trên bản đồ Việt Nam`
         : (active ? (active.description || 'Lưu giữ những khoảnh khắc và dấu chân đáng nhớ trên mọi nẻo đường Việt Nam') : '');
-      const travelModeLabel = isMulti
+      const travelModeLabel = agg
         ? `${routes.length} lộ trình`
         : (active && active.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy');
 
@@ -10408,6 +10425,8 @@
       canvas.width = 1200;
       canvas.height = canvasHeight;
       const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       // 1. Luxury Cosmic Slate Background Gradient
       const bgGrad = ctx.createLinearGradient(0, 0, 1200, canvasHeight);
@@ -10802,19 +10821,6 @@
         showToast(`🎉 Đã xuất thành công video lộ trình: "${active.name || 'Lộ trình'}" (1080p, siêu mượt)`, 'success');
       };
 
-      // Show Export Progress Overlay
-      const overlay = document.getElementById('cinema-export-overlay');
-      const routeNameEl = document.getElementById('cinema-export-route-name');
-      const barFill = document.getElementById('cinema-export-bar-fill');
-      const pctText = document.getElementById('cinema-export-pct-text');
-      const stageText = document.getElementById('cinema-export-stage-text');
-
-      if (routeNameEl) routeNameEl.textContent = `Tuyến: ${active.name || 'Lộ trình'}`;
-      if (barFill) barFill.style.width = '0%';
-      if (pctText) pctText.textContent = '0%';
-      if (stageText) stageText.textContent = 'Đang quay khung hình mượt mà...';
-      if (overlay) overlay.classList.remove('hidden');
-
       // Start recording
       isRecordingVideo = true;
       mediaRecorder.start(100); // collect in 100ms slices
@@ -10841,7 +10847,6 @@
             clearInterval(cinemaExportInterval);
             cinemaExportInterval = null;
           }
-          if (stageText) stageText.textContent = 'Đang đóng gói file video...';
           setTimeout(() => {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
               mediaRecorder.stop();
