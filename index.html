@@ -662,20 +662,48 @@
         </div>
 
         <!-- 5. Compact Route Telemetry Strip (Quãng đường, Thời gian, Điểm dừng) -->
-        <div id="route-summary-box" class="mx-2.5 sm:mx-3 mt-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 text-white shadow-xs shrink-0">
+        <div id="route-summary-box" class="mx-2.5 sm:mx-3 mt-2 p-2.5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 text-white shadow-md shrink-0 space-y-2">
+          <!-- Direction & Mode Sub-header -->
+          <div class="flex items-center justify-between gap-1 text-[10.5px] font-bold border-b border-white/10 pb-1.5">
+            <span id="route-summary-title" class="text-slate-200 truncate flex items-center gap-1.5">
+              <i class="fa-solid fa-route text-indigo-400 text-[11px]"></i>
+              <span id="route-summary-mode-label" class="font-bold text-indigo-200">Lộ trình</span>
+            </span>
+            <div class="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10 shrink-0" id="trip-direction-toggle-group">
+              <button type="button" id="btn-trip-roundtrip" onclick="setTripDirection('roundtrip')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5" title="Tổng cộng cả 2 chiều: Lượt đi + Lượt về">
+                <i class="fa-solid fa-arrows-left-right text-[8px]"></i> <span>Đi & Về</span>
+              </button>
+              <button type="button" id="btn-trip-outbound" onclick="setTripDirection('outbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chỉ tính chiều đi">
+                <i class="fa-solid fa-arrow-right text-[8px]"></i> <span>Chiều đi</span>
+              </button>
+              <button type="button" id="btn-trip-inbound" onclick="setTripDirection('inbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chỉ tính chiều về">
+                <i class="fa-solid fa-arrow-left text-[8px]"></i> <span>Chiều về</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main 3 Columns Telemetry -->
           <div class="flex items-center justify-between text-center divide-x divide-white/10">
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Quãng đường</span>
               <p id="summary-total-dist" class="text-xs sm:text-sm font-black text-white tracking-tight">0.0 km</p>
+              <span id="summary-dist-sub" class="text-[9px] text-emerald-300 font-medium block truncate">Đi: 0 km • Về: 0 km</span>
             </div>
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Thời gian</span>
               <p id="summary-total-time" class="text-xs sm:text-sm font-black text-amber-300 tracking-tight">0 phút</p>
+              <span id="summary-time-sub" class="text-[9px] text-amber-200/80 font-medium block truncate">Khứ hồi</span>
             </div>
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Điểm dừng</span>
               <p class="text-xs sm:text-sm font-black text-emerald-400 tracking-tight"><span id="route-stops-count-badge">0</span> điểm</p>
+              <span id="summary-stops-sub" class="text-[9px] text-slate-300 font-medium block truncate">1 tuyến</span>
             </div>
+          </div>
+
+          <!-- Mini Routes Breakdown Chips (Visible in Multi-Route Mode) -->
+          <div id="multi-route-pills-breakdown" class="hidden pt-1.5 border-t border-white/10 flex-wrap gap-1 text-[10px]">
+            <!-- Generated dynamically -->
           </div>
           <span id="summary-speed-label" class="hidden"></span>
         </div>
@@ -4449,7 +4477,10 @@
       if (activeFilterRouteId && activeFilterRouteId !== 'all') {
         const nameEl = document.getElementById('route-filter-banner-name');
         const countEl = document.getElementById('route-filter-banner-count');
-        if (activeFilterRouteId === 'none') {
+        if (activeFilterRouteId === 'all_routes' || showAllRoutesOnMap) {
+          if (nameEl) nameEl.textContent = 'Tất cả lộ trình';
+          if (countEl) countEl.textContent = `${routes.length} tuyến`;
+        } else if (activeFilterRouteId === 'none') {
           const unassignedCount = pins.filter(p => !routes.some(r => Array.isArray(r.pinIds) && r.pinIds.includes(p.id))).length;
           if (nameEl) nameEl.textContent = 'Chưa vào lộ trình';
           if (countEl) countEl.textContent = `${unassignedCount} điểm`;
@@ -4648,12 +4679,33 @@
             fetch(serviceUrl)
               .then(res => res.json())
               .then(data => {
-                if (data && data.routes && data.routes.length > 0 && data.routes[0].geometry) {
-                  const geoCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                  if (geoCoords.length > 0) {
-                    routeGeometryCache.set(cacheKey, geoCoords);
-                    shadowLine.setLatLngs(geoCoords);
-                    mainLine.setLatLngs(geoCoords);
+                if (data && data.routes && data.routes.length > 0) {
+                  if (data.routes[0].geometry) {
+                    const geoCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    if (geoCoords.length > 0) {
+                      routeGeometryCache.set(cacheKey, geoCoords);
+                      shadowLine.setLatLngs(geoCoords);
+                      mainLine.setLatLngs(geoCoords);
+                    }
+                  }
+                  if (typeof data.routes[0].distance === 'number') {
+                    r.distanceKm = parseFloat((data.routes[0].distance / 1000).toFixed(1));
+                  }
+                  if (typeof data.routes[0].duration === 'number') {
+                    r.durationSeconds = data.routes[0].duration;
+                  }
+                  r.returnDistanceKm = r.distanceKm;
+                  r.returnDurationSeconds = r.durationSeconds;
+
+                  mainLine.bindTooltip(`<b>${escapeHtml(r.name)}</b> (${(r.pinIds && r.pinIds.length) || 0} điểm${r.distanceKm ? ' • ' + r.distanceKm + ' km' : ''})`, {
+                    sticky: true,
+                    direction: 'top',
+                    opacity: 0.95,
+                    className: 'bg-slate-900 text-white rounded-lg px-2 py-1 text-xs border border-white/20 shadow-md font-sans'
+                  });
+
+                  if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
+                    updateRouteSummaryUI();
                   }
                 }
               })
@@ -6495,6 +6547,254 @@
       showToast('Đã sắp xếp tối ưu thứ tự lộ trình ngắn nhất!', 'success');
     }
 
+    // Active trip direction: 'roundtrip' (Cả đi & về - Khứ hồi), 'outbound' (Chiều đi), 'inbound' (Chiều về)
+    let activeTripDirection = 'roundtrip';
+
+    function setTripDirection(dir) {
+      activeTripDirection = dir;
+      const btnRound = document.getElementById('btn-trip-roundtrip');
+      const btnOut = document.getElementById('btn-trip-outbound');
+      const btnIn = document.getElementById('btn-trip-inbound');
+
+      const activeClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5';
+      const inactiveClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5';
+
+      if (btnRound) btnRound.className = (dir === 'roundtrip') ? activeClass : inactiveClass;
+      if (btnOut) btnOut.className = (dir === 'outbound') ? activeClass : inactiveClass;
+      if (btnIn) btnIn.className = (dir === 'inbound') ? activeClass : inactiveClass;
+
+      updateRouteSummaryUI();
+      renderRouteStops();
+    }
+
+    // Single Route Metrics Calculator (Outbound, Return, Round-trip)
+    function calculateSingleRouteMetrics(route) {
+      if (!route) {
+        return {
+          outboundKm: 0,
+          returnKm: 0,
+          roundTripKm: 0,
+          outboundSec: 0,
+          returnSec: 0,
+          roundTripSec: 0,
+          stopsCount: 0
+        };
+      }
+
+      const stopsCount = Array.isArray(route.pinIds) ? route.pinIds.length : 0;
+      const outboundKm = calculateRouteDistanceKm(route);
+      const isWalking = route.travelMode === 'walking';
+      const speedMps = isWalking ? 1.2 : 12.5; // ~4.3 km/h walking vs ~45 km/h driving
+      const outboundSec = (typeof route.durationSeconds === 'number' && route.durationSeconds > 0)
+        ? route.durationSeconds
+        : Math.round((outboundKm * 1000) / speedMps);
+
+      const returnKm = (typeof route.returnDistanceKm === 'number' && route.returnDistanceKm > 0)
+        ? route.returnDistanceKm
+        : outboundKm;
+      const returnSec = (typeof route.returnDurationSeconds === 'number' && route.returnDurationSeconds > 0)
+        ? route.returnDurationSeconds
+        : outboundSec;
+
+      const roundTripKm = parseFloat((outboundKm + returnKm).toFixed(1));
+      const roundTripSec = outboundSec + returnSec;
+
+      return {
+        outboundKm,
+        returnKm,
+        roundTripKm,
+        outboundSec,
+        returnSec,
+        roundTripSec,
+        stopsCount
+      };
+    }
+
+    // Grand Multi-Route Aggregate Metrics Calculator
+    function calculateAllRoutesAggregateMetrics() {
+      const validRoutes = (routes || []).filter(r => Array.isArray(r.pinIds) && r.pinIds.length >= 2);
+      let totalOutboundKm = 0;
+      let totalReturnKm = 0;
+      let totalRoundTripKm = 0;
+      let totalOutboundSec = 0;
+      let totalReturnSec = 0;
+      let totalRoundTripSec = 0;
+      let totalStopsCount = 0;
+      const uniquePinIdsSet = new Set();
+
+      const routeBreakdowns = validRoutes.map(r => {
+        const m = calculateSingleRouteMetrics(r);
+        totalOutboundKm += m.outboundKm;
+        totalReturnKm += m.returnKm;
+        totalRoundTripKm += m.roundTripKm;
+        totalOutboundSec += m.outboundSec;
+        totalReturnSec += m.returnSec;
+        totalRoundTripSec += m.roundTripSec;
+        totalStopsCount += m.stopsCount;
+        (r.pinIds || []).forEach(id => uniquePinIdsSet.add(id));
+        return {
+          route: r,
+          ...m
+        };
+      });
+
+      return {
+        routesCount: validRoutes.length,
+        totalRoutesCount: (routes || []).length,
+        totalOutboundKm: parseFloat(totalOutboundKm.toFixed(1)),
+        totalReturnKm: parseFloat(totalReturnKm.toFixed(1)),
+        totalRoundTripKm: parseFloat(totalRoundTripKm.toFixed(1)),
+        totalOutboundSec,
+        totalReturnSec,
+        totalRoundTripSec,
+        totalStopsCount,
+        uniquePinsCount: uniquePinIdsSet.size,
+        routeBreakdowns
+      };
+    }
+
+    // Central UI Telemetry Updater for both Single-Route and Multi-Route (Tất cả tuyến) modes
+    function updateRouteSummaryUI() {
+      const isMultiMode = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
+      const summaryBox = document.getElementById('route-summary-box');
+      const distEl = document.getElementById('summary-total-dist');
+      const timeEl = document.getElementById('summary-total-time');
+      const stopsBadgeEl = document.getElementById('route-stops-count-badge');
+      const distSubEl = document.getElementById('summary-dist-sub');
+      const timeSubEl = document.getElementById('summary-time-sub');
+      const stopsSubEl = document.getElementById('summary-stops-sub');
+      const modeLabelEl = document.getElementById('route-summary-mode-label');
+      const pillsBreakdown = document.getElementById('multi-route-pills-breakdown');
+      const pill = document.getElementById('floating-route-pill');
+      const pillDist = document.getElementById('pill-distance');
+      const pillTime = document.getElementById('pill-time');
+
+      if (isMultiMode) {
+        const agg = calculateAllRoutesAggregateMetrics();
+        const routesCount = agg.routesCount || routes.length;
+
+        if (modeLabelEl) {
+          modeLabelEl.textContent = `Tổng hợp ${routesCount} tuyến`;
+        }
+
+        let displayedKm = agg.totalRoundTripKm;
+        let displayedSec = agg.totalRoundTripSec;
+        let distSubText = `Đi: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Về: ${agg.totalReturnKm.toLocaleString('vi-VN')} km`;
+        let timeSubText = `Khứ hồi (${routesCount} tuyến)`;
+
+        if (activeTripDirection === 'outbound') {
+          displayedKm = agg.totalOutboundKm;
+          displayedSec = agg.totalOutboundSec;
+          distSubText = `Tổng chiều đi (${routesCount} tuyến)`;
+          timeSubText = `Lượt đi`;
+        } else if (activeTripDirection === 'inbound') {
+          displayedKm = agg.totalReturnKm;
+          displayedSec = agg.totalReturnSec;
+          distSubText = `Tổng chiều về (${routesCount} tuyến)`;
+          timeSubText = `Lượt về`;
+        }
+
+        const timeStr = formatTravelTime(displayedSec);
+
+        if (distEl) distEl.textContent = `${displayedKm.toLocaleString('vi-VN')} km`;
+        if (timeEl) timeEl.textContent = timeStr;
+        if (stopsBadgeEl) stopsBadgeEl.textContent = agg.totalStopsCount;
+        if (distSubEl) distSubEl.textContent = distSubText;
+        if (timeSubEl) timeSubEl.textContent = timeSubText;
+        if (stopsSubEl) stopsSubEl.textContent = `${routesCount} tuyến (${agg.uniquePinsCount} điểm)`;
+
+        // Floating pill on map
+        if (pillDist) pillDist.textContent = `${displayedKm.toLocaleString('vi-VN')} km`;
+        if (pillTime) pillTime.textContent = timeStr;
+        if (pill) {
+          pill.classList.remove('hidden');
+          pill.classList.add('flex');
+        }
+
+        // Multi-route pills breakdown
+        if (pillsBreakdown) {
+          pillsBreakdown.classList.remove('hidden');
+          pillsBreakdown.classList.add('flex');
+          if (agg.routeBreakdowns.length === 0) {
+            pillsBreakdown.innerHTML = `<span class="text-[10px] text-slate-400 italic">Chưa có tuyến đường hợp lệ</span>`;
+          } else {
+            pillsBreakdown.innerHTML = agg.routeBreakdowns.map(b => {
+              const r = b.route;
+              const rKm = activeTripDirection === 'roundtrip' ? b.roundTripKm : activeTripDirection === 'outbound' ? b.outboundKm : b.returnKm;
+              return `
+                <button type="button" onclick="handleSelectRoute('${r.id}'); setDisplayViewMode('active');" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/10 text-white text-[10px] transition truncate" title="Chuyển sang xem riêng tuyến ${escapeHtml(r.name)}">
+                  <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
+                  <span class="font-bold truncate max-w-[90px]">${escapeHtml(r.name)}:</span>
+                  <span class="text-amber-300 font-extrabold">${rKm} km</span>
+                </button>
+              `;
+            }).join('');
+          }
+        }
+
+        updateStatistics();
+        return;
+      }
+
+      // Single Selected Route Mode
+      const active = getActiveRoute();
+      if (!active || routePinIds.length < 2) {
+        if (pillsBreakdown) pillsBreakdown.classList.add('hidden');
+        if (modeLabelEl) modeLabelEl.textContent = active ? active.name : 'Lộ trình';
+        if (distEl) distEl.textContent = '0.0 km';
+        if (timeEl) timeEl.textContent = '0 phút';
+        if (stopsBadgeEl) stopsBadgeEl.textContent = routePinIds.length;
+        if (distSubEl) distSubEl.textContent = 'Đi: 0 km • Về: 0 km';
+        if (timeSubEl) timeSubEl.textContent = 'Khứ hồi';
+        if (stopsSubEl) stopsSubEl.textContent = 'Tuyến đang chọn';
+        if (pill) {
+          pill.classList.add('hidden');
+          pill.classList.remove('flex');
+        }
+        return;
+      }
+
+      if (pillsBreakdown) pillsBreakdown.classList.add('hidden');
+      if (modeLabelEl) modeLabelEl.textContent = active.name;
+
+      const m = calculateSingleRouteMetrics(active);
+      let displayedKm = m.roundTripKm;
+      let displayedSec = m.roundTripSec;
+      let distSubText = `Đi: ${m.outboundKm.toLocaleString('vi-VN')} km • Về: ${m.returnKm.toLocaleString('vi-VN')} km`;
+      let timeSubText = `Khứ hồi 2 chiều`;
+
+      if (activeTripDirection === 'outbound') {
+        displayedKm = m.outboundKm;
+        displayedSec = m.outboundSec;
+        distSubText = `Chiều đi`;
+        timeSubText = `Lượt đi`;
+      } else if (activeTripDirection === 'inbound') {
+        displayedKm = m.returnKm;
+        displayedSec = m.returnSec;
+        distSubText = `Chiều về`;
+        timeSubText = `Lượt về`;
+      }
+
+      const timeStr = formatTravelTime(displayedSec);
+
+      if (distEl) distEl.textContent = `${displayedKm.toLocaleString('vi-VN')} km`;
+      if (timeEl) timeEl.textContent = timeStr;
+      if (stopsBadgeEl) stopsBadgeEl.textContent = routePinIds.length;
+      if (distSubEl) distSubEl.textContent = distSubText;
+      if (timeSubEl) timeSubEl.textContent = timeSubText;
+      if (stopsSubEl) stopsSubEl.textContent = 'Tuyến đang chọn';
+
+      // Floating pill on map
+      if (pillDist) pillDist.textContent = `${displayedKm.toLocaleString('vi-VN')} km`;
+      if (pillTime) pillTime.textContent = timeStr;
+      if (pill) {
+        pill.classList.remove('hidden');
+        pill.classList.add('flex');
+      }
+
+      updateStatistics();
+    }
+
     function renderRouteStops() {
       const list = document.getElementById('route-stops-list');
       const emptyPrompt = document.getElementById('route-empty-prompt');
@@ -6502,6 +6802,156 @@
       const countBadge = document.getElementById('route-stops-count-badge');
       const badgeCount = document.getElementById('badge-route-stops');
 
+      // Check if we are in "All Routes" (Tất cả tuyến) display mode
+      const isMultiMode = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
+
+      if (isMultiMode) {
+        const agg = calculateAllRoutesAggregateMetrics();
+        const totalStops = agg.totalStopsCount;
+        if (countEl) countEl.textContent = `${agg.routesCount} tuyến (${totalStops} điểm)`;
+        if (countBadge) countBadge.textContent = totalStops;
+        if (badgeCount) badgeCount.textContent = totalStops;
+        const mobBadgeRoute = document.getElementById('mobile-badge-route');
+        if (mobBadgeRoute) {
+          mobBadgeRoute.textContent = totalStops;
+          mobBadgeRoute.classList.remove('hidden');
+        }
+
+        if (emptyPrompt) emptyPrompt.classList.add('hidden');
+
+        // Render Grand Multi-Route Aggregate Summary + Detailed Breakdown by Route
+        const grandSummaryHtml = `
+          <!-- Grand Aggregate Card (Lượt đi + Lượt về + Khứ hồi của cả 3 tuyến) -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-900 border border-indigo-500/40 text-white shadow-md space-y-2.5">
+            <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-indigo-500/30 text-indigo-300 flex items-center justify-center text-xs font-bold border border-indigo-500/40">
+                  <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-xs text-white">Tổng Hợp Toàn Bộ ${agg.routesCount} Tuyến</h4>
+                  <p class="text-[10px] text-slate-300">Bao gồm đầy đủ số liệu lượt đi & lượt về</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                ${agg.routesCount} lộ trình
+              </span>
+            </div>
+
+            <!-- 3 Columns: Lượt đi | Lượt về | Khứ hồi -->
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+                <span class="text-[9px] text-sky-300 font-semibold block uppercase">🏁 Lượt đi</span>
+                <p class="text-xs sm:text-sm font-black text-white mt-0.5">${agg.totalOutboundKm.toLocaleString('vi-VN')} km</p>
+                <span class="text-[9px] text-slate-400 block truncate">~${formatTravelTime(agg.totalOutboundSec)}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+                <span class="text-[9px] text-purple-300 font-semibold block uppercase">🔄 Lượt về</span>
+                <p class="text-xs sm:text-sm font-black text-white mt-0.5">${agg.totalReturnKm.toLocaleString('vi-VN')} km</p>
+                <span class="text-[9px] text-slate-400 block truncate">~${formatTravelTime(agg.totalReturnSec)}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-gradient-to-b from-emerald-500/20 to-teal-500/20 border border-emerald-500/40">
+                <span class="text-[9px] text-emerald-300 font-bold block uppercase">🌟 Khứ hồi</span>
+                <p class="text-xs sm:text-sm font-black text-emerald-300 mt-0.5">${agg.totalRoundTripKm.toLocaleString('vi-VN')} km</p>
+                <span class="text-[9px] text-emerald-200/80 block truncate">~${formatTravelTime(agg.totalRoundTripSec)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Label -->
+          <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-2">
+            <span>Chi tiết từng lộ trình (${agg.routesCount})</span>
+            <span class="text-[10px] text-slate-400 font-normal lowercase">Nhấn để xem / chuyển</span>
+          </div>
+        `;
+
+        // Render Cards for each individual Route
+        const routesCardsHtml = (agg.routeBreakdowns || []).map((b, idx) => {
+          const r = b.route;
+          const isSelected = r.id === activeRouteId;
+          const rColor = r.color || '#6366f1';
+          const isWalking = r.travelMode === 'walking';
+          const modeIcon = isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
+          const modeName = isWalking ? 'Đi bộ' : 'Ô tô / Xe máy';
+          const routePins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+
+          const stopsMiniListHtml = routePins.map((p, pIdx) => {
+            const isFirst = pIdx === 0;
+            const isLast = pIdx === routePins.length - 1;
+            return `
+              <div class="flex items-center gap-2 py-1 px-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer text-xs transition" onclick="focusPin('${p.id}')">
+                <span class="w-5 h-5 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold'} flex items-center justify-center text-[10px] shrink-0">
+                  ${pIdx + 1}
+                </span>
+                <span class="text-slate-800 dark:text-slate-200 font-medium truncate flex-1">${escapeHtml(p.title)}</span>
+                <span class="text-[10px] text-slate-400 shrink-0">${p.date || ''}</span>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="p-3 rounded-2xl bg-white dark:bg-slate-800 border ${isSelected ? 'border-sky-500/50 ring-2 ring-sky-400/20 shadow-sm' : 'border-slate-200 dark:border-slate-700 shadow-xs'} space-y-2 group transition">
+              <!-- Route Header -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs" style="background-color: ${rColor};">
+                    <span class="text-[11px] font-black">${idx + 1}</span>
+                  </div>
+                  <div class="min-w-0">
+                    <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
+                      <span>${escapeHtml(r.name)}</span>
+                      ${isSelected ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-sky-500 text-white">Đang chọn</span>' : ''}
+                    </h5>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
+                      <span>•</span>
+                      <span>${b.stopsCount} điểm dừng</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="handleSelectRoute('${r.id}'); setDisplayViewMode('active');" class="px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white text-[11px] font-bold transition flex items-center gap-1" title="Chuyển sang chỉ xem tuyến này">
+                    <span>Chọn</span>
+                    <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Route Distance & Time Breakdown -->
+              <div class="grid grid-cols-3 gap-1 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-center text-[10.5px]">
+                <div>
+                  <span class="text-[9px] text-slate-400 uppercase font-medium block">Đi</span>
+                  <span class="font-bold text-slate-700 dark:text-slate-200">${b.outboundKm} km</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 uppercase font-medium block">Về</span>
+                  <span class="font-bold text-slate-700 dark:text-slate-200">${b.returnKm} km</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase font-extrabold block">Khứ hồi</span>
+                  <span class="font-black text-emerald-600 dark:text-emerald-400">${b.roundTripKm} km</span>
+                </div>
+              </div>
+
+              <!-- Collapsible Stops List for this Route -->
+              <details class="text-xs">
+                <summary class="cursor-pointer text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline select-none py-0.5">
+                  Xem ${routePins.length} điểm dừng của tuyến này
+                </summary>
+                <div class="mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 space-y-0.5 max-h-36 overflow-y-auto">
+                  ${stopsMiniListHtml || '<p class="text-[10px] text-slate-400 italic">Chưa có điểm dừng</p>'}
+                </div>
+              </details>
+            </div>
+          `;
+        }).join('');
+
+        list.innerHTML = grandSummaryHtml + routesCardsHtml;
+        return;
+      }
+
+      // Single Route Mode Rendering
       if (countEl) countEl.textContent = routePinIds.length;
       if (countBadge) countBadge.textContent = routePinIds.length;
       if (badgeCount) badgeCount.textContent = routePinIds.length;
@@ -6531,11 +6981,11 @@
 
       if (routePinIds.length === 0) {
         list.innerHTML = '';
-        emptyPrompt.classList.remove('hidden');
+        if (emptyPrompt) emptyPrompt.classList.remove('hidden');
         return;
       }
 
-      emptyPrompt.classList.add('hidden');
+      if (emptyPrompt) emptyPrompt.classList.add('hidden');
 
       let deadEndBannerHtml = '';
       if (typeof analyzeRouteRedundancyAndDeadEnds === 'function' && routePinIds.length >= 3) {
@@ -6618,8 +7068,14 @@
 
       renderAllRoutesOnMap();
 
+      if (showAllRoutesOnMap || activeFilterRouteId === 'all_routes') {
+        updateRouteSummaryUI();
+      }
+
       if (routePinIds.length < 2) {
-        hideRouteSummaryStats();
+        if (!showAllRoutesOnMap && activeFilterRouteId !== 'all_routes') {
+          hideRouteSummaryStats();
+        }
         return;
       }
 
@@ -6634,7 +7090,9 @@
       }
 
       if (waypoints.length < 2) {
-        hideRouteSummaryStats();
+        if (!showAllRoutesOnMap && activeFilterRouteId !== 'all_routes') {
+          hideRouteSummaryStats();
+        }
         return;
       }
 
@@ -6665,7 +7123,6 @@
           fitSelectedRoutes: false,
           show: false,
           createMarker: function(i, wp, n) {
-            // All route stops and their labels are already rendered by renderAllPins
             return null;
           }
         }).addTo(map);
@@ -6684,34 +7141,19 @@
               currentRouteCoordinates = waypoints;
             }
 
-            const totalKm = (totalMeters / 1000).toFixed(1);
-            const timeStr = formatTravelTime(totalSeconds);
+            const totalKm = parseFloat((totalMeters / 1000).toFixed(1));
 
             // Store distance in active route model
             const active = getActiveRoute();
             if (active) {
-              active.distanceKm = parseFloat(totalKm);
+              active.distanceKm = totalKm;
+              active.durationSeconds = totalSeconds;
+              active.returnDistanceKm = totalKm;
+              active.returnDurationSeconds = totalSeconds;
               saveRoutesToStorage(false);
             }
 
-            // Update UI Summary Panels
-            document.getElementById('summary-total-dist').textContent = `${totalKm} km`;
-            document.getElementById('summary-total-time').textContent = timeStr;
-            
-            const statKmEl = document.getElementById('stat-total-km');
-            if (statKmEl) statKmEl.textContent = `${totalKm} km`;
-
-            // Floating pill
-            document.getElementById('pill-distance').textContent = `${totalKm} km`;
-            document.getElementById('pill-time').textContent = timeStr;
-            const pill = document.getElementById('floating-route-pill');
-            if (pill) {
-              pill.classList.remove('hidden');
-              pill.classList.add('flex');
-            }
-
-            updateStatistics();
-            showToast(`Lộ trình "${active.name}": ${totalKm} km (${timeStr})`, 'info');
+            updateRouteSummaryUI();
           }
         });
 
@@ -6743,45 +7185,28 @@
       for (let i = 0; i < waypoints.length - 1; i++) {
         totalMeters += waypoints[i].distanceTo(waypoints[i + 1]);
       }
-      const totalKm = (totalMeters / 1000).toFixed(1);
-      const estSeconds = activeTravelMode === 'walking' ? (totalMeters / 1.2) : (totalMeters / 12);
-      const timeStr = formatTravelTime(estSeconds);
+      const totalKm = parseFloat((totalMeters / 1000).toFixed(1));
+      const estSeconds = activeTravelMode === 'walking' ? (totalMeters / 1.2) : (totalMeters / 12.5);
 
       const active = getActiveRoute();
       if (active) {
-        active.distanceKm = parseFloat(totalKm);
+        active.distanceKm = totalKm;
+        active.durationSeconds = Math.round(estSeconds);
+        active.returnDistanceKm = totalKm;
+        active.returnDurationSeconds = Math.round(estSeconds);
         saveRoutesToStorage(false);
       }
 
-      document.getElementById('summary-total-dist').textContent = `${totalKm} km*`;
-      document.getElementById('summary-total-time').textContent = timeStr;
-      
-      const statKmEl = document.getElementById('stat-total-km');
-      if (statKmEl) statKmEl.textContent = `${totalKm} km`;
-
-      document.getElementById('pill-distance').textContent = `${totalKm} km`;
-      document.getElementById('pill-time').textContent = timeStr;
-      const pillFallback = document.getElementById('floating-route-pill');
-      if (pillFallback) {
-        pillFallback.classList.remove('hidden');
-        pillFallback.classList.add('flex');
-      }
-
-      updateStatistics();
+      updateRouteSummaryUI();
     }
 
     function hideRouteSummaryStats() {
       currentRouteCoordinates = [];
-      document.getElementById('summary-total-dist').textContent = '0.0 km';
-      document.getElementById('summary-total-time').textContent = '0 phút';
-      const pill = document.getElementById('floating-route-pill');
-      if (pill) {
-        pill.classList.add('hidden');
-        pill.classList.remove('flex');
-      }
+      updateRouteSummaryUI();
     }
 
     function formatTravelTime(totalSeconds) {
+      if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return '0 phút';
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.round((totalSeconds % 3600) / 60);
       if (hours > 0) {
@@ -9078,22 +9503,18 @@
         activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500'}"></i> ${isWalking ? 'Đi bộ' : 'Ô tô / Xe máy'}`;
       }
 
-      // 3. Cumulative Distance of ALL Routes
-      let sumAllRoutesKm = 0;
-      if (Array.isArray(routes)) {
-        routes.forEach(r => {
-          sumAllRoutesKm += calculateRouteDistanceKm(r);
-        });
-      }
+      // 3. Cumulative Distance of ALL Routes (Outbound, Return & Roundtrip)
+      const agg = calculateAllRoutesAggregateMetrics();
+      const sumAllRoutesKm = agg.totalRoundTripKm;
 
       const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
       if (statTotalAllKm) {
-        statTotalAllKm.textContent = `${sumAllRoutesKm.toFixed(1)} km`;
+        statTotalAllKm.textContent = `${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
       }
 
       const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
       if (totalRoutesCountEl) {
-        totalRoutesCountEl.textContent = `${routes.length} hành trình`;
+        totalRoutesCountEl.textContent = `${routes.length} hành trình (${agg.totalOutboundKm.toLocaleString('vi-VN')} km đi • ${agg.totalReturnKm.toLocaleString('vi-VN')} km về)`;
       }
 
       const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -9104,22 +9525,21 @@
       // 4. Calculate 63 Provinces & 3,260 km Coastline
       calculateVietnamFootprint();
 
-      // 5. Render Breakdown List of EACH Route with individual km
+      // 5. Render Breakdown List of EACH Route with individual km & roundtrip
       const breakdownListContainer = document.getElementById('stat-routes-breakdown-list');
       if (breakdownListContainer) {
         if (!routes || routes.length === 0) {
           breakdownListContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">Chưa có lộ trình nào được tạo.</div>`;
         } else {
           breakdownListContainer.innerHTML = routes.map((r) => {
-            const rKm = calculateRouteDistanceKm(r);
+            const m = calculateSingleRouteMetrics(r);
             const isCurrentActive = r.id === activeRouteId;
             const stopsCount = (r.pinIds || []).length;
-            const percentage = sumAllRoutesKm > 0 ? Math.min(100, Math.round((rKm / sumAllRoutesKm) * 100)) : 0;
             const modeIcon = r.travelMode === 'walking' ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
             const modeName = r.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy';
 
             return `
-              <div class="py-3 px-1 flex items-center justify-between gap-3">
+              <div class="py-3 px-1 flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
@@ -9129,11 +9549,14 @@
                   <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1 pl-4.5">
                     <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
                     <span>•</span>
-                    <span>${stopsCount} điểm dừng</span>
+                    <span>${stopsCount} điểm</span>
+                    <span>•</span>
+                    <span class="text-slate-400">Đi: ${m.outboundKm} km | Về: ${m.returnKm} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${rKm.toFixed(1)} km</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toFixed(1)} km</span>
+                  <span class="block text-[10px] text-slate-400 font-semibold">Khứ hồi</span>
                   ${!isCurrentActive ? `
                     <button onclick="handleSelectRoute('${r.id}'); switchTab('route');" class="block text-[11px] text-sky-600 dark:text-sky-400 font-bold hover:underline mt-0.5">
                       Xem lộ trình
