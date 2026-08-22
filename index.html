@@ -3503,16 +3503,10 @@
       }
 
       const routeIndex = options.routeIndex !== undefined ? options.routeIndex : null;
-      const isFirst = options.isFirst === true;
-      const isLast = options.isLast === true;
 
       let innerContent = `<i class="fa-solid ${icon} custom-marker-icon"></i>`;
       if (routeIndex !== null) {
-        if (isFirst) {
-          innerContent = `<span class="custom-marker-number font-black text-[11px] text-white flex items-center justify-center gap-0.5">🏁1</span>`;
-        } else {
-          innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
-        }
+        innerContent = `<span class="custom-marker-number font-black text-xs text-white">${routeIndex}</span>`;
       }
 
       // Border style based on text/bg color
@@ -3521,24 +3515,11 @@
         borderStyle = 'border: 1px solid rgba(0, 0, 0, 0.2);';
       }
 
-      let labelTextPrefix = '';
-      if (isFirst) {
-        labelTextPrefix = '🏁 1. ';
-      } else if (routeIndex !== null) {
-        labelTextPrefix = `${routeIndex}. `;
-      }
-
-      let labelSubtitleBadge = '';
-      if (isFirst) {
-        labelSubtitleBadge = `<span class="block text-[8.5px] font-bold text-emerald-300 tracking-tight">Xuất phát & Về đích</span>`;
-      } else if (isLast) {
-        labelSubtitleBadge = `<span class="block text-[8.5px] font-bold text-rose-300 tracking-tight">Điểm quay đầu</span>`;
-      }
+      const labelTextPrefix = (routeIndex !== null) ? `${routeIndex}. ` : '';
 
       const labelHtml = title ? `
-        <div class="custom-marker-label shadow-md ${isFirst ? 'ring-2 ring-emerald-400/80' : ''}" style="background-color: ${labelBgColor}; color: ${labelTextColor}; ${borderStyle}" title="${escapeHtml(title)}${isFirst ? ' (Điểm xuất phát & Về đích khứ hồi)' : ''}">
+        <div class="custom-marker-label shadow-md" style="background-color: ${labelBgColor}; color: ${labelTextColor}; ${borderStyle}" title="${escapeHtml(title)}">
           <span class="custom-marker-label-text" style="color: ${labelTextColor};">${labelTextPrefix}${escapeHtml(title)}</span>
-          ${labelSubtitleBadge}
         </div>
       ` : '';
 
@@ -3778,13 +3759,6 @@
           `}
 
           <div class="p-3.5 space-y-2">
-            ${isStartFinishOfActive ? `
-              <div class="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold flex items-center gap-1.5 shadow-xs">
-                <i class="fa-solid fa-flag-checkered text-emerald-500"></i>
-                <span>Điểm số 1: Xuất phát & Về đích khứ hồi</span>
-              </div>
-            ` : ''}
-
             <div class="flex items-start justify-between gap-2">
               <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">${escapeHtml(pin.title)}</h4>
             </div>
@@ -7029,15 +7003,12 @@
           <div class="relative p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-3 group">
             <!-- Step Number Badge -->
             <div class="w-8 h-8 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold'} flex items-center justify-center text-xs shrink-0 shadow-sm">
-              ${isFirst ? '<i class="fa-solid fa-flag-checkered text-xs"></i>' : (index + 1)}
+              ${index + 1}
             </div>
 
             <!-- Stop Info -->
             <div class="flex-1 min-w-0 cursor-pointer" onclick="focusPin('${pin.id}')">
-              <div class="flex items-center gap-1.5">
-                <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(pin.title)}</h5>
-                ${isFirst ? '<span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-[9px] font-black shrink-0">Xuất phát & Về đích</span>' : ''}
-              </div>
+              <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(pin.title)}</h5>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                 <span class="${cat.textClass} font-semibold"><i class="fa-solid ${cat.icon}"></i> ${cat.name}</span>
                 <span>•</span>
