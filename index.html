@@ -6819,47 +6819,9 @@
 
         if (emptyPrompt) emptyPrompt.classList.add('hidden');
 
-        // Render Grand Multi-Route Aggregate Summary + Detailed Breakdown by Route
-        const grandSummaryHtml = `
-          <!-- Grand Aggregate Card (Lượt đi + Lượt về + Khứ hồi của cả 3 tuyến) -->
-          <div class="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-900 border border-indigo-500/40 text-white shadow-md space-y-2.5">
-            <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-indigo-500/30 text-indigo-300 flex items-center justify-center text-xs font-bold border border-indigo-500/40">
-                  <i class="fa-solid fa-layer-group"></i>
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-xs text-white">Tổng Hợp Toàn Bộ ${agg.routesCount} Tuyến</h4>
-                  <p class="text-[10px] text-slate-300">Bao gồm đầy đủ số liệu lượt đi & lượt về</p>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ${agg.routesCount} lộ trình
-              </span>
-            </div>
-
-            <!-- 3 Columns: Lượt đi | Lượt về | Khứ hồi -->
-            <div class="grid grid-cols-3 gap-1.5 text-center">
-              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
-                <span class="text-[9px] text-sky-300 font-semibold block uppercase">🏁 Lượt đi</span>
-                <p class="text-xs sm:text-sm font-black text-white mt-0.5">${agg.totalOutboundKm.toLocaleString('vi-VN')} km</p>
-                <span class="text-[9px] text-slate-400 block truncate">~${formatTravelTime(agg.totalOutboundSec)}</span>
-              </div>
-              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
-                <span class="text-[9px] text-purple-300 font-semibold block uppercase">🔄 Lượt về</span>
-                <p class="text-xs sm:text-sm font-black text-white mt-0.5">${agg.totalReturnKm.toLocaleString('vi-VN')} km</p>
-                <span class="text-[9px] text-slate-400 block truncate">~${formatTravelTime(agg.totalReturnSec)}</span>
-              </div>
-              <div class="p-2 rounded-xl bg-gradient-to-b from-emerald-500/20 to-teal-500/20 border border-emerald-500/40">
-                <span class="text-[9px] text-emerald-300 font-bold block uppercase">🌟 Khứ hồi</span>
-                <p class="text-xs sm:text-sm font-black text-emerald-300 mt-0.5">${agg.totalRoundTripKm.toLocaleString('vi-VN')} km</p>
-                <span class="text-[9px] text-emerald-200/80 block truncate">~${formatTravelTime(agg.totalRoundTripSec)}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section Label -->
-          <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-2">
+        // Section Label for Individual Routes List
+        const sectionHeaderHtml = `
+          <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
             <span>Chi tiết từng lộ trình (${agg.routesCount})</span>
             <span class="text-[10px] text-slate-400 font-normal lowercase">Nhấn để xem / chuyển</span>
           </div>
@@ -6947,7 +6909,7 @@
           `;
         }).join('');
 
-        list.innerHTML = grandSummaryHtml + routesCardsHtml;
+        list.innerHTML = sectionHeaderHtml + routesCardsHtml;
         return;
       }
 
@@ -8613,11 +8575,12 @@
         ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
-      // 8. Watermark and Metadata Branding Box (Top-Left)
+      // 8. Watermark and Top-Left Metadata Branding Box
       const isSharedRoute = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const isMultiCinema = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
       const active = isSharedRoute ? sharedRoutePayload : getActiveRoute();
-      const brandW = 390 * uiScale;
-      const brandH = 62 * uiScale;
+      const brandW = 420 * uiScale;
+      const brandH = 68 * uiScale;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
       ctx.lineWidth = 1.2 * uiScale;
@@ -8631,14 +8594,62 @@
 
       const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
       const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
+      const routeDisplayName = isMultiCinema ? `Tổng hợp ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
       ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
       ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-      ctx.fillText(active ? `${active.name || 'Lộ trình'} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})` : '', 34 * uiScale, 66 * uiScale);
+      ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${modeBadge} (${tiltBadge})`, 34 * uiScale, 68 * uiScale);
+
+      // 9. Top-Right Real-time Telemetry HUD (Outbound, Return, Roundtrip & Provinces)
+      const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
+      const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
+      const cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : 0);
+      const cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : 0);
+      const cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : 0);
+      const cSec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : 0);
+      const cTimeStr = formatTravelTime(cSec);
+      const cProvInfo = getProvincesForPins(activePins);
+      const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
+
+      const hudW = 460 * uiScale;
+      const hudH = 68 * uiScale;
+      const hudX = w - hudW - (20 * uiScale);
+      const hudY = 20 * uiScale;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
+
+      // Top Row of HUD: Distances
+      ctx.textAlign = 'left';
+      ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`🏁 Đi: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (26 * uiScale));
+
+      ctx.fillStyle = '#c084fc';
+      ctx.fillText(`🔄 Về: ${cReturnKm.toLocaleString('vi-VN')} km`, hudX + (155 * uiScale), hudY + (26 * uiScale));
+
+      ctx.fillStyle = '#34d399';
+      ctx.fillText(`🌟 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (295 * uiScale), hudY + (26 * uiScale));
+
+      // Bottom Row of HUD: Time, Stops & Provinces
+      ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (50 * uiScale));
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`•`, hudX + (140 * uiScale), hudY + (50 * uiScale));
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (155 * uiScale), hudY + (50 * uiScale));
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`•`, hudX + (280 * uiScale), hudY + (50 * uiScale));
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (295 * uiScale), hudY + (50 * uiScale));
     }
 
-    // ==========================================
-    // EXPORT HIGH-RESOLUTION TRAVEL POSTER INFOGRAPHIC (PNG)
-    // ==========================================
     // ==========================================
     // EXPORT HIGH-RESOLUTION TRAVEL POSTER INFOGRAPHIC (PNG)
     // ==========================================
@@ -8688,17 +8699,34 @@
 
     async function exportRoutePosterCard() {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+      const isMulti = !isShared && (showAllRoutesOnMap || activeFilterRouteId === 'all_routes');
       const active = isShared ? sharedRoutePayload : getActiveRoute();
-      const activePins = isShared
-        ? sharedRoutePayload.stops
-        : (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      
+      let activePins = [];
+      if (isShared) {
+        activePins = sharedRoutePayload.stops;
+      } else if (isMulti) {
+        // Multi-route mode: collect pins from all valid routes
+        const pinSet = new Set();
+        (routes || []).forEach(r => {
+          (r.pinIds || []).forEach(id => {
+            const p = pins.find(pin => pin.id === id);
+            if (p && !pinSet.has(p.id)) {
+              pinSet.add(p.id);
+              activePins.push(p);
+            }
+          });
+        });
+      } else {
+        activePins = (routePinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      }
 
-      if (!active || activePins.length < 2) {
+      if (activePins.length < 2) {
         showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất Ảnh!', 'error');
         return;
       }
 
-      showToast('Đang tạo thiết kế Ảnh Hành trình HD kèm hình ảnh...', 'info');
+      showToast('Đang tạo thiết kế Ảnh Hành trình HD kèm đầy đủ thông số...', 'info');
 
       // Preload all uploaded photos asynchronously
       const pinsWithImages = await Promise.all(activePins.map(async (pin) => {
@@ -8706,13 +8734,35 @@
         return { ...pin, imgObj };
       }));
 
+      // Compute single / multi metrics
+      const agg = isMulti ? calculateAllRoutesAggregateMetrics() : null;
+      const singleM = (!isMulti && active) ? calculateSingleRouteMetrics(active) : null;
+
+      const outboundKm = agg ? agg.totalOutboundKm : (singleM ? singleM.outboundKm : 0);
+      const returnKm = agg ? agg.totalReturnKm : (singleM ? singleM.returnKm : 0);
+      const roundTripKm = agg ? agg.totalRoundTripKm : (singleM ? singleM.roundTripKm : 0);
+      const outboundSec = agg ? agg.totalOutboundSec : (singleM ? singleM.outboundSec : 0);
+      const returnSec = agg ? agg.totalReturnSec : (singleM ? singleM.returnSec : 0);
+      const roundTripSec = agg ? agg.totalRoundTripSec : (singleM ? singleM.roundTripSec : 0);
+
+      const provInfo = getProvincesForPins(activePins);
+      const posterTitle = isMulti
+        ? `Tổng Hợp Toàn Bộ ${routes.length} Lộ Trình`
+        : (active ? active.name : 'Hành Trình Kỷ Niệm');
+      const posterDesc = isMulti
+        ? `Tổng hợp đầy đủ ${routes.length} tuyến đường với chiều đi, chiều về và khứ hồi trên bản đồ Việt Nam`
+        : (active ? (active.description || 'Lưu giữ những khoảnh khắc và dấu chân đáng nhớ trên mọi nẻo đường Việt Nam') : '');
+      const travelModeLabel = isMulti
+        ? `${routes.length} lộ trình`
+        : (active && active.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy');
+
       // Calculate dynamic canvas height to fit all stops gracefully
       const totalStops = pinsWithImages.length;
       const stopCardHeight = 220;
       const spacing = 18;
-      const headerAreaHeight = 360;
+      const headerAreaHeight = 440;
       const footerAreaHeight = 120;
-      const canvasHeight = Math.max(1600, headerAreaHeight + totalStops * (stopCardHeight + spacing) + footerAreaHeight);
+      const canvasHeight = Math.max(1700, headerAreaHeight + totalStops * (stopCardHeight + spacing) + footerAreaHeight);
 
       // Create high-res 1200 x Dynamic Height canvas
       const canvas = document.createElement('canvas');
@@ -8755,62 +8805,126 @@
 
       // Main Route Name
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 46px sans-serif';
-      ctx.fillText(active.name, 600, 135);
+      ctx.font = 'bold 44px sans-serif';
+      ctx.fillText(posterTitle, 600, 135);
 
       // Route description
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '20px sans-serif';
-      ctx.fillText(active.description || 'Lưu giữ những khoảnh khắc và dấu chân đáng nhớ trên mọi nẻo đường Việt Nam', 600, 175);
+      ctx.font = '19px sans-serif';
+      ctx.fillText(posterDesc, 600, 172);
 
-      // 3. Telemetry Statistics Card Box
-      const statsBoxY = 215;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      // 3. Telemetry Statistics Card Box (5 Balanced Columns)
+      const statsBoxY = 205;
+      const statsBoxH = 120;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
       ctx.strokeStyle = 'rgba(99, 102, 241, 0.45)';
       ctx.lineWidth = 2;
-      roundRect(ctx, 80, statsBoxY, 1040, 110, 24, true, true);
+      roundRect(ctx, 60, statsBoxY, 1080, statsBoxH, 24, true, true);
 
-      const totalKm = calculateRouteDistanceKm(active);
-      const estTimeStr = active.distanceKm 
-        ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
-        : `${activePins.length * 25} phút`;
-      const travelModeLabel = active.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy';
+      // 5 Columns Coordinates
+      const colCenters = [165, 375, 600, 825, 1015];
 
-      // Stat 1: Distance
+      // Stat 1: Outbound
       ctx.textAlign = 'center';
       ctx.fillStyle = '#38bdf8';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('TỔNG QUÃNG ĐƯỜNG', 200, statsBoxY + 40);
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('🏁 CHIỀU ĐI', colCenters[0], statsBoxY + 36);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(`${totalKm} km`, 200, statsBoxY + 80);
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`${outboundKm.toLocaleString('vi-VN')} km`, colCenters[0], statsBoxY + 70);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`~${formatTravelTime(outboundSec)}`, colCenters[0], statsBoxY + 95);
 
-      // Stat 2: Time
-      ctx.fillStyle = '#f59e0b';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('THỜI GIAN DỰ TÍNH', 480, statsBoxY + 40);
+      // Stat 2: Return
+      ctx.fillStyle = '#c084fc';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('🔄 CHIỀU VỀ', colCenters[1], statsBoxY + 36);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(estTimeStr, 480, statsBoxY + 80);
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`${returnKm.toLocaleString('vi-VN')} km`, colCenters[1], statsBoxY + 70);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`~${formatTravelTime(returnSec)}`, colCenters[1], statsBoxY + 95);
 
-      // Stat 3: Travel Mode
-      ctx.fillStyle = '#ec4899';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('PHƯƠNG TIỆN', 750, statsBoxY + 40);
-      ctx.fillStyle = '#ffffff';
+      // Stat 3: Roundtrip (Highlighted Emerald Container)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, 495, statsBoxY + 12, 210, statsBoxH - 24, 16, true, true);
+
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('🌟 KHỨ HỒI (CẢ ĐI & VỀ)', colCenters[2], statsBoxY + 36);
+      ctx.fillStyle = '#34d399';
       ctx.font = 'bold 26px sans-serif';
-      ctx.fillText(travelModeLabel, 750, statsBoxY + 80);
+      ctx.fillText(`${roundTripKm.toLocaleString('vi-VN')} km`, colCenters[2], statsBoxY + 70);
+      ctx.fillStyle = '#a7f3d0';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`~${formatTravelTime(roundTripSec)}`, colCenters[2], statsBoxY + 95);
 
-      // Stat 4: Stops
-      ctx.fillStyle = '#10b981';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('ĐIỂM DỪNG KỶ NIỆM', 1000, statsBoxY + 40);
+      // Stat 4: Provinces Visited
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('🏛️ TỈNH THÀNH', colCenters[3], statsBoxY + 36);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 30px sans-serif';
-      ctx.fillText(`${pinsWithImages.length} điểm`, 1000, statsBoxY + 80);
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`${provInfo.count} Tỉnh/TP`, colCenters[3], statsBoxY + 70);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Dấu chân Việt Nam', colCenters[3], statsBoxY + 95);
 
-      // 4. Stops Timeline List (with Photos and Locations)
-      let currentY = 360;
+      // Stat 5: Stops & Mode
+      ctx.fillStyle = '#ec4899';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('📍 ĐIỂM DỪNG', colCenters[4], statsBoxY + 36);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`${activePins.length} Điểm`, colCenters[4], statsBoxY + 70);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(travelModeLabel, colCenters[4], statsBoxY + 95);
+
+      // 4. Province Tags Ribbon Bar (Below stats box)
+      const provRibbonY = 345;
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.65)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      roundRect(ctx, 60, provRibbonY, 1080, 52, 14, true, true);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('🏛️ ĐI QUA CÁC TỈNH THÀNH:', 85, provRibbonY + 31);
+
+      // Draw Province Badges
+      let currentBadgeX = 305;
+      const provDisplayNames = provInfo.names.slice(0, 7);
+      provDisplayNames.forEach(pName => {
+        ctx.font = 'bold 12px sans-serif';
+        const txtW = ctx.measureText(pName).width;
+        const bW = txtW + 20;
+        
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.18)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1;
+        roundRect(ctx, currentBadgeX, provRibbonY + 13, bW, 26, 8, true, true);
+
+        ctx.fillStyle = '#e0f2fe';
+        ctx.textAlign = 'center';
+        ctx.fillText(pName, currentBadgeX + bW / 2, provRibbonY + 30);
+        currentBadgeX += bW + 8;
+      });
+
+      if (provInfo.names.length > 7) {
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(`+${provInfo.names.length - 7} tỉnh khác`, currentBadgeX + 6, provRibbonY + 31);
+      }
+
+      // 5. Stops Timeline List (with Photos and Locations)
+      let currentY = 425;
 
       pinsWithImages.forEach((pin, idx) => {
         const itemY = currentY;
@@ -8820,54 +8934,54 @@
         ctx.fillStyle = 'rgba(30, 41, 59, 0.75)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.lineWidth = 1.5;
-        roundRect(ctx, 80, itemY, 1040, stopCardHeight, 22, true, true);
+        roundRect(ctx, 60, itemY, 1080, stopCardHeight, 22, true, true);
 
         // Step number circle
         ctx.beginPath();
-        ctx.arc(140, itemY + 60, 30, 0, Math.PI * 2);
+        ctx.arc(120, itemY + 60, 30, 0, Math.PI * 2);
         ctx.fillStyle = idx === 0 ? '#10b981' : (idx === pinsWithImages.length - 1 ? '#f43f5e' : '#6366f1');
         ctx.fill();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 24px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${idx + 1}`, 140, itemY + 68);
+        ctx.fillText(`${idx + 1}`, 120, itemY + 68);
 
         // Stop Details Left Column
         ctx.textAlign = 'left';
         ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(`${catConfig.name.toUpperCase()} • ${pin.date ? new Date(pin.date).toLocaleDateString('vi-VN') : 'Kỷ niệm'}`, 200, itemY + 42);
+        ctx.fillText(`${catConfig.name.toUpperCase()} • ${pin.date ? new Date(pin.date).toLocaleDateString('vi-VN') : 'Kỷ niệm'}`, 180, itemY + 42);
 
         // Title
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 28px sans-serif';
-        ctx.fillText(pin.title.substring(0, 32) + (pin.title.length > 32 ? '...' : ''), 200, itemY + 78);
+        ctx.fillText(pin.title.substring(0, 34) + (pin.title.length > 34 ? '...' : ''), 180, itemY + 78);
 
         // Location Name / Address
         if (pin.locationName || pin.address) {
           const loc = pin.locationName || pin.address;
           ctx.fillStyle = '#7dd3fc';
           ctx.font = '16px sans-serif';
-          ctx.fillText(`📍 ${loc.substring(0, 42)}${loc.length > 42 ? '...' : ''}`, 200, itemY + 110);
+          ctx.fillText(`📍 ${loc.substring(0, 46)}${loc.length > 46 ? '...' : ''}`, 180, itemY + 110);
         }
 
         // Star rating
         let starsStr = '★'.repeat(pin.rating || 5);
         ctx.fillStyle = '#fbbf24';
         ctx.font = '22px sans-serif';
-        ctx.fillText(starsStr, 200, itemY + 144);
+        ctx.fillText(starsStr, 180, itemY + 144);
 
         // Notes
         if (pin.notes) {
           ctx.fillStyle = '#cbd5e1';
           ctx.font = 'italic 16px sans-serif';
-          ctx.fillText(`"${pin.notes.substring(0, 52)}${pin.notes.length > 52 ? '...' : ''}"`, 200, itemY + 180);
+          ctx.fillText(`"${pin.notes.substring(0, 56)}${pin.notes.length > 56 ? '...' : ''}"`, 180, itemY + 180);
         }
 
         // Right Column: Uploaded Photo Box
-        const photoWidth = 260;
+        const photoWidth = 270;
         const photoHeight = 175;
-        const photoX = 835;
+        const photoX = 850;
         const photoY = itemY + 22;
 
         if (pin.imgObj) {
@@ -8891,7 +9005,7 @@
         currentY += stopCardHeight + spacing;
       });
 
-      // 5. Sovereignty & Brand Footer
+      // 6. Sovereignty & Brand Footer
       const footerY = canvasHeight - 70;
       ctx.fillStyle = '#e2e8f0';
       ctx.font = 'bold 18px sans-serif';
@@ -8908,13 +9022,13 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        const safeName = (posterTitle || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
         a.download = `gaomaps-anh-${safeName}-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('Đã tải ảnh Hành trình HD kèm hình ảnh thành công!', 'success');
+        showToast('Đã tải ảnh Hành trình HD kèm đầy đủ thông số thành công!', 'success');
       }, 'image/png');
     }
 
@@ -9187,6 +9301,26 @@
       }
 
       return null;
+    }
+
+    /**
+     * Helper to get list of unique provinces touched by an array of pins
+     */
+    function getProvincesForPins(pinsList) {
+      if (!Array.isArray(pinsList)) return { count: 0, names: [], list: [] };
+      const visitedMap = new Map();
+      pinsList.forEach(pin => {
+        const prov = detectProvinceForPin(pin);
+        if (prov && !visitedMap.has(prov.id)) {
+          visitedMap.set(prov.id, prov);
+        }
+      });
+      const list = Array.from(visitedMap.values());
+      return {
+        count: list.length,
+        names: list.map(p => p.name),
+        list: list
+      };
     }
 
     /**
