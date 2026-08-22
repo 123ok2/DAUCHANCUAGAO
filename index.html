@@ -59,6 +59,9 @@
   <!-- High Definition Client-Side QR Code Generator -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
+  <!-- LZ-String Compression for Fail-Proof Self-Contained Shared URLs -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -5955,16 +5958,16 @@
         };
       }
 
-      // Generate Short Cloud Share Identifier (eliminates URI_TOO_LONG completely)
+      // Generate Short Cloud Share Identifier
       const sharePrefix = (currentShareScope === 'all') ? 'all_' : 'rt_';
       const shareId = sharePrefix + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
 
-      // Save payload locally as cache
+      // Save payload locally as immediate cache
       try {
         localStorage.setItem('memomap_share_' + shareId, JSON.stringify(sharePayload));
       } catch (e) {}
 
-      // Asynchronously publish rich route data to Firebase Firestore
+      // Asynchronously publish rich route data to Firebase Firestore (Layer 1: Cloud Sync)
       if (firebaseDb && isFirebaseReady) {
         try {
           firebaseDb.collection('memomap_shared_routes').doc(shareId).set(sharePayload).catch(err => {
@@ -5975,12 +5978,35 @@
         }
       }
 
-      // Generate Clean Lightweight URL
-      const shareUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
+      // Generate ultra-compressed payload string for fail-proof URL hash (Layer 2: 100% Standalone Offline & Cross-Device)
+      let compressedHash = '';
+      try {
+        if (typeof LZString !== 'undefined' && LZString.compressToEncodedURIComponent) {
+          // Prefer compressing full sharePayload; if too big, compress compactQrPayload
+          const fullJson = JSON.stringify(sharePayload);
+          if (fullJson.length < 80000) {
+            compressedHash = LZString.compressToEncodedURIComponent(fullJson);
+          } else {
+            compressedHash = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload || sharePayload));
+          }
+        } else {
+          compressedHash = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(compactQrPayload || sharePayload)))));
+        }
+      } catch (e) {
+        console.warn('Compression error:', e);
+      }
+
+      // Generate Clean, Standalone, Self-Contained URL (incorporates both ?s= ID and #d= compressed data)
+      const shareUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}${compressedHash ? '#d=' + compressedHash : ''}`;
       input.value = shareUrl;
 
-      // QR Code uses concise URL (ultra-sharp, high-contrast, lightning-fast scan)
-      const qrUrl = shareUrl;
+      // QR Code uses high-res standalone URL for instant camera scanning
+      let qrUrl = shareUrl;
+      // If full shareUrl is too massive for dense QR scan (> 1500 chars), generate ultra-compact QR payload
+      if (shareUrl.length > 1500 && compactQrPayload && typeof LZString !== 'undefined') {
+        const compactHash = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload));
+        qrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}#d=${compactHash}`;
+      }
 
       // Render High-Definition Vector/Canvas QR Code
       const qrCanvas = document.getElementById('share-qrcode-canvas');
@@ -6759,21 +6785,176 @@
       }
     }
 
-    // Parse and Hydrate Shared Route from incoming URL
+    function unpackCompactPayload(raw) {
+      if (!raw) return null;
+      if (raw.all === 1 || Array.isArray(raw.r)) {
+        let allDisplayStops = [];
+        const packagedRoutes = (raw.r || []).map((r, rIdx) => {
+          const rColor = r.c || '#6366f1';
+          const rStops = (r.s || []).map((s, sIdx) => ({
+            title: s.t || `Điểm #${sIdx + 1}`,
+            locationName: s.l || '',
+            lat: s.lat,
+            lng: s.lng,
+            category: s.c || 'sightseeing',
+            rating: s.r || 5,
+            notes: s.n || '',
+            date: s.d || '',
+            photo: s.p || '',
+            routeName: r.n || `Tuyến #${rIdx + 1}`,
+            routeColor: rColor,
+            routeIndex: sIdx + 1
+          }));
+          allDisplayStops.push(...rStops);
+          return {
+            id: `shared_sub_${rIdx}`,
+            name: r.n || `Tuyến #${rIdx + 1}`,
+            color: rColor,
+            travelMode: r.m || 'driving',
+            distKm: r.d || 0,
+            durationStr: r.t || '',
+            stops: rStops
+          };
+        });
+        return {
+          isMultiRoute: true,
+          name: raw.n || `Trọn bộ ${packagedRoutes.length} Tuyến Lộ Trình`,
+          desc: raw.desc || 'Tổng hợp các tuyến lộ trình du lịch trên Gạo Maps',
+          color: raw.c || '#10b981',
+          mode: 'multi',
+          distKm: raw.d || 0,
+          durationStr: raw.t || '',
+          totalRoutes: packagedRoutes.length,
+          routes: packagedRoutes,
+          stops: allDisplayStops
+        };
+      } else {
+        return {
+          isMultiRoute: false,
+          name: raw.n || 'Lộ trình du lịch',
+          desc: raw.desc || '',
+          color: raw.c || '#6366f1',
+          mode: raw.m || 'driving',
+          distKm: raw.d || 0,
+          durationStr: raw.t || '',
+          waypoints: raw.w || null,
+          stops: Array.isArray(raw.s) ? raw.s.map((s, idx) => ({
+            title: s.t || `Điểm #${idx + 1}`,
+            locationName: s.l || '',
+            lat: s.lat,
+            lng: s.lng,
+            category: s.c || 'sightseeing',
+            rating: s.r || 5,
+            notes: s.n || '',
+            date: s.d || '',
+            photo: s.p || ''
+          })) : []
+        };
+      }
+    }
+
+    // Parse and Hydrate Shared Route from incoming URL (Robust 3-Tier Fallback)
     let lastHydratedShareId = null;
 
     async function checkSharedRouteFromUrl() {
+      let payload = null;
+
+      // 1. TIER 1: Check URL Hash (#d=... or #data=... or #sr=...) - 100% Client-Side & Standalone
+      if (window.location.hash && window.location.hash.length > 2) {
+        const hashStr = window.location.hash.substring(1);
+        let hashData = null;
+        if (hashStr.startsWith('d=')) {
+          hashData = hashStr.substring(2);
+        } else if (hashStr.startsWith('data=')) {
+          hashData = hashStr.substring(5);
+        } else if (hashStr.startsWith('sr=')) {
+          hashData = hashStr.substring(3);
+        } else {
+          const hashParams = new URLSearchParams(hashStr);
+          hashData = hashParams.get('d') || hashParams.get('data') || hashParams.get('sr');
+        }
+
+        if (hashData) {
+          try {
+            if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
+              const decompressed = LZString.decompressFromEncodedURIComponent(hashData);
+              if (decompressed) {
+                const parsed = JSON.parse(decompressed);
+                payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
+              }
+            }
+            if (!payload) {
+              const decoded = decodeURIComponent(escape(atob(decodeURIComponent(hashData))));
+              const parsed = JSON.parse(decoded);
+              payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
+            }
+          } catch (e) {
+            console.warn('Error parsing shared hash payload:', e);
+          }
+        }
+      }
+
+      // 2. TIER 2: Check URL Query Parameters (?d=..., ?data=..., ?sr=..., ?share_route=...)
       const urlParams = new URLSearchParams(window.location.search);
-      const shareId = urlParams.get('s') || urlParams.get('share_id') || urlParams.get('id');
+      const queryData = urlParams.get('d') || urlParams.get('data');
       const shareParam = urlParams.get('share_route');
       const compactParam = urlParams.get('sr');
+      const shareId = urlParams.get('s') || urlParams.get('share_id') || urlParams.get('id');
 
-      if (!shareId && !shareParam && !compactParam) return;
+      if (!payload && queryData) {
+        try {
+          if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
+            const decompressed = LZString.decompressFromEncodedURIComponent(queryData);
+            if (decompressed) {
+              const parsed = JSON.parse(decompressed);
+              payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
+            }
+          }
+          if (!payload) {
+            const decoded = decodeURIComponent(escape(atob(decodeURIComponent(queryData))));
+            const parsed = JSON.parse(decoded);
+            payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
+          }
+        } catch (e) {
+          console.warn('Error parsing queryData payload:', e);
+        }
+      }
 
+      if (!payload && shareParam) {
+        try {
+          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
+          payload = JSON.parse(decodedJson);
+        } catch (e) {
+          console.warn('Error parsing shareParam:', e);
+        }
+      }
+
+      if (!payload && compactParam) {
+        try {
+          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(compactParam))));
+          const raw = JSON.parse(decodedJson);
+          payload = unpackCompactPayload(raw);
+        } catch (e) {
+          console.warn('Error parsing compactParam:', e);
+        }
+      }
+
+      // If standalone payload was successfully extracted from URL hash/query, hydrate immediately!
+      if (payload && Array.isArray(payload.stops) && payload.stops.length > 0) {
+        lastHydratedShareId = shareId || 'url_embedded';
+        try {
+          if (shareId) localStorage.setItem('memomap_share_' + shareId, JSON.stringify(payload));
+        } catch (e) {}
+        hydrateSharedRouteExperience(payload);
+        showToast(`Đang hiển thị lộ trình được chia sẻ: "${payload.name || 'Lộ trình'}"`, 'success');
+        return;
+      }
+
+      // 3. TIER 3: If only shareId was passed, query LocalStorage & Firestore
       if (shareId) {
         if (lastHydratedShareId === shareId && isSharedViewMode) return;
 
-        // 1. Try local cache first for instantaneous rendering
+        // 3a. Try local cache first for 0ms instantaneous rendering
         let localData = null;
         try {
           const cached = localStorage.getItem('memomap_share_' + shareId);
@@ -6786,7 +6967,7 @@
           showToast(`Đang hiển thị lộ trình: "${localData.name}"`, 'success');
         }
 
-        // 2. Fetch from Firebase Cloud
+        // 3b. Fetch from Firebase Firestore
         const loadFromCloud = async () => {
           if (firebaseDb && isFirebaseReady) {
             try {
@@ -6826,45 +7007,6 @@
           }, 600);
         }
         return;
-      }
-
-      // Legacy fallback for old parameter formats
-      try {
-        let sharedData = null;
-        if (shareParam) {
-          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
-          sharedData = JSON.parse(decodedJson);
-        } else if (compactParam) {
-          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(compactParam))));
-          const raw = JSON.parse(decodedJson);
-          sharedData = {
-            name: raw.n || 'Lộ trình du lịch',
-            desc: raw.desc || '',
-            color: raw.c || '#6366f1',
-            mode: raw.m || 'driving',
-            distKm: raw.d || 0,
-            durationStr: raw.t || '',
-            waypoints: raw.w || null,
-            stops: Array.isArray(raw.s) ? raw.s.map(s => ({
-              title: s.t || 'Điểm dừng',
-              locationName: s.l || '',
-              lat: s.lat,
-              lng: s.lng,
-              category: s.c || 'sightseeing',
-              rating: s.r || 5,
-              notes: s.n || '',
-              date: s.d || '',
-              photo: s.p || ''
-            })) : []
-          };
-        }
-
-        if (sharedData && Array.isArray(sharedData.stops) && sharedData.stops.length > 0) {
-          hydrateSharedRouteExperience(sharedData);
-          showToast(`Đang mở lộ trình được chia sẻ: "${sharedData.name}"`, 'success');
-        }
-      } catch (err) {
-        console.warn('Error parsing shared route url:', err);
       }
     }
 
@@ -7176,8 +7318,75 @@
     }
 
     function importSharedRouteToMyRoutes() {
-      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops)) {
+      if (!sharedRoutePayload || !Array.isArray(sharedRoutePayload.stops) || sharedRoutePayload.stops.length === 0) {
         showToast('Không có dữ liệu lộ trình để lưu!', 'error');
+        return;
+      }
+
+      if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes) && sharedRoutePayload.routes.length > 0) {
+        let totalImportedPins = 0;
+        let createdRoutes = 0;
+
+        sharedRoutePayload.routes.forEach((r, rIdx) => {
+          const subPinIds = [];
+          const rStops = r.stops || [];
+
+          rStops.forEach((s, sIdx) => {
+            let matchedPin = pins.find(p => Math.abs(p.lat - s.lat) < 0.0001 && Math.abs(p.lng - s.lng) < 0.0001);
+            if (!matchedPin) {
+              matchedPin = {
+                id: 'shared-pin-' + Date.now() + '-' + rIdx + '-' + sIdx,
+                title: s.title || `Điểm #${sIdx + 1}`,
+                locationName: s.locationName || '',
+                lat: s.lat,
+                lng: s.lng,
+                category: s.category || 'sightseeing',
+                date: s.date || new Date().toISOString().split('T')[0],
+                rating: s.rating || 5,
+                notes: s.notes || 'Điểm từ lộ trình được chia sẻ',
+                photo: s.photo || ''
+              };
+              pins.push(matchedPin);
+              totalImportedPins++;
+            } else if (!matchedPin.photo && s.photo) {
+              matchedPin.photo = s.photo;
+            }
+            subPinIds.push(matchedPin.id);
+          });
+
+          const newSubRoute = {
+            id: 'route-imported-' + Date.now() + '-' + rIdx,
+            name: r.name || `Tuyến #${rIdx + 1}`,
+            description: r.description || 'Lộ trình được chia sẻ từ bạn bè',
+            color: r.color || '#6366f1',
+            pinIds: subPinIds,
+            customWaypoints: r.waypoints || null,
+            travelMode: r.travelMode || 'driving',
+            distanceKm: r.distKm || null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          routes.push(newSubRoute);
+          createdRoutes++;
+        });
+
+        if (routes.length > 0) {
+          activeRouteId = routes[routes.length - 1].id;
+        }
+
+        savePinsToStorage();
+        saveRoutesToStorage();
+        populateRouteSelectorDropdown();
+        renderAllPins();
+        renderSidebarList();
+        renderRouteStops();
+        updateStatistics();
+
+        closeSharedRouteBanner();
+        showToast(`Đã lưu thành công ${createdRoutes} tuyến đường với ${sharedRoutePayload.stops.length} địa điểm vào tài khoản của bạn!`, 'success');
+
+        const bounds = L.latLngBounds(sharedRoutePayload.stops.map(s => [s.lat, s.lng]));
+        map.fitBounds(bounds, { padding: [60, 60] });
         return;
       }
 
@@ -8240,6 +8449,8 @@
 
     // Call OSRM real-road routing engine with Draggable Line & Custom Color
     function updateRouteCalculation() {
+      if (isSharedViewMode) return;
+
       if (routingControl) {
         map.removeControl(routingControl);
         routingControl = null;
