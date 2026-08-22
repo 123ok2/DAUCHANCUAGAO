@@ -5557,21 +5557,18 @@
 
       if (currentShareScope === 'all') {
         // MULTI-ROUTE SHARE LOGIC
+        const agg = calculateAllRoutesAggregateMetrics();
         displayTitle = `Trọn bộ ${routes.length} Tuyến Lộ Trình`;
         if (distLabel) distLabel.textContent = 'Tổng Quãng Đường';
         if (timeLabel) timeLabel.textContent = 'Tổng Thời Gian';
         if (stopsLabel) stopsLabel.textContent = 'Tổng Điểm Dừng';
 
-        let totalCombinedKm = 0;
-        let totalStopsCount = 0;
         let allDisplayStops = [];
 
-        // Build packaged routes payload
+        // Build packaged routes payload using accurate single route metrics
         const packagedRoutes = await Promise.all(routes.map(async (r) => {
           const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
-          const rDistKm = calculateRouteDistanceKm(r);
-          totalCombinedKm += parseFloat(rDistKm) || 0;
-          totalStopsCount += rPins.length;
+          const m = calculateSingleRouteMetrics(r);
 
           const rStopsPayload = await Promise.all(rPins.map(async (p, idx) => {
             const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 220, 0.5) : '';
@@ -5593,18 +5590,18 @@
             return stopObj;
           }));
 
-          const rEstTimeStr = r.distanceKm 
-            ? formatTravelTime(r.distanceKm * 1000 / (r.travelMode === 'walking' ? 1.2 : 12))
-            : `${rPins.length * 25} phút`;
-
           return {
             id: r.id,
             name: r.name,
             description: r.description || '',
             color: r.color || '#6366f1',
             travelMode: r.travelMode || 'driving',
-            distKm: rDistKm,
-            durationStr: rEstTimeStr,
+            distKm: m.roundTripKm,
+            outboundKm: m.outboundKm,
+            returnKm: m.returnKm,
+            durationStr: formatTravelTime(m.roundTripSec),
+            durationSeconds: m.roundTripSec,
+            stopsCount: rPins.length,
             stops: rStopsPayload,
             waypoints: (r.id === activeRouteId && customRouteWaypoints && customRouteWaypoints.length >= 2)
               ? customRouteWaypoints
@@ -5612,11 +5609,12 @@
           };
         }));
 
-        totalCombinedKm = Math.round(totalCombinedKm * 10) / 10;
-        const totalDurationStr = `~${Math.max(15, Math.round(totalCombinedKm / 45 * 60))} phút`;
+        const totalKm = agg.totalRoundTripKm;
+        const totalDurationStr = formatTravelTime(agg.totalRoundTripSec);
+        const totalStopsCount = agg.totalStopsCount || allDisplayStops.length;
 
         if (title) title.textContent = `${routes.length} Tuyến đường (${totalStopsCount} điểm)`;
-        if (distEl) distEl.textContent = `${totalCombinedKm} km`;
+        if (distEl) distEl.textContent = `${totalKm} km`;
         if (timeEl) timeEl.textContent = totalDurationStr;
         if (countEl) countEl.textContent = `${totalStopsCount} điểm`;
         if (colorDot) colorDot.style.backgroundColor = '#10b981';
@@ -5669,8 +5667,11 @@
           desc: 'Tổng hợp các tuyến lộ trình du lịch trên Gạo Maps',
           color: '#10b981',
           mode: 'multi',
-          distKm: totalCombinedKm,
+          distKm: totalKm,
+          outboundKm: agg.totalOutboundKm,
+          returnKm: agg.totalReturnKm,
           durationStr: totalDurationStr,
+          durationSeconds: agg.totalRoundTripSec,
           totalRoutes: routes.length,
           routes: packagedRoutes,
           stops: allDisplayStops,
@@ -5680,17 +5681,18 @@
         compactQrPayload = {
           all: 1,
           n: `Trọn bộ ${routes.length} Tuyến Lộ Trình`,
-          d: totalCombinedKm,
+          d: totalKm,
           t: totalDurationStr,
           c: '#10b981',
           m: 'multi',
           r: routes.map(r => {
             const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+            const m = calculateSingleRouteMetrics(r);
             return {
               n: r.name,
               c: r.color || '#6366f1',
               m: r.travelMode || 'driving',
-              d: calculateRouteDistanceKm(r),
+              d: m.roundTripKm,
               s: rPins.map(p => ({
                 t: p.title,
                 lat: Math.round(p.lat * 1000000) / 1000000,
@@ -5708,16 +5710,15 @@
       } else {
         // SINGLE DESIGNATED ROUTE SHARE LOGIC
         const targetRoute = routes.find(r => r.id === currentShareRouteId) || getActiveRoute();
+        const m = calculateSingleRouteMetrics(targetRoute);
         displayTitle = targetRoute.name || 'Lộ trình Du Lịch';
         if (distLabel) distLabel.textContent = 'Tổng Quãng Đường';
         if (timeLabel) timeLabel.textContent = 'Thời Gian Dự Tính';
         if (stopsLabel) stopsLabel.textContent = 'Điểm Dừng';
 
         const activePins = (targetRoute.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
-        const totalKm = calculateRouteDistanceKm(targetRoute);
-        const estTimeStr = targetRoute.distanceKm 
-          ? formatTravelTime(targetRoute.distanceKm * 1000 / (targetRoute.travelMode === 'walking' ? 1.2 : 12))
-          : `${activePins.length * 25} phút`;
+        const totalKm = m.roundTripKm;
+        const estTimeStr = formatTravelTime(m.roundTripSec);
 
         if (title) title.textContent = targetRoute.name || 'Lộ trình Chuyến đi';
         if (distEl) distEl.textContent = `${totalKm} km`;
@@ -5791,7 +5792,10 @@
           color: targetRoute.color || '#6366f1',
           mode: targetRoute.travelMode || 'driving',
           distKm: totalKm,
+          outboundKm: m.outboundKm,
+          returnKm: m.returnKm,
           durationStr: estTimeStr,
+          durationSeconds: m.roundTripSec,
           stops: stopsPayload,
           waypoints: (targetRoute.customWaypoints && targetRoute.customWaypoints.length >= 2)
             ? targetRoute.customWaypoints
@@ -6716,6 +6720,8 @@
       }
     }
 
+    let sharedRouteMultiLayers = [];
+
     function hydrateSharedRouteExperience(sharedData) {
       isSharedViewMode = true;
       sharedRoutePayload = sharedData;
@@ -6755,25 +6761,123 @@
         }
       }
 
+      // Update Route Summary Box & Sidebar Stops List
+      updateRouteSummaryUI();
+      renderRouteStops();
+
       // Render Showcase Drawer & open it automatically
       renderSharedStopsDrawer(sharedData);
       const showcasePanel = document.getElementById('shared-route-showcase-panel');
       if (showcasePanel) showcasePanel.classList.remove('hidden');
 
+      // Clear any prior shared routing layers
+      if (routingControl) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+      if (sharedRouteMultiLayers && sharedRouteMultiLayers.length > 0) {
+        sharedRouteMultiLayers.forEach(l => { try { map.removeLayer(l); } catch (e) {} });
+        sharedRouteMultiLayers = [];
+      }
+
       // Render Interactive Route on Leaflet Map
       setTimeout(() => {
-        if (sharedData.stops.length >= 2) {
-          const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
-          map.fitBounds(bounds, { padding: [80, 80] });
+        if (!sharedData.stops || sharedData.stops.length === 0) return;
 
+        const bounds = L.latLngBounds(sharedData.stops.map(s => [s.lat, s.lng]));
+        map.fitBounds(bounds, { padding: [80, 80] });
+
+        if (sharedData.isMultiRoute && Array.isArray(sharedData.routes) && sharedData.routes.length > 0) {
+          // MULTI-ROUTE MAP RENDERING
+          let allCoordsForSim = [];
+
+          sharedData.routes.forEach((r, rIdx) => {
+            const rStops = r.stops || [];
+            const rColor = r.color || '#6366f1';
+
+            // 1. Draw markers for this sub-route
+            rStops.forEach((stopInfo, sIdx) => {
+              const num = stopInfo.routeIndex || (sIdx + 1);
+              const isFirst = (sIdx === 0);
+              const isLast = (sIdx === rStops.length - 1 && rStops.length > 1);
+
+              const marker = L.marker([stopInfo.lat, stopInfo.lng], {
+                icon: createCustomMarkerIcon(stopInfo, {
+                  routeIndex: num,
+                  isFirst: isFirst,
+                  isLast: isLast,
+                  customColor: rColor
+                }),
+                title: stopInfo.title || `Điểm #${num}`
+              });
+
+              const cat = CATEGORIES[stopInfo.category] || CATEGORIES.sightseeing;
+              const popupHtml = `
+                <div class="p-2.5 max-w-[260px] space-y-2">
+                  ${stopInfo.photo ? `
+                    <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+                      <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
+                    </div>
+                  ` : ''}
+                  <div>
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400">
+                      <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+                      ${stopInfo.rating ? `<span class="text-amber-500 ml-auto font-bold">${'★'.repeat(stopInfo.rating)}</span>` : ''}
+                    </div>
+                    <div class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold text-white mt-1 shadow-2xs" style="background-color: ${rColor};">
+                      <span>#${num}</span>
+                      <span class="max-w-[100px] truncate">${escapeHtml(r.name)}</span>
+                    </div>
+                    <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
+                    ${stopInfo.locationName ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
+                    ${stopInfo.notes ? `<p class="text-xs text-slate-700 dark:text-slate-300 italic mt-1.5 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
+                  </div>
+                </div>
+              `;
+              marker.bindPopup(popupHtml);
+              marker.addTo(map);
+              sharedRouteMultiLayers.push(marker);
+            });
+
+            // 2. Draw polyline/waypoint route line for this sub-route
+            if (rStops.length >= 2) {
+              const polyPoints = (r.waypoints && Array.isArray(r.waypoints) && r.waypoints.length >= 2)
+                ? r.waypoints.map(wp => [wp.lat, wp.lng])
+                : rStops.map(s => [s.lat, s.lng]);
+
+              const glowLine = L.polyline(polyPoints, {
+                color: '#0f172a',
+                opacity: 0.3,
+                weight: 8,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }).addTo(map);
+
+              const mainLine = L.polyline(polyPoints, {
+                color: rColor,
+                opacity: 0.95,
+                weight: 5,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }).addTo(map);
+
+              sharedRouteMultiLayers.push(glowLine);
+              sharedRouteMultiLayers.push(mainLine);
+
+              polyPoints.forEach(pt => allCoordsForSim.push({ lat: pt[0], lng: pt[1] }));
+            }
+          });
+
+          if (allCoordsForSim.length > 0) {
+            currentRouteCoordinates = allCoordsForSim;
+          }
+
+        } else if (sharedData.stops.length >= 2) {
+          // SINGLE ROUTE MAP RENDERING
           const waypoints = (sharedData.waypoints && Array.isArray(sharedData.waypoints) && sharedData.waypoints.length >= 2)
             ? sharedData.waypoints.map(wp => L.latLng(wp.lat, wp.lng))
             : sharedData.stops.map(s => L.latLng(s.lat, s.lng));
 
-          if (routingControl) {
-            map.removeControl(routingControl);
-            routingControl = null;
-          }
           const routerService = L.Routing.osrmv1({
             serviceUrl: sharedData.mode === 'walking'
               ? 'https://routing.openstreetmap.de/routed-foot/route/v1' 
@@ -6862,6 +6966,11 @@
       if (banner) banner.classList.add('hidden');
       const drawer = document.getElementById('shared-route-showcase-panel');
       if (drawer) drawer.classList.add('hidden');
+
+      if (sharedRouteMultiLayers && sharedRouteMultiLayers.length > 0) {
+        sharedRouteMultiLayers.forEach(l => { try { map.removeLayer(l); } catch (e) {} });
+        sharedRouteMultiLayers = [];
+      }
 
       // Clear query params without reload
       if (window.history && window.history.replaceState) {
@@ -7364,7 +7473,6 @@
 
     // Central UI Telemetry Updater for both Single-Route and Multi-Route (Tất cả tuyến) modes
     function updateRouteSummaryUI() {
-      const isMultiMode = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
       const summaryBox = document.getElementById('route-summary-box');
       const distEl = document.getElementById('summary-total-dist');
       const timeEl = document.getElementById('summary-total-time');
@@ -7377,6 +7485,72 @@
       const pill = document.getElementById('floating-route-pill');
       const pillDist = document.getElementById('pill-distance');
       const pillTime = document.getElementById('pill-time');
+
+      // Shared Route View Mode Telemetry Override
+      if (isSharedViewMode && sharedRoutePayload) {
+        const isMulti = !!sharedRoutePayload.isMultiRoute;
+        const totalKm = sharedRoutePayload.distKm || 0;
+        const totalDuration = sharedRoutePayload.durationStr || '0 phút';
+        const totalStops = (sharedRoutePayload.stops || []).length;
+
+        if (isMulti) {
+          const routesList = sharedRoutePayload.routes || [];
+          const routesCount = sharedRoutePayload.totalRoutes || routesList.length || 1;
+          if (modeLabelEl) modeLabelEl.textContent = `Tổng hợp ${routesCount} tuyến (Được chia sẻ)`;
+          if (distEl) distEl.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+          if (timeEl) timeEl.textContent = totalDuration;
+          if (stopsBadgeEl) stopsBadgeEl.textContent = totalStops;
+          if (distSubEl) {
+            const outKm = sharedRoutePayload.outboundKm || parseFloat((totalKm / 2).toFixed(1));
+            const retKm = sharedRoutePayload.returnKm || parseFloat((totalKm / 2).toFixed(1));
+            distSubEl.textContent = `Đi: ${outKm.toLocaleString('vi-VN')} km • Về: ${retKm.toLocaleString('vi-VN')} km`;
+          }
+          if (timeSubEl) timeSubEl.textContent = `Khứ hồi (${routesCount} tuyến)`;
+          if (stopsSubEl) stopsSubEl.textContent = `${routesCount} tuyến (${totalStops} điểm)`;
+
+          if (pillDist) pillDist.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+          if (pillTime) pillTime.textContent = totalDuration;
+          if (pill) {
+            pill.classList.remove('hidden');
+            pill.classList.add('flex');
+          }
+
+          if (pillsBreakdown) {
+            pillsBreakdown.classList.remove('hidden');
+            pillsBreakdown.classList.add('flex');
+            pillsBreakdown.innerHTML = routesList.map(r => `
+              <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-white text-[10px] truncate">
+                <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
+                <span class="font-bold truncate max-w-[90px]">${escapeHtml(r.name)}:</span>
+                <span class="text-amber-300 font-extrabold">${r.distKm} km</span>
+              </div>
+            `).join('');
+          }
+        } else {
+          if (modeLabelEl) modeLabelEl.textContent = `Lộ trình: ${sharedRoutePayload.name || 'Được chia sẻ'}`;
+          if (distEl) distEl.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+          if (timeEl) timeEl.textContent = totalDuration;
+          if (stopsBadgeEl) stopsBadgeEl.textContent = totalStops;
+          if (distSubEl) {
+            const outKm = sharedRoutePayload.outboundKm || totalKm;
+            const retKm = sharedRoutePayload.returnKm || totalKm;
+            distSubEl.textContent = `Đi: ${outKm.toLocaleString('vi-VN')} km • Về: ${retKm.toLocaleString('vi-VN')} km`;
+          }
+          if (timeSubEl) timeSubEl.textContent = `Khứ hồi 2 chiều`;
+          if (stopsSubEl) stopsSubEl.textContent = `1 tuyến (${totalStops} điểm)`;
+
+          if (pillDist) pillDist.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+          if (pillTime) pillTime.textContent = totalDuration;
+          if (pill) {
+            pill.classList.remove('hidden');
+            pill.classList.add('flex');
+          }
+          if (pillsBreakdown) pillsBreakdown.classList.add('hidden');
+        }
+        return;
+      }
+
+      const isMultiMode = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
 
       if (isMultiMode) {
         const agg = calculateAllRoutesAggregateMetrics();
@@ -7510,6 +7684,133 @@
       const countEl = document.getElementById('route-stops-count');
       const countBadge = document.getElementById('route-stops-count-badge');
       const badgeCount = document.getElementById('badge-route-stops');
+
+      // Shared Route View Mode Sidebar rendering
+      if (isSharedViewMode && sharedRoutePayload) {
+        const isMulti = !!sharedRoutePayload.isMultiRoute;
+        const totalStops = (sharedRoutePayload.stops || []).length;
+        if (countBadge) countBadge.textContent = totalStops;
+        if (badgeCount) badgeCount.textContent = totalStops;
+        const mobBadgeRoute = document.getElementById('mobile-badge-route');
+        if (mobBadgeRoute) {
+          mobBadgeRoute.textContent = totalStops;
+          mobBadgeRoute.classList.remove('hidden');
+        }
+        if (emptyPrompt) emptyPrompt.classList.add('hidden');
+
+        if (isMulti) {
+          const routesList = sharedRoutePayload.routes || [];
+          const routesCount = sharedRoutePayload.totalRoutes || routesList.length || 1;
+          if (countEl) countEl.textContent = `${routesCount} tuyến (${totalStops} điểm)`;
+
+          const sectionHeaderHtml = `
+            <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+              <span>Chi tiết từng lộ trình (${routesCount})</span>
+              <span class="text-[10px] text-emerald-500 font-bold">Chế độ chia sẻ</span>
+            </div>
+          `;
+
+          const routesCardsHtml = routesList.map((r, idx) => {
+            const rColor = r.color || '#6366f1';
+            const isWalking = r.travelMode === 'walking';
+            const modeIcon = isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
+            const modeName = isWalking ? 'Đi bộ' : 'Ô tô / Xe máy';
+            const rStops = r.stops || [];
+
+            const stopsMiniListHtml = rStops.map((p, pIdx) => {
+              const isFirst = pIdx === 0;
+              const isLast = pIdx === rStops.length - 1;
+              return `
+                <div class="flex items-center gap-2 py-1 px-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer text-xs transition" onclick="focusSharedStop(${p.lat}, ${p.lng}, '${escapeHtml(p.title)}')">
+                  <span class="w-5 h-5 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold'} flex items-center justify-center text-[10px] shrink-0">
+                    ${pIdx + 1}
+                  </span>
+                  <span class="text-slate-800 dark:text-slate-200 font-medium truncate flex-1">${escapeHtml(p.title)}</span>
+                  <span class="text-[10px] text-slate-400 shrink-0">${p.date || ''}</span>
+                </div>
+              `;
+            }).join('');
+
+            return `
+              <div class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs space-y-2 group transition">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs" style="background-color: ${rColor};">
+                      <span class="text-[11px] font-black">${idx + 1}</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(r.name)}</h5>
+                      <div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
+                        <span>•</span>
+                        <span>${rStops.length} điểm dừng</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-center text-[10.5px]">
+                  <div>
+                    <span class="text-[9px] text-slate-400 uppercase font-medium block">Đi</span>
+                    <span class="font-bold text-slate-700 dark:text-slate-200">${r.outboundKm || ((r.distKm||0)/2).toFixed(1)} km</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] text-slate-400 uppercase font-medium block">Về</span>
+                    <span class="font-bold text-slate-700 dark:text-slate-200">${r.returnKm || ((r.distKm||0)/2).toFixed(1)} km</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase font-extrabold block">Khứ hồi</span>
+                    <span class="font-black text-emerald-600 dark:text-emerald-400">${r.distKm} km</span>
+                  </div>
+                </div>
+
+                <details class="text-xs" open>
+                  <summary class="cursor-pointer text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline select-none py-0.5">
+                    Xem ${rStops.length} điểm dừng của tuyến này
+                  </summary>
+                  <div class="mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 space-y-0.5 max-h-36 overflow-y-auto">
+                    ${stopsMiniListHtml || '<p class="text-[10px] text-slate-400 italic">Chưa có điểm dừng</p>'}
+                  </div>
+                </details>
+              </div>
+            `;
+          }).join('');
+
+          list.innerHTML = sectionHeaderHtml + routesCardsHtml;
+          return;
+        } else {
+          // Single shared route
+          if (countEl) countEl.textContent = `${totalStops} điểm dừng`;
+          const stops = sharedRoutePayload.stops || [];
+          if (stops.length === 0) {
+            list.innerHTML = `<p class="text-xs text-slate-400 p-3 italic">Chưa có điểm dừng nào.</p>`;
+            return;
+          }
+          list.innerHTML = stops.map((s, idx) => {
+            const cat = CATEGORIES[s.category] || CATEGORIES.sightseeing;
+            return `
+              <div class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between gap-2.5 transition hover:border-indigo-400">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer" onclick="focusSharedStop(${s.lat}, ${s.lng}, '${escapeHtml(s.title)}')">
+                  <div class="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0 flex items-center justify-center border border-slate-200 dark:border-slate-600">
+                    ${s.photo ? `<img src="${s.photo}" class="w-full h-full object-cover" />` : `<i class="fa-solid ${cat.icon} text-slate-400"></i>`}
+                    <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-indigo-600 text-white font-black text-[9px] flex items-center justify-center shadow-xs">
+                      ${idx + 1}
+                    </span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(s.title || `Điểm #${idx + 1}`)}</h5>
+                    <p class="text-[10px] text-slate-400 truncate">${escapeHtml(s.locationName || cat.name)}</p>
+                  </div>
+                </div>
+                <button type="button" onclick="focusSharedStop(${s.lat}, ${s.lng}, '${escapeHtml(s.title)}')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-indigo-500 text-xs shrink-0 hover:bg-indigo-600 hover:text-white transition">
+                  <i class="fa-solid fa-location-crosshairs"></i>
+                </button>
+              </div>
+            `;
+          }).join('');
+          return;
+        }
+      }
 
       // Check if we are in "All Routes" (Tất cả tuyến) display mode
       const isMultiMode = showAllRoutesOnMap || activeFilterRouteId === 'all_routes';
