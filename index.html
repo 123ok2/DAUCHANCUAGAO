@@ -673,13 +673,13 @@
               <span id="route-summary-mode-label" class="font-bold text-indigo-200">Lộ trình</span>
             </span>
             <div class="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10 shrink-0" id="trip-direction-toggle-group">
-              <button type="button" id="btn-trip-roundtrip" onclick="setTripDirection('roundtrip')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5" title="Tổng cộng cả 2 chiều: Lượt đi + Lượt về">
-                <i class="fa-solid fa-arrows-left-right text-[8px]"></i> <span>Đi & Về</span>
+              <button type="button" id="btn-trip-outbound" onclick="setTripDirection('outbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5" title="Toàn tuyến: Từ điểm đầu đến điểm cuối (1 chiều)">
+                <i class="fa-solid fa-arrow-right text-[8px]"></i> <span>Toàn tuyến</span>
               </button>
-              <button type="button" id="btn-trip-outbound" onclick="setTripDirection('outbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chỉ tính chiều đi">
-                <i class="fa-solid fa-arrow-right text-[8px]"></i> <span>Chiều đi</span>
+              <button type="button" id="btn-trip-roundtrip" onclick="setTripDirection('roundtrip')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Khứ hồi: Cả lượt đi và lượt về (x2 quãng đường)">
+                <i class="fa-solid fa-arrows-left-right text-[8px]"></i> <span>Khứ hồi (x2)</span>
               </button>
-              <button type="button" id="btn-trip-inbound" onclick="setTripDirection('inbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chỉ tính chiều về">
+              <button type="button" id="btn-trip-inbound" onclick="setTripDirection('inbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chiều về: Từ điểm cuối về điểm đầu">
                 <i class="fa-solid fa-arrow-left text-[8px]"></i> <span>Chiều về</span>
               </button>
             </div>
@@ -7545,8 +7545,8 @@
       showToast('Đã sắp xếp tối ưu thứ tự lộ trình ngắn nhất!', 'success');
     }
 
-    // Active trip direction: 'roundtrip' (Cả đi & về - Khứ hồi), 'outbound' (Chiều đi), 'inbound' (Chiều về)
-    let activeTripDirection = 'roundtrip';
+    // Active trip direction: 'outbound' (Toàn tuyến / 1 Chiều - Mặc định), 'roundtrip' (Khứ hồi - x2), 'inbound' (Chiều về)
+    let activeTripDirection = 'outbound';
 
     function setTripDirection(dir) {
       activeTripDirection = dir;
@@ -7557,8 +7557,8 @@
       const activeClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5';
       const inactiveClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5';
 
-      if (btnRound) btnRound.className = (dir === 'roundtrip') ? activeClass : inactiveClass;
       if (btnOut) btnOut.className = (dir === 'outbound') ? activeClass : inactiveClass;
+      if (btnRound) btnRound.className = (dir === 'roundtrip') ? activeClass : inactiveClass;
       if (btnIn) btnIn.className = (dir === 'inbound') ? activeClass : inactiveClass;
 
       updateRouteSummaryUI();
@@ -7740,16 +7740,16 @@
           modeLabelEl.textContent = `Tổng hợp ${routesCount} tuyến`;
         }
 
-        let displayedKm = agg.totalRoundTripKm;
-        let displayedSec = agg.totalRoundTripSec;
-        let distSubText = `Đi: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Về: ${agg.totalReturnKm.toLocaleString('vi-VN')} km`;
-        let timeSubText = `Khứ hồi (${routesCount} tuyến)`;
+        let displayedKm = agg.totalOutboundKm;
+        let displayedSec = agg.totalOutboundSec;
+        let distSubText = `Toàn tuyến: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
+        let timeSubText = `Toàn tuyến (${routesCount} tuyến)`;
 
-        if (activeTripDirection === 'outbound') {
-          displayedKm = agg.totalOutboundKm;
-          displayedSec = agg.totalOutboundSec;
-          distSubText = `Tổng chiều đi (${routesCount} tuyến)`;
-          timeSubText = `Lượt đi`;
+        if (activeTripDirection === 'roundtrip') {
+          displayedKm = agg.totalRoundTripKm;
+          displayedSec = agg.totalRoundTripSec;
+          distSubText = `Khứ hồi: Đi ${agg.totalOutboundKm.toLocaleString('vi-VN')} km + Về ${agg.totalReturnKm.toLocaleString('vi-VN')} km`;
+          timeSubText = `Khứ hồi (${routesCount} tuyến)`;
         } else if (activeTripDirection === 'inbound') {
           displayedKm = agg.totalReturnKm;
           displayedSec = agg.totalReturnSec;
@@ -7783,7 +7783,7 @@
           } else {
             pillsBreakdown.innerHTML = agg.routeBreakdowns.map(b => {
               const r = b.route;
-              const rKm = activeTripDirection === 'roundtrip' ? b.roundTripKm : activeTripDirection === 'outbound' ? b.outboundKm : b.returnKm;
+              const rKm = activeTripDirection === 'roundtrip' ? b.roundTripKm : activeTripDirection === 'inbound' ? b.returnKm : b.outboundKm;
               return `
                 <button type="button" onclick="handleSelectRoute('${r.id}'); setDisplayViewMode('active');" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/10 text-white text-[10px] transition truncate" title="Chuyển sang xem riêng tuyến ${escapeHtml(r.name)}">
                   <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
@@ -7807,8 +7807,8 @@
         if (distEl) distEl.textContent = '0.0 km';
         if (timeEl) timeEl.textContent = '0 phút';
         if (stopsBadgeEl) stopsBadgeEl.textContent = routePinIds.length;
-        if (distSubEl) distSubEl.textContent = 'Đi: 0 km • Về: 0 km';
-        if (timeSubEl) timeSubEl.textContent = 'Khứ hồi';
+        if (distSubEl) distSubEl.textContent = 'Toàn tuyến: 0 km • Khứ hồi: 0 km';
+        if (timeSubEl) timeSubEl.textContent = 'Toàn tuyến';
         if (stopsSubEl) stopsSubEl.textContent = 'Tuyến đang chọn';
         if (pill) {
           pill.classList.add('hidden');
@@ -7821,20 +7821,20 @@
       if (modeLabelEl) modeLabelEl.textContent = active.name;
 
       const m = calculateSingleRouteMetrics(active);
-      let displayedKm = m.roundTripKm;
-      let displayedSec = m.roundTripSec;
-      let distSubText = `Đi: ${m.outboundKm.toLocaleString('vi-VN')} km • Về: ${m.returnKm.toLocaleString('vi-VN')} km`;
-      let timeSubText = `Khứ hồi 2 chiều`;
+      let displayedKm = m.outboundKm;
+      let displayedSec = m.outboundSec;
+      let distSubText = `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${m.roundTripKm.toLocaleString('vi-VN')} km`;
+      let timeSubText = `Toàn tuyến (Chiều đi)`;
 
-      if (activeTripDirection === 'outbound') {
-        displayedKm = m.outboundKm;
-        displayedSec = m.outboundSec;
-        distSubText = `Chiều đi`;
-        timeSubText = `Lượt đi`;
+      if (activeTripDirection === 'roundtrip') {
+        displayedKm = m.roundTripKm;
+        displayedSec = m.roundTripSec;
+        distSubText = `Khứ hồi: Đi ${m.outboundKm.toLocaleString('vi-VN')} km + Về ${m.returnKm.toLocaleString('vi-VN')} km`;
+        timeSubText = `Khứ hồi 2 chiều`;
       } else if (activeTripDirection === 'inbound') {
         displayedKm = m.returnKm;
         displayedSec = m.returnSec;
-        distSubText = `Chiều về`;
+        distSubText = `Chiều về (Điểm cuối về đầu)`;
         timeSubText = `Lượt về`;
       }
 
@@ -8313,13 +8313,19 @@
 
             const totalKm = parseFloat((totalMeters / 1000).toFixed(1));
 
-            // Store distance in active route model
+            // Store distance and road coordinates in active route model
             const active = getActiveRoute();
             if (active) {
               active.distanceKm = totalKm;
               active.durationSeconds = totalSeconds;
               active.returnDistanceKm = totalKm;
               active.returnDurationSeconds = totalSeconds;
+              if (Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
+                active.roadCoordinates = currentRouteCoordinates.map(c => ({
+                  lat: typeof c.lat === 'number' ? c.lat : c[0],
+                  lng: typeof c.lng === 'number' ? c.lng : c[1]
+                }));
+              }
               saveRoutesToStorage(false);
             }
 
@@ -8970,12 +8976,16 @@
         if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes) && cinemaTargetRouteId && cinemaTargetRouteId !== 'all') {
           const found = sharedRoutePayload.routes.find(r => r.id === cinemaTargetRouteId || r.name === cinemaTargetRouteId);
           if (found) {
-            if (Array.isArray(found.waypoints) && found.waypoints.length >= 2) {
+            if (Array.isArray(found.roadCoordinates) && found.roadCoordinates.length >= 2) {
+              baseCoords = found.roadCoordinates;
+            } else if (Array.isArray(found.waypoints) && found.waypoints.length >= 2) {
               baseCoords = found.waypoints.map(c => ({ lat: c.lat || c[0], lng: c.lng || c[1] }));
             } else if (Array.isArray(found.stops) && found.stops.length >= 2) {
               baseCoords = interpolateBetweenPoints(found.stops);
             }
           }
+        } else if (Array.isArray(sharedRoutePayload.roadCoordinates) && sharedRoutePayload.roadCoordinates.length >= 2) {
+          baseCoords = sharedRoutePayload.roadCoordinates;
         } else if (Array.isArray(sharedRoutePayload.waypoints) && sharedRoutePayload.waypoints.length >= 2) {
           baseCoords = sharedRoutePayload.waypoints.map(c => ({ lat: c.lat || c[0], lng: c.lng || c[1] }));
         } else if (Array.isArray(sharedRoutePayload.stops) && sharedRoutePayload.stops.length >= 2) {
@@ -8984,7 +8994,9 @@
       } else if (cinemaTargetRouteId === 'all') {
         const allCoords = [];
         routes.forEach(r => {
-          if (Array.isArray(r.customWaypoints) && r.customWaypoints.length >= 2) {
+          if (Array.isArray(r.roadCoordinates) && r.roadCoordinates.length >= 2) {
+            r.roadCoordinates.forEach(wp => allCoords.push({ lat: wp.lat, lng: wp.lng }));
+          } else if (Array.isArray(r.customWaypoints) && r.customWaypoints.length >= 2) {
             r.customWaypoints.forEach(wp => allCoords.push({ lat: wp.lat || wp[0], lng: wp.lng || wp[1] }));
           } else {
             const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
@@ -8998,7 +9010,12 @@
       } else {
         const targetRoute = getCinemaSelectedRoute();
         if (targetRoute) {
-          if (targetRoute.id === activeRouteId && Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
+          if (Array.isArray(targetRoute.roadCoordinates) && targetRoute.roadCoordinates.length >= 2) {
+            baseCoords = targetRoute.roadCoordinates.map(c => ({
+              lat: typeof c.lat === 'number' ? c.lat : c[0],
+              lng: typeof c.lng === 'number' ? c.lng : c[1]
+            }));
+          } else if (targetRoute.id === activeRouteId && Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
             baseCoords = currentRouteCoordinates.map(c => ({
               lat: typeof c.lat === 'number' ? c.lat : c[0],
               lng: typeof c.lng === 'number' ? c.lng : c[1]
@@ -9024,6 +9041,113 @@
         return baseCoords.concat(reversed);
       }
       return baseCoords;
+    }
+
+    async function ensureCinemaRouteCoordinates(targetRouteId = null) {
+      const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
+
+      if (isShared) {
+        if (sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes)) {
+          if (targetRouteId && targetRouteId !== 'all') {
+            const found = sharedRoutePayload.routes.find(r => r.id === targetRouteId || r.name === targetRouteId);
+            if (found) {
+              if (Array.isArray(found.roadCoordinates) && found.roadCoordinates.length >= 2) {
+                return found.roadCoordinates;
+              }
+              const wps = (Array.isArray(found.waypoints) && found.waypoints.length >= 2) ? found.waypoints : found.stops;
+              if (Array.isArray(wps) && wps.length >= 2) {
+                const geo = await fetchOsrmRoadGeometry(wps.map(p => [p.lat, p.lng]), found.travelMode || 'driving');
+                if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+                  found.roadCoordinates = geo.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+                  return found.roadCoordinates;
+                }
+              }
+            }
+          } else {
+            let allMultiCoords = [];
+            for (const r of sharedRoutePayload.routes) {
+              if (Array.isArray(r.roadCoordinates) && r.roadCoordinates.length >= 2) {
+                allMultiCoords.push(...r.roadCoordinates);
+              } else {
+                const wps = (Array.isArray(r.waypoints) && r.waypoints.length >= 2) ? r.waypoints : r.stops;
+                if (Array.isArray(wps) && wps.length >= 2) {
+                  const geo = await fetchOsrmRoadGeometry(wps.map(p => [p.lat, p.lng]), r.travelMode || 'driving');
+                  if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+                    r.roadCoordinates = geo.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+                    allMultiCoords.push(...r.roadCoordinates);
+                  }
+                }
+              }
+            }
+            if (allMultiCoords.length >= 2) {
+              sharedRoutePayload.roadCoordinates = allMultiCoords;
+              return allMultiCoords;
+            }
+          }
+        } else {
+          if (Array.isArray(sharedRoutePayload.roadCoordinates) && sharedRoutePayload.roadCoordinates.length >= 2) {
+            return sharedRoutePayload.roadCoordinates;
+          }
+          const wps = (Array.isArray(sharedRoutePayload.waypoints) && sharedRoutePayload.waypoints.length >= 2) ? sharedRoutePayload.waypoints : sharedRoutePayload.stops;
+          if (Array.isArray(wps) && wps.length >= 2) {
+            const geo = await fetchOsrmRoadGeometry(wps.map(p => [p.lat, p.lng]), sharedRoutePayload.mode || 'driving');
+            if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+              sharedRoutePayload.roadCoordinates = geo.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+              return sharedRoutePayload.roadCoordinates;
+            }
+          }
+        }
+        return null;
+      }
+
+      if (targetRouteId === 'all') {
+        let combinedAllCoords = [];
+        for (const r of routes) {
+          if (Array.isArray(r.roadCoordinates) && r.roadCoordinates.length >= 2) {
+            combinedAllCoords.push(...r.roadCoordinates);
+          } else {
+            const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+            if (rPins.length >= 2) {
+              const wps = (Array.isArray(r.customWaypoints) && r.customWaypoints.length >= 2) ? r.customWaypoints : rPins;
+              const geo = await fetchOsrmRoadGeometry(wps.map(p => [p.lat, p.lng]), r.travelMode || 'driving');
+              if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+                r.roadCoordinates = geo.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+                combinedAllCoords.push(...r.roadCoordinates);
+              }
+            }
+          }
+        }
+        if (combinedAllCoords.length >= 2) {
+          return combinedAllCoords;
+        }
+        return null;
+      }
+
+      const targetRoute = (targetRouteId ? routes.find(r => r.id === targetRouteId) : null) || getActiveRoute();
+      if (!targetRoute) return null;
+
+      if (Array.isArray(targetRoute.roadCoordinates) && targetRoute.roadCoordinates.length >= 2) {
+        if (targetRoute.id === activeRouteId) {
+          currentRouteCoordinates = targetRoute.roadCoordinates;
+        }
+        return targetRoute.roadCoordinates;
+      }
+
+      const targetPins = (targetRoute.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
+      if (targetPins.length >= 2) {
+        const wps = (Array.isArray(targetRoute.customWaypoints) && targetRoute.customWaypoints.length >= 2) ? targetRoute.customWaypoints : targetPins;
+        const geo = await fetchOsrmRoadGeometry(wps.map(p => [p.lat, p.lng]), targetRoute.travelMode || 'driving');
+        if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+          const coords = geo.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+          targetRoute.roadCoordinates = coords;
+          if (targetRoute.id === activeRouteId) {
+            currentRouteCoordinates = coords;
+          }
+          return coords;
+        }
+      }
+
+      return null;
     }
 
     // ==========================================
@@ -9349,7 +9473,7 @@
       }
     }
 
-    function changeCinemaRoute(routeId) {
+    async function changeCinemaRoute(routeId) {
       cinemaTargetRouteId = routeId;
       cinemaProgress = 0.0;
       cinemaLastTimestamp = null;
@@ -9362,6 +9486,9 @@
         titleEl.textContent = `Mô Phỏng: ${selectedRoute.name || 'Lộ trình'}`;
       }
 
+      showToast(`Đang nạp đường chỉ dẫn thực tế: ${selectedRoute ? selectedRoute.name : 'Lộ trình'}...`, 'info');
+      await ensureCinemaRouteCoordinates(routeId);
+
       const canvas = document.getElementById('cinema-canvas');
       const pathCoords = getInterpolatedRouteCoords();
       if (canvas && pathCoords.length >= 2) {
@@ -9369,7 +9496,6 @@
           drawCinemaFrame(cinemaProgress, pathCoords);
         });
       }
-      showToast(`Đã chuyển sang mô phỏng lộ trình: ${selectedRoute ? selectedRoute.name : 'Lộ trình'}`, 'info');
       requestAnimationFrame(runCinemaLoop);
     }
 
@@ -9458,7 +9584,7 @@
       showToast(`Đã chuyển nền bản đồ video sang: ${styleNames[style] || style}`, 'info');
     }
 
-    function openRouteCinemaModal(targetRouteId = null) {
+    async function openRouteCinemaModal(targetRouteId = null) {
       const isShared = isSharedViewMode && sharedRoutePayload && Array.isArray(sharedRoutePayload.stops);
 
       // Determine target route ID
@@ -9512,16 +9638,20 @@
       document.getElementById('cinema-play-icon').className = 'fa-solid fa-pause';
       document.getElementById('cinema-play-text').textContent = 'Tạm dừng';
 
+      showToast(`🛣️ Đang đồng bộ đường chỉ dẫn thực tế cho ${active.name || 'lộ trình'}...`, 'info');
+
+      // Ensure exact road curve geometry before starting playback
+      await ensureCinemaRouteCoordinates(cinemaTargetRouteId);
+
       const canvas = document.getElementById('cinema-canvas');
       const pathCoords = getInterpolatedRouteCoords();
       if (canvas && pathCoords.length >= 2) {
-        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
-          drawCinemaFrame(cinemaProgress, pathCoords);
-        });
+        await preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height);
+        drawCinemaFrame(cinemaProgress, pathCoords);
       }
 
       requestAnimationFrame(runCinemaLoop);
-      showToast(`Đang phát mô phỏng lộ trình: ${active.name || 'Lộ trình'}...`, 'info');
+      showToast(`Đang phát mô phỏng lộ trình bám đường bộ: ${active.name || 'Lộ trình'}`, 'success');
     }
 
     function closeRouteCinemaModal() {
@@ -9705,7 +9835,7 @@
       // Inactive track (dark outline)
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.lineWidth = 14 * uiScale;
+      ctx.lineWidth = 9 * uiScale;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       worldRoutePoints.forEach((pt, i) => {
@@ -9716,7 +9846,7 @@
 
       ctx.beginPath();
       ctx.strokeStyle = cinemaMapStyle === 'dark' ? '#334155' : '#64748b';
-      ctx.lineWidth = 7 * uiScale;
+      ctx.lineWidth = 4.5 * uiScale;
       worldRoutePoints.forEach((pt, i) => {
         if (i === 0) ctx.moveTo(pt.x, pt.y);
         else ctx.lineTo(pt.x, pt.y);
@@ -9737,7 +9867,7 @@
       // Glow line
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(99, 102, 241, 0.65)';
-      ctx.lineWidth = 16 * uiScale;
+      ctx.lineWidth = 10 * uiScale;
       for (let i = 0; i <= currentIdx; i++) {
         if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
         else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
@@ -9748,7 +9878,7 @@
       // Sharp bright neon trail
       ctx.beginPath();
       ctx.strokeStyle = '#0ea5e9';
-      ctx.lineWidth = 7 * uiScale;
+      ctx.lineWidth = 4.5 * uiScale;
       for (let i = 0; i <= currentIdx; i++) {
         if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
         else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
@@ -10022,8 +10152,18 @@
       const cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : (active && active.distanceKm ? active.distanceKm : 0));
       const cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : (active && active.distanceKm ? active.distanceKm : 0));
       const cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : (active && active.distanceKm ? active.distanceKm * 2 : 0));
-      const cSec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
-      const cTimeStr = formatTravelTime(cSec);
+
+      let curJourneyKm = cOutboundKm;
+      let curJourneySec = aggCinema ? aggCinema.totalOutboundSec : (mCinema ? mCinema.outboundSec : Math.round(cOutboundKm * 75));
+      if (cinemaJourneyMode === 'return') {
+        curJourneyKm = cReturnKm;
+        curJourneySec = aggCinema ? aggCinema.totalReturnSec : (mCinema ? mCinema.returnSec : Math.round(cReturnKm * 75));
+      } else if (cinemaJourneyMode === 'roundtrip') {
+        curJourneyKm = cRoundTripKm;
+        curJourneySec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
+      }
+
+      const cTimeStr = formatTravelTime(curJourneySec);
       const cProvInfo = getProvincesForPins(activePins);
       const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
 
@@ -10037,17 +10177,14 @@
       ctx.lineWidth = 1.2 * uiScale;
       roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
 
-      // Top Row of HUD: Distances
+      // Top Row of HUD: Primary Distance & Roundtrip reference
       ctx.textAlign = 'left';
       ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`🏁 Đi: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (26 * uiScale));
+      ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (26 * uiScale));
 
       ctx.fillStyle = '#c084fc';
-      ctx.fillText(`🔄 Về: ${cReturnKm.toLocaleString('vi-VN')} km`, hudX + (155 * uiScale), hudY + (26 * uiScale));
-
-      ctx.fillStyle = '#34d399';
-      ctx.fillText(`🌟 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (295 * uiScale), hudY + (26 * uiScale));
+      ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (220 * uiScale), hudY + (26 * uiScale));
 
       // Bottom Row of HUD: Time, Stops & Provinces
       ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
@@ -10055,16 +10192,16 @@
       ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (50 * uiScale));
 
       ctx.fillStyle = '#94a3b8';
-      ctx.fillText(`•`, hudX + (140 * uiScale), hudY + (50 * uiScale));
+      ctx.fillText(`•`, hudX + (150 * uiScale), hudY + (50 * uiScale));
 
       ctx.fillStyle = '#e2e8f0';
-      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (155 * uiScale), hudY + (50 * uiScale));
+      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (165 * uiScale), hudY + (50 * uiScale));
 
       ctx.fillStyle = '#94a3b8';
-      ctx.fillText(`•`, hudX + (280 * uiScale), hudY + (50 * uiScale));
+      ctx.fillText(`•`, hudX + (285 * uiScale), hudY + (50 * uiScale));
 
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (295 * uiScale), hudY + (50 * uiScale));
+      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (300 * uiScale), hudY + (50 * uiScale));
     }
 
     // ==========================================
@@ -10486,12 +10623,19 @@
         return;
       }
 
-      showToast('Đang chuẩn bị bản đồ Full HD 1080p trước khi xuất video...', 'info');
+      showToast('Đang đồng bộ đường chỉ dẫn thực tế & chuẩn bị bản đồ Full HD 1080p...', 'info');
       const btnText = document.getElementById('export-video-btn-text');
-      if (btnText) btnText.textContent = 'Đang tải bản đồ HD...';
+      if (btnText) btnText.textContent = 'Đang nạp đường chỉ dẫn...';
 
-      // 1. Ensure all map background tiles are 100% preloaded before recording
+      // 1. Ensure high-resolution road curves & map background tiles are 100% preloaded before recording
+      await ensureCinemaRouteCoordinates(cinemaTargetRouteId);
       const pathCoords = getInterpolatedRouteCoords();
+      if (pathCoords.length < 2) {
+        showToast('Không có tọa độ đường đi hợp lệ để quay video!', 'error');
+        if (btnText) btnText.textContent = 'Ghi & Tải Video';
+        return;
+      }
+      if (btnText) btnText.textContent = 'Đang tải bản đồ HD...';
       await preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height);
 
       // Select supported high quality mime type
@@ -11053,16 +11197,15 @@
 
       // 3. Cumulative Distance of ALL Routes (Outbound, Return & Roundtrip)
       const agg = calculateAllRoutesAggregateMetrics();
-      const sumAllRoutesKm = agg.totalRoundTripKm;
 
       const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
       if (statTotalAllKm) {
-        statTotalAllKm.textContent = `${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
+        statTotalAllKm.textContent = `${agg.totalOutboundKm.toLocaleString('vi-VN')} km`;
       }
 
       const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
       if (totalRoutesCountEl) {
-        totalRoutesCountEl.textContent = `${routes.length} hành trình (${agg.totalOutboundKm.toLocaleString('vi-VN')} km đi • ${agg.totalReturnKm.toLocaleString('vi-VN')} km về)`;
+        totalRoutesCountEl.textContent = `${routes.length} hành trình (Toàn tuyến: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${agg.totalRoundTripKm.toLocaleString('vi-VN')} km)`;
       }
 
       const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -11099,12 +11242,12 @@
                     <span>•</span>
                     <span>${stopsCount} điểm</span>
                     <span>•</span>
-                    <span class="text-slate-400">Đi: ${m.outboundKm} km | Về: ${m.returnKm} km</span>
+                    <span class="text-slate-400">Khứ hồi: ${m.roundTripKm} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toFixed(1)} km</span>
-                  <span class="block text-[10px] text-slate-400 font-semibold">Khứ hồi</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
+                  <span class="block text-[10px] text-slate-400 font-semibold">Toàn tuyến</span>
                   ${!isCurrentActive ? `
                     <button onclick="handleSelectRoute('${r.id}'); switchTab('route');" class="block text-[11px] text-sky-600 dark:text-sky-400 font-bold hover:underline mt-0.5">
                       Xem lộ trình
