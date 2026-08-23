@@ -619,13 +619,13 @@
 
           <!-- 3. Compact Mode Selector & Smart Quick Actions Strip -->
           <div class="flex items-center gap-1.5">
-            <!-- Travel Mode (Car / Walk) -->
+            <!-- Travel Mode (Ô tô / Xe máy) -->
             <div class="grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium border border-slate-200/60 dark:border-slate-700/60 shrink-0">
-              <button id="mode-driving" class="py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 transition text-[11px]" onclick="setTravelMode('driving')" title="Đi bằng Ô tô / Xe máy">
-                <i class="fa-solid fa-car-side text-[10px]"></i> <span>Xe</span>
+              <button id="mode-driving" class="py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 transition text-[11px] whitespace-nowrap" onclick="setTravelMode('driving')" title="Đi bằng Ô tô">
+                <i class="fa-solid fa-car text-[10px]"></i> <span>Ô tô</span>
               </button>
-              <button id="mode-walking" class="py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px]" onclick="setTravelMode('walking')" title="Đi bộ">
-                <i class="fa-solid fa-person-walking text-[10px]"></i> <span>Bộ</span>
+              <button id="mode-motorcycle" class="py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px] whitespace-nowrap" onclick="setTravelMode('motorcycle')" title="Đi bằng Xe máy">
+                <i class="fa-solid fa-motorcycle text-[10px]"></i> <span>Xe máy</span>
               </button>
             </div>
 
@@ -748,106 +748,104 @@
       </div>
 
       <!-- Tab Content 3: Analytics & Statistics (Tối giản & Trực quan) -->
-      <div id="tab-stats" class="hidden flex-1 flex-col overflow-y-auto p-4 space-y-4 w-full">
+      <div id="tab-stats" class="hidden flex-1 flex-col overflow-y-auto p-3 sm:p-3.5 space-y-3 w-full">
         
-        <!-- 1. DẤU CHÂN VIỆT NAM (34 TỈNH THÀNH MỚI) -->
-        <div class="w-full">
-          <!-- Card: 34 Tỉnh Thành Đã Đi Qua -->
-          <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-rose-700 text-white shadow-lg shadow-orange-500/20 flex flex-col justify-between relative overflow-hidden group">
-            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
-              <i class="fa-solid fa-map-location-dot"></i>
-            </div>
-            <div>
-              <div class="flex items-center justify-between text-amber-100 text-xs font-bold uppercase tracking-wider">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-flag text-amber-300"></i> Đã đi qua tỉnh thành (34 tỉnh mới)</span>
-                <span id="stat-visited-provinces-pct-badge" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black">0%</span>
+        <!-- 1. EXECUTIVE SUMMARY METRICS CARD (Clean, Professional, Zero Clutter) -->
+        <div class="rounded-2xl bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white p-3.5 sm:p-4 shadow-sm space-y-3">
+          
+          <!-- Top Row: 2 Key Metric Blocks -->
+          <div class="grid grid-cols-2 gap-3 divide-x divide-slate-800">
+            <!-- Metric 1: Total Distance (Roundtrip) -->
+            <div class="space-y-1">
+              <div class="flex items-center gap-1 text-[10.5px] font-semibold text-slate-400 uppercase tracking-wider">
+                <i class="fa-solid fa-route text-sky-400 text-xs"></i>
+                <span class="truncate">Tổng Quãng Đường</span>
               </div>
-              <div class="my-2.5">
-                <div class="flex items-baseline gap-1.5">
-                  <span id="stat-visited-provinces-val" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0 / 34</span>
-                  <span class="text-xs sm:text-sm font-semibold text-amber-200">tỉnh thành</span>
-                </div>
-                <p class="text-[11px] text-amber-100/90 mt-0.5" id="stat-visited-provinces-sub">Tự động nhận diện từ các kỷ niệm & lộ trình</p>
+              <div class="flex items-baseline gap-1">
+                <span id="stat-total-all-routes-km" class="text-xl sm:text-2xl font-black text-white tracking-tight">0.0 km</span>
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">Khứ hồi</span>
+                <span class="text-[10px] text-slate-400 truncate" id="stat-total-routes-count"><i class="fa-solid fa-signs-post mr-1"></i>0 hành trình</span>
               </div>
             </div>
 
-            <!-- Progress Bar 34 Provinces -->
-            <div class="space-y-2 pt-2 border-t border-white/20">
-              <div class="w-full h-2 rounded-full bg-black/25 overflow-hidden p-0.5">
-                <div id="stat-visited-provinces-bar" class="h-full rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 transition-all duration-700 ease-out" style="width: 0%;"></div>
+            <!-- Metric 2: Vietnam Footprint (34 Provinces) -->
+            <div class="pl-3 space-y-1">
+              <div class="flex items-center justify-between gap-1 text-[10.5px] font-semibold text-slate-400 uppercase tracking-wider">
+                <span class="flex items-center gap-1 truncate"><i class="fa-solid fa-flag text-amber-400 text-xs"></i> 34 Tỉnh Mới</span>
+                <span id="stat-visited-provinces-pct-badge" class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">0%</span>
               </div>
-              <div class="grid grid-cols-5 gap-1 text-center text-[10px] sm:text-[11px] text-amber-100/90 font-medium">
-                <span id="stat-reg-bac" class="truncate">Bắc: 0/15</span>
-                <span id="stat-reg-trung" class="truncate">Trung: 0/9</span>
-                <span id="stat-reg-taynguyen" class="truncate">T.Nguyên: 0/2</span>
-                <span id="stat-reg-dongnam" class="truncate">ĐNB: 0/3</span>
-                <span id="stat-reg-mientay" class="truncate">ĐBSCL: 0/5</span>
+              <div class="flex items-baseline gap-1">
+                <span id="stat-visited-provinces-val" class="text-xl sm:text-2xl font-black text-amber-300 tracking-tight">0 / 34</span>
+                <span class="text-[10px] text-slate-400 font-medium">tỉnh</span>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-slate-400">
+                <span id="stat-visited-provinces-sub" class="truncate">34 tỉnh thành</span>
+                <span class="text-slate-300 font-semibold shrink-0 ml-1"><i class="fa-solid fa-location-dot text-amber-400 mr-0.5"></i><span id="stat-total-pins">0</span> kỷ niệm</span>
               </div>
             </div>
           </div>
+
+          <!-- Bottom: Province Footprint Progress Bar & 5 Region Breakdown -->
+          <div class="pt-2 border-t border-slate-800/80 space-y-2">
+            <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+              <div id="stat-visited-provinces-bar" class="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 transition-all duration-500" style="width: 0%;"></div>
+            </div>
+            
+            <div class="grid grid-cols-5 gap-1 text-center text-[9.5px] sm:text-[10px] font-semibold text-slate-300">
+              <span id="stat-reg-bac" class="py-0.5 px-1 rounded bg-slate-800/80 border border-slate-700/60 truncate" title="Miền Bắc (15 tỉnh)">Bắc: 0/15</span>
+              <span id="stat-reg-trung" class="py-0.5 px-1 rounded bg-slate-800/80 border border-slate-700/60 truncate" title="Miền Trung (9 tỉnh)">Trung: 0/9</span>
+              <span id="stat-reg-taynguyen" class="py-0.5 px-1 rounded bg-slate-800/80 border border-slate-700/60 truncate" title="Tây Nguyên (2 tỉnh)">TN: 0/2</span>
+              <span id="stat-reg-dongnam" class="py-0.5 px-1 rounded bg-slate-800/80 border border-slate-700/60 truncate" title="Đông Nam Bộ (3 tỉnh)">ĐNB: 0/3</span>
+              <span id="stat-reg-mientay" class="py-0.5 px-1 rounded bg-slate-800/80 border border-slate-700/60 truncate" title="ĐBSCL (5 tỉnh)">Tây: 0/5</span>
+            </div>
+          </div>
+
         </div>
 
-        <!-- 2. Hero Card: Tổng quãng đường tất cả lộ trình -->
-        <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white shadow-lg shadow-indigo-500/20 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-indigo-100 text-xs font-semibold uppercase tracking-wider">
-            <span>Tổng quãng đường tất cả lộ trình</span>
-            <i class="fa-solid fa-route text-base"></i>
-          </div>
-          <div class="my-3">
-            <span id="stat-total-all-routes-km" class="text-3xl sm:text-4xl font-black tracking-tight">0.0 km</span>
-          </div>
-          <div class="flex items-center gap-3 text-xs text-indigo-100 pt-2 border-t border-white/20">
-            <span id="stat-total-routes-count"><i class="fa-solid fa-signs-post mr-1"></i>0 hành trình</span>
-            <span>•</span>
-            <span><i class="fa-solid fa-location-dot mr-1"></i><span id="stat-total-pins">0</span> kỷ niệm</span>
-          </div>
-        </div>
-
-        <!-- 3. INTERACTIVE PROVINCE FOOTPRINT EXPLORER (BẢN ĐỒ DẤU CHÂN 34 TỈNH THÀNH) -->
-        <div class="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-4 space-y-3.5 shadow-xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-700/60">
-            <div>
-              <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <i class="fa-solid fa-map-location-dot text-amber-500"></i>
-                <span>Danh Sách 34 Tỉnh Thành Mới & 18 Tỉnh/Thành Ven Biển</span>
+        <!-- 2. INTERACTIVE PROVINCE FOOTPRINT EXPLORER (BẢN ĐỒ DẤU CHÂN 34 TỈNH THÀNH) -->
+        <div class="rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 p-3.5 space-y-3 shadow-xs">
+          <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-700/60">
+            <div class="min-w-0">
+              <h4 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-map-location-dot text-amber-500 shrink-0"></i>
+                <span class="truncate">Dấu Chân 34 Tỉnh Thành</span>
               </h4>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Nhấp vào tỉnh thành để xem kỷ niệm hoặc định vị trên bản đồ</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span id="stat-province-filter-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">0/34 tỉnh</span>
-            </div>
+            <span id="stat-province-filter-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 shrink-0">0/34 tỉnh</span>
           </div>
 
           <!-- Search & Filter Controls for Provinces -->
           <div class="space-y-2">
             <div class="relative">
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-              <input type="text" id="province-search-input" oninput="handleProvinceFilterSearch(this.value)" placeholder="Tìm kiếm tỉnh thành (Hà Nội, TP.HCM, Đà Nẵng, Khánh Hòa...)" class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" />
+              <input type="text" id="province-search-input" oninput="handleProvinceFilterSearch(this.value)" placeholder="Tìm kiếm tỉnh thành..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none" />
             </div>
 
             <!-- Filter Buttons -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-              <button onclick="setProvinceFilterTab('all')" id="tab-prov-all" class="prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[11px] shrink-0">Tất cả (34)</button>
-              <button onclick="setProvinceFilterTab('visited')" id="tab-prov-visited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">✅ Đã đi qua (<span id="prov-visited-tab-count">0</span>)</button>
-              <button onclick="setProvinceFilterTab('unvisited')" id="tab-prov-unvisited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">⏳ Chưa đi qua (<span id="prov-unvisited-tab-count">34</span>)</button>
-              <button onclick="setProvinceFilterTab('coastal')" id="tab-prov-coastal" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[11px] shrink-0">🌊 18 Tỉnh/Thành Ven Biển</button>
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 text-xs no-scrollbar">
+              <button onclick="setProvinceFilterTab('all')" id="tab-prov-all" class="prov-filter-tab-btn active px-2.5 py-1 rounded-full font-bold bg-amber-500 text-white shadow-xs transition text-[10.5px] shrink-0 whitespace-nowrap">Tất cả (34)</button>
+              <button onclick="setProvinceFilterTab('visited')" id="tab-prov-visited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[10.5px] shrink-0 whitespace-nowrap">✅ Đã đến (<span id="prov-visited-tab-count">0</span>)</button>
+              <button onclick="setProvinceFilterTab('unvisited')" id="tab-prov-unvisited" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[10.5px] shrink-0 whitespace-nowrap">⏳ Chưa đến (<span id="prov-unvisited-tab-count">34</span>)</button>
+              <button onclick="setProvinceFilterTab('coastal')" id="tab-prov-coastal" class="prov-filter-tab-btn px-2.5 py-1 rounded-full font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition text-[10.5px] shrink-0 whitespace-nowrap">🌊 Ven Biển (18)</button>
             </div>
           </div>
 
           <!-- Province Chips Grid Container -->
-          <div id="provinces-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+          <div id="provinces-grid-container" class="grid grid-cols-1 gap-1.5 max-h-64 overflow-y-auto pr-1">
             <!-- Dynamic province cards rendered here -->
           </div>
         </div>
 
-        <!-- 4. Quãng đường từng lộ trình -->
-        <div class="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-4 space-y-3 shadow-xs">
+        <!-- 3. Quãng đường từng lộ trình -->
+        <div class="rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 p-3.5 space-y-3 shadow-xs">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700/60">
-            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <h4 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
               <i class="fa-solid fa-chart-simple text-indigo-500"></i>
-              <span>Quãng đường từng lộ trình</span>
+              <span>Quãng Đường Từng Tuyến</span>
             </h4>
-            <span id="stat-routes-badge-count" class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">0 lộ trình</span>
+            <span id="stat-routes-badge-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">0 lộ trình</span>
           </div>
 
           <!-- Danh sách hiển thị từng lộ trình -->
@@ -856,8 +854,8 @@
           </div>
         </div>
 
-        <!-- 5. Liên kết tiện ích đơn giản (1 dòng tinh tế) -->
-        <div class="pt-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800">
+        <!-- 4. Liên kết tiện ích dữ liệu -->
+        <div class="pt-1.5 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <button onclick="exportDataJson()" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition font-medium">Xuất JSON</button>
             <span>•</span>
@@ -3322,19 +3320,19 @@
         }
       });
 
-      // Update travel mode UI
+      // Update travel mode UI (Ô tô / Xe máy)
       const driveBtn = document.getElementById('mode-driving');
-      const walkBtn = document.getElementById('mode-walking');
+      const motoBtn = document.getElementById('mode-motorcycle') || document.getElementById('mode-walking');
       const speedLabel = document.getElementById('summary-speed-label');
-      if (driveBtn && walkBtn) {
-        if (activeTravelMode === 'driving') {
-          driveBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-2 transition';
-          walkBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
-          if (speedLabel) speedLabel.textContent = 'Theo tốc độ ô tô / xe máy';
+      if (driveBtn && motoBtn) {
+        if (activeTravelMode === 'motorcycle') {
+          motoBtn.className = 'py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+          driveBtn.className = 'py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+          if (speedLabel) speedLabel.textContent = 'Theo tốc độ xe máy (~35-45 km/h)';
         } else {
-          walkBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-2 transition';
-          driveBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
-          if (speedLabel) speedLabel.textContent = 'Theo tốc độ đi bộ (4-5 km/h)';
+          driveBtn.className = 'py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+          motoBtn.className = 'py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+          if (speedLabel) speedLabel.textContent = 'Theo tốc độ ô tô (~50-60 km/h)';
         }
       }
     }
@@ -4763,18 +4761,19 @@
         const isWalking = (travelMode === 'walking');
 
         const endpoints = isWalking ? [
-          `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`,
-          `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`
+          { url: `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`, timeout: 3500, isFoot: true },
+          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false },
+          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false }
         ] : [
-          `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`,
-          `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`
+          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false },
+          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false }
         ];
 
-        for (const url of endpoints) {
+        for (const ep of endpoints) {
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-            const res = await fetch(url, { signal: controller.signal });
+            const timeoutId = setTimeout(() => controller.abort(), ep.timeout || 5000);
+            const res = await fetch(ep.url, { signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (res.ok) {
@@ -4786,16 +4785,18 @@
                   coords = r.geometry.coordinates.map(c => [c[1], c[0]]); // [lat, lng]
                 }
                 if (coords.length > 0) {
+                  const dist = r.distance || 0;
+                  const dur = isWalking && !ep.isFoot ? Math.round(dist / 1.2) : (r.duration || 0);
                   return {
                     coords: coords,
-                    distance: r.distance || 0,
-                    duration: r.duration || 0
+                    distance: dist,
+                    duration: dur
                   };
                 }
               }
             }
           } catch (e) {
-            // fallback to next endpoint
+            // fallback to next endpoint silently
           }
         }
         return null;
@@ -5209,7 +5210,7 @@
                   <h5 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(r.name)}</h5>
                   ${isActive ? '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500 text-white">Đang chọn</span>' : ''}
                 </div>
-                <p class="text-[11px] text-slate-400 truncate mt-0.5">${r.description ? escapeHtml(r.description) : `${stopCount} điểm dừng • ${r.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô/xe máy'}`}</p>
+                <p class="text-[11px] text-slate-400 truncate mt-0.5">${r.description ? escapeHtml(r.description) : `${stopCount} điểm dừng • ${r.travelMode === 'motorcycle' ? 'Xe máy' : 'Ô tô'}`}</p>
               </div>
             </div>
 
@@ -7209,12 +7210,7 @@
             ? sharedData.waypoints.map(wp => L.latLng(wp.lat, wp.lng))
             : sharedData.stops.map(s => L.latLng(s.lat, s.lng));
 
-          const routerService = L.Routing.osrmv1({
-            serviceUrl: sharedData.mode === 'walking'
-              ? 'https://routing.openstreetmap.de/routed-foot/route/v1' 
-              : 'https://router.project-osrm.org/route/v1',
-            profile: sharedData.mode === 'walking' ? 'foot' : 'driving'
-          });
+          const routerService = createSafeCustomRouter(sharedData.mode || 'driving');
 
           routingControl = L.Routing.control({
             waypoints: waypoints,
@@ -7486,22 +7482,23 @@
     }
 
     function setTravelMode(mode) {
-      activeTravelMode = mode;
+      activeTravelMode = (mode === 'motorcycle') ? 'motorcycle' : 'driving';
       const driveBtn = document.getElementById('mode-driving');
-      const walkBtn = document.getElementById('mode-walking');
+      const motoBtn = document.getElementById('mode-motorcycle') || document.getElementById('mode-walking');
+      const speedLabel = document.getElementById('summary-speed-label');
 
-      if (mode === 'driving') {
-        driveBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center gap-2 transition';
-        walkBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
-        document.getElementById('summary-speed-label').textContent = 'Theo tốc độ ô tô / xe máy';
+      if (activeTravelMode === 'motorcycle') {
+        if (motoBtn) motoBtn.className = 'py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+        if (driveBtn) driveBtn.className = 'py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+        if (speedLabel) speedLabel.textContent = 'Theo tốc độ xe máy (~35-45 km/h)';
       } else {
-        walkBtn.className = 'py-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-2 transition';
-        driveBtn.className = 'py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 flex items-center justify-center gap-2 transition';
-        document.getElementById('summary-speed-label').textContent = 'Theo tốc độ đi bộ (4-5 km/h)';
+        if (driveBtn) driveBtn.className = 'py-1 px-2 rounded-md bg-white dark:bg-slate-700 shadow-2xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+        if (motoBtn) motoBtn.className = 'py-1 px-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 transition text-[11px] whitespace-nowrap';
+        if (speedLabel) speedLabel.textContent = 'Theo tốc độ ô tô (~50-60 km/h)';
       }
 
       saveRoutesToStorage();
-      showToast(`Đã chuyển phương thức di chuyển sang: ${mode === 'driving' ? 'Ô tô / Xe máy' : 'Đi bộ'}`, 'info');
+      showToast(`Đã chuyển phương tiện sang: ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}`, 'info');
       updateRouteCalculation();
     }
 
@@ -8447,6 +8444,78 @@
       list.innerHTML = deadEndBannerHtml + stopsCardsHtml + roundTripEndCardHtml;
     }
 
+    // Resilient Custom Router for Leaflet Routing Machine that prevents circular JSON errors and network crashes
+    function createSafeCustomRouter(mode) {
+      return {
+        route: async function(waypoints, callback, context, options) {
+          try {
+            if (!waypoints || waypoints.length < 2) {
+              if (typeof callback === 'function') callback.call(context, null, []);
+              return;
+            }
+            const pts = waypoints.map(wp => [wp.latLng.lat, wp.latLng.lng]);
+            const roadRes = await calculateRoadRoute(pts, mode);
+
+            let coords = [];
+            let totalMeters = 0;
+            let totalDuration = 0;
+
+            if (roadRes && Array.isArray(roadRes.coordinates) && roadRes.coordinates.length >= 2) {
+              coords = roadRes.coordinates.map(c => L.latLng(c[0], c[1]));
+              totalMeters = Math.round(roadRes.distanceKm * 1000);
+              totalDuration = roadRes.durationSeconds || Math.round(roadRes.distanceKm * 75);
+            } else {
+              coords = waypoints.map(wp => wp.latLng);
+              for (let i = 0; i < coords.length - 1; i++) {
+                totalMeters += coords[i].distanceTo(coords[i + 1]);
+              }
+              totalDuration = Math.round(mode === 'walking' ? (totalMeters / 1.2) : (totalMeters / 12.5));
+            }
+
+            const formattedRoutes = [{
+              name: mode === 'walking' ? 'Lộ trình đi bộ' : 'Lộ trình đường bộ',
+              summary: {
+                totalDistance: totalMeters,
+                totalTime: totalDuration
+              },
+              coordinates: coords,
+              waypoints: waypoints,
+              inputWaypoints: waypoints,
+              instructions: []
+            }];
+
+            if (typeof callback === 'function') {
+              callback.call(context, null, formattedRoutes);
+            }
+          } catch (e) {
+            try {
+              const coords = (waypoints || []).map(wp => wp.latLng);
+              let totalMeters = 0;
+              for (let i = 0; i < coords.length - 1; i++) {
+                totalMeters += coords[i].distanceTo(coords[i + 1]);
+              }
+              const totalDuration = Math.round(totalMeters / 12.5);
+              const fallbackRoute = [{
+                name: 'Lộ trình trực tiếp',
+                summary: { totalDistance: totalMeters, totalTime: totalDuration },
+                coordinates: coords,
+                waypoints: waypoints,
+                inputWaypoints: waypoints,
+                instructions: []
+              }];
+              if (typeof callback === 'function') {
+                callback.call(context, null, fallbackRoute);
+              }
+            } catch (innerFallbackErr) {
+              if (typeof callback === 'function') {
+                callback.call(context, null, []);
+              }
+            }
+          }
+        }
+      };
+    }
+
     // Call OSRM real-road routing engine with Draggable Line & Custom Color
     function updateRouteCalculation() {
       if (isSharedViewMode) return;
@@ -8486,20 +8555,12 @@
         return;
       }
 
-      // OSRM Service URL (using project-osrm router with driving/walking profile)
-      const serviceUrl = activeTravelMode === 'walking' 
-        ? 'https://routing.openstreetmap.de/routed-foot/route/v1' 
-        : 'https://router.project-osrm.org/route/v1';
-
       try {
         const primaryColor = routeColor || '#6366f1';
         
         routingControl = L.Routing.control({
           waypoints: waypoints,
-          router: L.Routing.osrmv1({
-            serviceUrl: serviceUrl,
-            profile: activeTravelMode === 'walking' ? 'foot' : 'driving'
-          }),
+          router: createSafeCustomRouter(activeTravelMode),
           lineOptions: {
             styles: [
               { color: '#0f172a', opacity: 0.25, weight: 8 },
@@ -8564,13 +8625,13 @@
           }
         });
 
-        routingControl.on('routingerror', function(err) {
-          console.warn('Routing fallback triggered:', err);
+        routingControl.on('routingerror', function() {
+          console.warn('Routing fallback triggered');
           calculateStraightLineFallback(waypoints);
         });
 
       } catch (err) {
-        console.error('Error initiating route:', err);
+        console.warn('Error initiating route, using straight line fallback');
         calculateStraightLineFallback(waypoints);
       }
     }
@@ -11303,8 +11364,8 @@
       const subProvEl = document.getElementById('stat-visited-provinces-sub');
       if (subProvEl) {
         subProvEl.innerHTML = visitedCount > 0
-          ? `Bạn đã đặt dấu chân đến <strong class="text-white font-bold">${visitedCount}</strong> / 34 tỉnh thành trên cả nước`
-          : `Tự động nhận diện từ các kỷ niệm & lộ trình của bạn`;
+          ? `Đã đến <strong class="text-white font-bold">${visitedCount}</strong>/34 tỉnh`
+          : `34 tỉnh mới`;
       }
 
       // Regional break down
@@ -11531,12 +11592,12 @@
 
       const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
       if (statTotalAllKm) {
-        statTotalAllKm.textContent = `${agg.totalOutboundKm.toLocaleString('vi-VN')} km`;
+        statTotalAllKm.textContent = `${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
       }
 
       const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
       if (totalRoutesCountEl) {
-        totalRoutesCountEl.textContent = `${routes.length} hành trình (Toàn tuyến: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${agg.totalRoundTripKm.toLocaleString('vi-VN')} km)`;
+        totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${routes.length}</b> hành trình <span class="opacity-50 mx-1">•</span> Chiều đi: <b>${agg.totalOutboundKm.toLocaleString('vi-VN')} km</b>`;
       }
 
       const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -11573,12 +11634,12 @@
                     <span>•</span>
                     <span>${stopsCount} điểm</span>
                     <span>•</span>
-                    <span class="text-slate-400">Khứ hồi: ${m.roundTripKm} km</span>
+                    <span class="text-slate-400">Chiều đi: ${m.outboundKm.toLocaleString('vi-VN')} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
-                  <span class="block text-[10px] text-slate-400 font-semibold">Toàn tuyến</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toLocaleString('vi-VN')} km</span>
+                  <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Khứ hồi</span>
                   ${!isCurrentActive ? `
                     <button onclick="handleSelectRoute('${r.id}'); switchTab('route');" class="block text-[11px] text-sky-600 dark:text-sky-400 font-bold hover:underline mt-0.5">
                       Xem lộ trình
