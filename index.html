@@ -2397,8 +2397,8 @@
           <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-indigo-500/40 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0">
             <i class="fa-solid fa-layer-group text-[11px] sm:text-xs text-sky-400 shrink-0"></i>
             <select id="cinema-map-style-select" onchange="changeCinemaMapStyle(this.value)" class="bg-transparent text-[11px] sm:text-xs font-bold text-white outline-none cursor-pointer">
-              <option value="voyager" class="bg-slate-900 text-white" selected>Voyager</option>
-              <option value="satellite" class="bg-slate-900 text-white">Vệ tinh</option>
+              <option value="satellite" class="bg-slate-900 text-white" selected>Vệ tinh</option>
+              <option value="voyager" class="bg-slate-900 text-white">Voyager</option>
               <option value="dark" class="bg-slate-900 text-white">Tối</option>
               <option value="light" class="bg-slate-900 text-white">Sáng</option>
               <option value="osm" class="bg-slate-900 text-white">OSM</option>
@@ -9370,7 +9370,7 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecordingVideo = false;
-    let cinemaMapStyle = 'voyager'; // 'voyager', 'satellite', 'dark', 'light', 'osm', 'grid'
+    let cinemaMapStyle = 'satellite'; // Default to satellite mode for video export & 3D cinema
     let cinemaCameraMode = 'follow'; // 'follow', 'cinematic', 'overview'
     let cinemaZoomSetting = 'auto'; // 'auto', '15', '13', '11'
     let cinemaTiltAngle = 35; // 35 (mild 3D tilt, steady north-up), 45 (deep tilt), 0 (2D flat)
@@ -9840,10 +9840,9 @@
       const titleEl = document.getElementById('cinema-route-title');
       if (titleEl) titleEl.textContent = `Mô Phỏng: ${active.name || 'Lộ trình'}`;
 
-      const savedTile = localStorage.getItem(LS_TILE_KEY) || 'voyager';
-      cinemaMapStyle = ['voyager', 'satellite', 'dark', 'light', 'osm'].includes(savedTile) ? savedTile : 'voyager';
+      cinemaMapStyle = 'satellite';
       const selectEl = document.getElementById('cinema-map-style-select');
-      if (selectEl) selectEl.value = cinemaMapStyle;
+      if (selectEl) selectEl.value = 'satellite';
 
       const modeSelect = document.getElementById('cinema-cam-mode-select');
       if (modeSelect) modeSelect.value = cinemaCameraMode;
