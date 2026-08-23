@@ -6126,12 +6126,15 @@
     // ==========================================
     // ROUTE SHARING & URL GENERATION (LINK SHARE)
     // ==========================================
-    async function compressPhotoForSharing(photoDataUrl, maxDim = 280, quality = 0.6) {
+    async function compressPhotoForSharing(photoDataUrl, maxDim = 220, quality = 0.5) {
       if (!photoDataUrl || typeof photoDataUrl !== 'string') return '';
-      if (photoDataUrl.length < 2000) return photoDataUrl; // Already short or URL
+      // If already a short URL or placeholder
+      if (photoDataUrl.length < 500 && !photoDataUrl.startsWith('data:')) return photoDataUrl;
       return new Promise((resolve) => {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        if (photoDataUrl.startsWith('http://') || photoDataUrl.startsWith('https://')) {
+          img.crossOrigin = 'anonymous';
+        }
         img.onload = () => {
           try {
             const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
@@ -6143,12 +6146,16 @@
             const cx = cvs.getContext('2d');
             cx.drawImage(img, 0, 0, w, h);
             const compressed = cvs.toDataURL('image/jpeg', quality);
-            resolve(compressed);
+            resolve(compressed || photoDataUrl);
           } catch (e) {
-            resolve(photoDataUrl.substring(0, 10000));
+            console.warn('Canvas photo compression error:', e);
+            resolve(photoDataUrl);
           }
         };
-        img.onerror = () => resolve('');
+        img.onerror = () => {
+          // Safeguard: Never lose photo on error, preserve original data URL!
+          resolve(photoDataUrl);
+        };
         img.src = photoDataUrl;
       });
     }
@@ -6429,23 +6436,22 @@
           t: totalDurationStr,
           c: '#10b981',
           m: 'multi',
-          r: routes.map(r => {
-            const rPins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
-            const m = calculateSingleRouteMetrics(r);
+          r: packagedRoutes.map(pr => {
             return {
-              n: r.name,
-              c: r.color || '#6366f1',
-              m: r.travelMode || 'driving',
-              d: m.roundTripKm,
-              s: rPins.map(p => ({
+              n: pr.name,
+              c: pr.color || '#6366f1',
+              m: pr.travelMode || 'driving',
+              d: pr.distKm,
+              s: (pr.stops || []).map(p => ({
                 t: p.title,
                 lat: Math.round(p.lat * 1000000) / 1000000,
                 lng: Math.round(p.lng * 1000000) / 1000000,
-                l: (p.locationName || p.address || '').substring(0, 40),
+                l: (p.locationName || '').substring(0, 50),
                 c: p.category || 'sightseeing',
                 r: p.rating || 5,
-                n: (p.notes || '').substring(0, 60),
-                d: p.date || ''
+                n: (p.notes || '').substring(0, 80),
+                d: p.date || '',
+                p: p.photo || ''
               }))
             };
           })
@@ -6512,7 +6518,7 @@
         }
 
         const stopsPayload = await Promise.all(activePins.map(async (p) => {
-          const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 240, 0.55) : '';
+          const compressedPhoto = p.photo ? await compressPhotoForSharing(p.photo, 220, 0.5) : '';
           return {
             title: p.title,
             locationName: p.locationName || p.address || '',
@@ -6554,7 +6560,7 @@
           t: estTimeStr,
           c: targetRoute.color || '#6366f1',
           m: targetRoute.travelMode || 'driving',
-          s: activePins.map(p => ({
+          s: activePins.map((p, idx) => ({
             t: p.title,
             lat: Math.round(p.lat * 1000000) / 1000000,
             lng: Math.round(p.lng * 1000000) / 1000000,
@@ -6562,7 +6568,8 @@
             c: p.category || 'sightseeing',
             r: p.rating || 5,
             n: (p.notes || '').substring(0, 80),
-            d: p.date || ''
+            d: p.date || '',
+            p: stopsPayload[idx]?.photo || ''
           }))
         };
       }
@@ -6591,15 +6598,15 @@
       let compressedHash = '';
       try {
         if (typeof LZString !== 'undefined' && LZString.compressToEncodedURIComponent) {
-          // Prefer compressing full sharePayload; if too big, compress compactQrPayload
+          // Compress full sharePayload first to retain 100% of images, metadata & custom paths
           const fullJson = JSON.stringify(sharePayload);
-          if (fullJson.length < 80000) {
-            compressedHash = LZString.compressToEncodedURIComponent(fullJson);
-          } else {
+          compressedHash = LZString.compressToEncodedURIComponent(fullJson);
+          if (!compressedHash || compressedHash.length > 500000) {
+            // If exceptionally massive, fallback to compact payload with compressed images
             compressedHash = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload || sharePayload));
           }
         } else {
-          compressedHash = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(compactQrPayload || sharePayload)))));
+          compressedHash = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload)))));
         }
       } catch (e) {
         console.warn('Compression error:', e);
@@ -7109,10 +7116,25 @@
     function focusSharedStop(lat, lng, title) {
       if (!map) return;
       map.flyTo([lat, lng], 16, { duration: 1.2 });
-      L.popup({ offset: [0, -10] })
-        .setLatLng([lat, lng])
-        .setContent(`<div class="font-bold text-xs p-1">${title}</div>`)
-        .openOn(map);
+      let opened = false;
+      if (sharedRouteMultiLayers && sharedRouteMultiLayers.length > 0) {
+        for (const layer of sharedRouteMultiLayers) {
+          if (layer && typeof layer.getLatLng === 'function') {
+            const pos = layer.getLatLng();
+            if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001) {
+              layer.openPopup();
+              opened = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!opened) {
+        L.popup({ offset: [0, -10] })
+          .setLatLng([lat, lng])
+          .setContent(`<div class="font-bold text-xs p-1">${title}</div>`)
+          .openOn(map);
+      }
     }
 
     // Open Full Route Insights & Explorer Modal
@@ -8787,10 +8809,11 @@
               const isFirst = pIdx === 0;
               const isLast = pIdx === rStops.length - 1;
               return `
-                <div class="flex items-center gap-2 py-1 px-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer text-xs transition" onclick="focusSharedStop(${p.lat}, ${p.lng}, '${escapeHtml(p.title)}')">
-                  <span class="w-5 h-5 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold'} flex items-center justify-center text-[10px] shrink-0">
-                    ${pIdx + 1}
-                  </span>
+                <div class="flex items-center gap-2 py-1.5 px-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer text-xs transition" onclick="focusSharedStop(${p.lat}, ${p.lng}, '${escapeHtml(p.title)}')">
+                  <div class="relative w-7 h-7 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700 shrink-0 flex items-center justify-center">
+                    ${p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover" />` : `<span class="text-[10px] font-bold ${isFirst ? 'text-emerald-600' : isLast ? 'text-rose-600' : 'text-slate-600 dark:text-slate-300'}">${pIdx + 1}</span>`}
+                    ${p.photo ? `<span class="absolute top-0 left-0 w-3.5 h-3.5 rounded-br-md bg-indigo-600 text-white font-black text-[8px] flex items-center justify-center">${pIdx + 1}</span>` : ''}
+                  </div>
                   <span class="text-slate-800 dark:text-slate-200 font-medium truncate flex-1">${escapeHtml(p.title)}</span>
                   <span class="text-[10px] text-slate-400 shrink-0">${p.date || ''}</span>
                 </div>
