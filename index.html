@@ -838,6 +838,10 @@
                 <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
                 <span>Hoàn tác</span>
               </button>
+              <button onclick="reverseCurrentRoute()" class="h-7 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 text-[11px] font-bold hover:bg-slate-200 flex items-center gap-1 transition shrink-0" title="Đảo ngược chiều toàn bộ lộ trình">
+                <i class="fa-solid fa-arrows-up-down text-indigo-500 text-[10px]"></i>
+                <span>Đảo chiều</span>
+              </button>
               <button onclick="optimizeRouteOrder()" class="h-7 px-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 text-[11px] font-bold hover:bg-indigo-100 flex items-center gap-1 transition shrink-0" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất cả đi & về (TSP)">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
                 <span>Tối ưu</span>
@@ -8296,8 +8300,71 @@
 
       customRouteWaypoints = null;
       saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
+    }
+
+    let draggedStopIndex = null;
+
+    function handleStopDragStart(e, index) {
+      if (isSharedViewMode) return;
+      draggedStopIndex = index;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(index));
+      }
+      e.currentTarget.classList.add('opacity-50', 'scale-[0.98]', 'ring-2', 'ring-indigo-400');
+    }
+
+    function handleStopDragOver(e) {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move';
+      }
+    }
+
+    function handleStopDrop(e, targetIndex) {
+      e.preventDefault();
+      if (isSharedViewMode) return;
+      if (draggedStopIndex === null || draggedStopIndex === targetIndex) return;
+
+      const [movedItem] = routePinIds.splice(draggedStopIndex, 1);
+      routePinIds.splice(targetIndex, 0, movedItem);
+
+      draggedStopIndex = null;
+      customRouteWaypoints = null;
+      saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+      showToast('Đã cập nhật thứ tự điểm dừng trên bản đồ!', 'success');
+    }
+
+    function handleStopDragEnd(e) {
+      e.currentTarget.classList.remove('opacity-50', 'scale-[0.98]', 'ring-2', 'ring-indigo-400');
+      draggedStopIndex = null;
+    }
+
+    function reverseCurrentRoute() {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể đảo chiều lộ trình chia sẻ.', 'info');
+        return;
+      }
+      if (!Array.isArray(routePinIds) || routePinIds.length < 2) {
+        showToast('Cần ít nhất 2 điểm dừng để đảo chiều lộ trình!', 'info');
+        return;
+      }
+      routePinIds.reverse();
+      customRouteWaypoints = null;
+      saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+      showToast('Đã đảo chiều toàn bộ thứ tự điểm dừng trên bản đồ!', 'success');
     }
 
     function clearCurrentRoute() {
@@ -8333,6 +8400,8 @@
         const undoBtn = document.getElementById('btn-undo-optimize');
         if (undoBtn) undoBtn.classList.add('hidden');
         saveRoutesToStorage();
+        renderAllPins();
+        renderSidebarList();
         renderRouteStops();
         updateRouteCalculation();
         showToast('Đã khôi phục lại thứ tự điểm dừng ban đầu!', 'info');
@@ -8412,6 +8481,8 @@
       routePinIds = tour.map(p => p.id);
       customRouteWaypoints = null;
       saveRoutesToStorage();
+      renderAllPins();
+      renderSidebarList();
       renderRouteStops();
       updateRouteCalculation();
       showToast(`Đã tối ưu hóa lộ trình ngắn nhất trọn vẹn cả đi lẫn về cho ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}!`, 'success');
@@ -8971,7 +9042,12 @@
         const isLast = index === routePinIds.length - 1;
 
         return `
-          <div class="relative p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-3 group">
+          <div class="relative p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-3 group transition cursor-grab active:cursor-grabbing hover:border-indigo-300 dark:hover:border-indigo-600"
+               draggable="true"
+               ondragstart="handleStopDragStart(event, ${index})"
+               ondragover="handleStopDragOver(event)"
+               ondrop="handleStopDrop(event, ${index})"
+               ondragend="handleStopDragEnd(event)">
             <!-- Step Number Badge -->
             <div class="w-8 h-8 rounded-full ${isFirst ? 'bg-emerald-500 text-white font-bold' : isLast ? 'bg-rose-500 text-white font-bold' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold'} flex items-center justify-center text-xs shrink-0 shadow-sm">
               ${index + 1}
@@ -8989,13 +9065,13 @@
 
             <!-- Up / Down / Delete Buttons -->
             <div class="flex items-center gap-1 shrink-0">
-              <button onclick="moveStop(${index}, -1)" ${isFirst ? 'disabled' : ''} class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs transition" title="Lên">
+              <button onclick="moveStop(${index}, -1)" ${isFirst ? 'disabled' : ''} class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs transition active:scale-95" title="Di chuyển lên trên">
                 <i class="fa-solid fa-arrow-up"></i>
               </button>
-              <button onclick="moveStop(${index}, 1)" ${isLast ? 'disabled' : ''} class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs transition" title="Xuống">
+              <button onclick="moveStop(${index}, 1)" ${isLast ? 'disabled' : ''} class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs transition active:scale-95" title="Di chuyển xuống dưới">
                 <i class="fa-solid fa-arrow-down"></i>
               </button>
-              <button onclick="removeStopFromRoute('${pin.id}')" class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-500 hover:bg-rose-100 flex items-center justify-center text-xs transition" title="Xóa">
+              <button onclick="removeStopFromRoute('${pin.id}')" class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-500 hover:bg-rose-100 flex items-center justify-center text-xs transition active:scale-95" title="Xóa khỏi lộ trình">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
@@ -12183,20 +12259,153 @@
     }
 
     // ==========================================
-    // SEARCH & AUTOCOMPLETE LOGIC
+    // ENHANCED VIETNAM LANDMARKS & MULTI-TIER SEARCH ENGINE
     // ==========================================
     let searchDebounceTimer = null;
-    const POPULAR_DESTINATIONS = [
-      { name: "Hà Nội", desc: "Thủ đô ngàn năm văn hiến, Hồ Hoàn Kiếm, Phố cổ", lat: 21.028511, lng: 105.854167, icon: "fa-landmark", tag: "Thủ đô" },
-      { name: "TP. Hồ Chí Minh", desc: "Thành phố sôi động, Chợ Bến Thành, Dinh Độc Lập", lat: 10.823099, lng: 106.629664, icon: "fa-city", tag: "Đô thị" },
-      { name: "Đà Nẵng", desc: "Thành phố đáng sống, Cầu Rồng, Bán đảo Sơn Trà", lat: 16.054407, lng: 108.202167, icon: "fa-water", tag: "Biển đảo" },
-      { name: "Đà Lạt", desc: "Thành phố ngàn hoa & sương mù lãng mạn, Lâm Đồng", lat: 11.940419, lng: 108.458313, icon: "fa-mountain-sun", tag: "Cao nguyên" },
-      { name: "Phú Quốc", desc: "Đảo ngọc biển xanh cát trắng, Kiên Giang", lat: 10.289879, lng: 103.984020, icon: "fa-umbrella-beach", tag: "Nghỉ dưỡng" },
-      { name: "Hội An", desc: "Phố cổ di sản thế giới lung linh đèn lồng, Quảng Nam", lat: 15.880058, lng: 108.338047, icon: "fa-monument", tag: "Di sản" },
-      { name: "Sapa", desc: "Đỉnh Fansipan nóc nhà Đông Dương, ruộng bậc thang", lat: 22.336360, lng: 103.843781, icon: "fa-mountain", tag: "Khám phá" },
-      { name: "Vịnh Hạ Long", desc: "Kỳ quan thiên nhiên thế giới, Quảng Ninh", lat: 20.910051, lng: 107.183902, icon: "fa-ship", tag: "Kỳ quan" },
-      { name: "Huế", desc: "Cố đô đền đài lăng tẩm & sông Hương thơ mộng", lat: 16.463713, lng: 107.590866, icon: "fa-archway", tag: "Văn hóa" },
-      { name: "Ninh Bình", desc: "Tràng An, Tam Cốc Bích Động non nước hữu tình", lat: 20.250614, lng: 105.974454, icon: "fa-tree", tag: "Sinh thái" }
+    let currentSearchFilterTab = 'all';
+    let lastSearchResultsCache = {
+      query: '',
+      matchedPins: [],
+      matchedLandmarks: [],
+      matchedProvinces: [],
+      externalResults: []
+    };
+
+    // Comprehensive Database of 150+ Vietnam Top Landmarks, Tourist Spots, Heritage Sites, Islands, Passes, Pagodas
+    const VIETNAM_LANDMARKS_DATABASE = [
+      // MIỀN BẮC - HÀ NỘI & ĐÔNG BẮC / TÂY BẮC
+      { name: "Hồ Hoàn Kiếm (Hồ Gươm)", province: "Hà Nội", cat: "sightseeing", icon: "fa-water", lat: 21.0287, lng: 105.8523, tag: "Thủ đô", desc: "Trái tim Hà Nội, Tháp Rùa, Đền Ngọc Sơn, Cầu Thê Húc", kw: "ho guom hoan kiem thap rua den ngoc son cau the huc ha noi" },
+      { name: "Lăng Chủ tịch Hồ Chí Minh", province: "Hà Nội", cat: "historic", icon: "fa-landmark", lat: 21.0368, lng: 105.8346, tag: "Di tích", desc: "Quảng trường Ba Đình, Nhà sàn Bác Hồ, Chùa Một Cột", kw: "lang bac quang truong ba dinh chua mot cot nha san ha noi" },
+      { name: "Văn Miếu - Quốc Tử Giám", province: "Hà Nội", cat: "historic", icon: "fa-graduation-cap", lat: 21.0293, lng: 105.8361, tag: "Di sản", desc: "Trường đại học đầu tiên của Việt Nam, Khuê Văn Các", kw: "van mieu quoc tu giam khue van cac bia tien si ha noi" },
+      { name: "Hoàng Thành Thăng Long", province: "Hà Nội", cat: "historic", icon: "fa-chess-rook", lat: 21.0336, lng: 105.8402, tag: "UNESCO", desc: "Di sản văn hóa thế giới, Đoan Môn, Điện Kính Thiên", kw: "hoang thanh thang long doan mon kinh thien ha noi" },
+      { name: "Hồ Tây & Chùa Trấn Quốc", province: "Hà Nội", cat: "sightseeing", icon: "fa-place-of-worship", lat: 21.0483, lng: 105.8372, tag: "Thắng cảnh", desc: "Hồ nước tự nhiên lớn nhất Hà Nội, ngôi chùa cổ kính bậc nhất", kw: "ho tay chua tran quoc duong thanh nien phu tay ho ha noi" },
+      { name: "Nhà tù Hỏa Lò", province: "Hà Nội", cat: "historic", icon: "fa-monument", lat: 21.0253, lng: 105.8465, tag: "Lịch sử", desc: "Di tích lịch sử nổi tiếng tại trung tâm Hà Nội", kw: "hoa lo nha tu hoa lo hanoi hilton ha noi" },
+      { name: "Cầu Long Biên", province: "Hà Nội", cat: "historic", icon: "fa-bridge", lat: 21.0427, lng: 105.8569, tag: "Biểu tượng", desc: "Cây cầu lịch sử vắt qua sông Hồng chứng nhân thời gian", kw: "cau long bien song hong ha noi" },
+      { name: "Chùa Hương (Hương Sơn)", province: "Hà Nội", cat: "historic", icon: "fa-mountain-sun", lat: 20.6186, lng: 105.7533, tag: "Tâm linh", desc: "Quần thể danh thắng tâm linh Suối Yến, Động Hương Tích, Mỹ Đức", kw: "chua huong suoi yen dong huong tich my duc ha noi" },
+      { name: "Vườn Quốc gia Ba Vì", province: "Hà Nội", cat: "nature", icon: "fa-tree", lat: 21.0805, lng: 105.3622, tag: "Thiên nhiên", desc: "Đỉnh Vua, Đỉnh Ngọc Hoa, Vườn xương rồng, Nhà thờ đổ Ba Vì", kw: "ba vi vuon quoc gia ba vi dinh vua rung ba vi" },
+      
+      // HÀ GIANG & ĐÔNG BẮC
+      { name: "Cột cờ Lũng Cú", province: "Hà Giang", cat: "historic", icon: "fa-flag", lat: 23.3639, lng: 105.3188, tag: "Địa đầu", desc: "Điểm cực Bắc thiêng liêng của Tổ quốc, Đồng Văn", kw: "lung cu cot co lung cu cuc bac dong van ha giang" },
+      { name: "Đèo Mã Pí Lèng & Sông Nho Quế", province: "Hà Giang", cat: "nature", icon: "fa-mountain", lat: 23.2378, lng: 105.4167, tag: "Tứ đại đỉnh đèo", desc: "Hẻm vực Tu Sản sâu nhất Đông Nam Á, cung đèo hùng vĩ bậc nhất", kw: "ma pi leng song nho que hem tu san meo vac ha giang" },
+      { name: "Cao nguyên đá Đồng Văn", province: "Hà Giang", cat: "sightseeing", icon: "fa-gem", lat: 23.2789, lng: 105.3625, tag: "Công viên địa chất", desc: "Công viên địa chất toàn cầu UNESCO, Phố Cổ Đồng Văn, Dinh họ Vương", kw: "dong van cao nguyen da pho co dinh vua meo dinh ho vuong ha giang" },
+      { name: "Dốc Thẩm Mã", province: "Hà Giang", cat: "sightseeing", icon: "fa-road", lat: 23.1892, lng: 105.2345, tag: "Check-in", desc: "Cung đèo uốn lượn 9 khúc tuyệt đẹp trên đường lên Đồng Văn", kw: "doc tham ma doc chin khoanh yen minh ha giang" },
+      { name: "Ruộng bậc thang Hoàng Su Phì", province: "Hà Giang", cat: "nature", icon: "fa-wheat-awn", lat: 22.7533, lng: 104.6854, tag: "Thắng cảnh", desc: "Kỳ quan ruộng bậc thang mùa lúa chín vàng óng", kw: "hoang su phi ruong bac thang ban luoc nam ty ha giang" },
+      
+      // LÀO CAI / SAPA & TÂY BẮC
+      { name: "Đỉnh Fansipan (3.143m)", province: "Lào Cai", cat: "nature", icon: "fa-mountain", lat: 22.3033, lng: 103.7753, tag: "Nóc nhà Đông Dương", desc: "Đỉnh núi cao nhất Đông Dương, quần thể tâm linh trên đỉnh Fansipan", kw: "fansipan phan xi pang sapa sa pa laocai lao cai" },
+      { name: "Thị xã Sa Pa & Bản Cát Cát", province: "Lào Cai", cat: "sightseeing", icon: "fa-house-chimney-window", lat: 22.3364, lng: 103.8438, tag: "Du lịch", desc: "Thành phố trong sương, Thung lũng Mường Hoa, Bản Cát Cát, Tả Van", kw: "sapa sa pa ban cat cat muong hoa ta van nui ham rong" },
+      { name: "Đèo Ô Quy Hồ (Cổng Trời)", province: "Lào Cai", cat: "nature", icon: "fa-cloud-sun", lat: 22.3551, lng: 103.7712, tag: "Tứ đại đỉnh đèo", desc: "Cung đèo dài và hùng vĩ nối liền Lào Cai & Lai Châu, săn hoàng hôn", kw: "o quy ho deo o quy ho cong troi sapa lai chau" },
+      { name: "Y Tý - Đại ngàn săn mây", province: "Lào Cai", cat: "nature", icon: "fa-cloud", lat: 22.6178, lng: 103.6067, tag: "Săn mây", desc: "Thiên đường mây Y Tý, Ngải Thầu, Lảo Thẩn, Bát Xát", kw: "y ty bat xat lao than san may laocai" },
+      { name: "Mù Cang Chải", province: "Yên Bái", cat: "nature", icon: "fa-wheat-awn", lat: 21.8569, lng: 104.0847, tag: "Di tích quốc gia", desc: "Đồi mâm xôi La Pán Tẩn, Móng Ngựa, Đèo Khau Phạ", kw: "mu cang chai mam xoi mong ngua khau pha yen bai" },
+      { name: "Tà Xùa (Bắc Yên)", province: "Sơn La", cat: "nature", icon: "fa-cloud-sun", lat: 21.3283, lng: 104.4697, tag: "Săn mây", desc: "Sống lưng khủng long Tà Xùa, biển mây cuồn cuộn", kw: "ta xua song lung khung long san may bac yen son la" },
+      { name: "Cao nguyên Mộc Châu", province: "Sơn La", cat: "sightseeing", icon: "fa-seedling", lat: 20.8447, lng: 104.6469, tag: "Nghỉ dưỡng", desc: "Đồi chè Trái Tim, Thác Dải Yếm, Rừng thông Bản Áng, Cầu kính Bạch Long", kw: "moc chau rung thong ban ang thac dai yem cau kinh bach long son la" },
+      { name: "Mai Châu & Bản Lác", province: "Hòa Bình", cat: "sightseeing", icon: "fa-house-user", lat: 20.6625, lng: 105.0767, tag: "Thung lũng", desc: "Thung lũng thanh bình người Thái, Đèo Thung Khe Đá Trắng", kw: "mai chau ban lac deo thung khe da trang hoa binh" },
+      { name: "Hồ Ba Bể", province: "Bắc Kạn", cat: "nature", icon: "fa-water", lat: 22.4042, lng: 105.6186, tag: "Vườn quốc gia", desc: "Hồ nước ngọt tự nhiên lớn nhất vùng núi phía Bắc", kw: "ho ba be vuon quoc gia ba be bac kan" },
+      { name: "Thác Bản Giốc", province: "Cao Bằng", cat: "nature", icon: "fa-water", lat: 22.8539, lng: 106.7236, tag: "Kỳ quan", desc: "Thác nước tự nhiên hùng vĩ bậc nhất biên giới Việt - Trung, Trùng Khánh", kw: "thac ban gioc dong nguom ngao trung khanh cao bang" },
+      { name: "Khu di tích Pác Bó & Suối Lê-nin", province: "Cao Bằng", cat: "historic", icon: "fa-landmark", lat: 22.9817, lng: 106.0792, tag: "Di tích", desc: "Cột mốc lịch sử Bác Hồ về nước, Núi Các Mác, Hà Quảng", kw: "pac bo suoi le nin nui cac mac ha quang cao bang" },
+
+      // QUẢNG NINH, HẢI PHÒNG, NINH BÌNH
+      { name: "Vịnh Hạ Long", province: "Quảng Ninh", cat: "sightseeing", icon: "fa-ship", lat: 20.9101, lng: 107.1839, tag: "Kỳ quan UNESCO", desc: "Kỳ quan thiên nhiên thế giới với hàng nghìn hòn đảo đá vôi kỳ vĩ", kw: "vinh ha long hang suot sot dao ti top quang ninh" },
+      { name: "Quần thể Yên Tử (Chùa Đồng)", province: "Quảng Ninh", cat: "historic", icon: "fa-place-of-worship", lat: 21.1578, lng: 106.7192, tag: "Tâm linh", desc: "Đất tổ Phật giáo Trúc Lâm Yên Tử của Phật hoàng Trần Nhân Tông", kw: "yen tu chua dong truc lam uong bi quang ninh" },
+      { name: "Đảo Cô Tô", province: "Quảng Ninh", cat: "nature", icon: "fa-umbrella-beach", lat: 20.9917, lng: 107.7667, tag: "Biển đảo", desc: "Bãi biển Vàn Chảy, Hồng Vàn, Đảo Cô Tô con hoang sơ trong vắt", kw: "co to dao co to van chay hong van quang ninh" },
+      { name: "Mũi Sa Vĩ (Móng Cái)", province: "Quảng Ninh", cat: "historic", icon: "fa-compass", lat: 21.4908, lng: 108.0169, tag: "Cực Đông Bắc", desc: "Nơi đặt nét vẽ đầu tiên của dải đất hình chữ S Việt Nam", kw: "sa vi mui sa vi mong cai tra co quang ninh" },
+      { name: "Quần đảo Cát Bà & Vịnh Lan Hạ", province: "Hải Phòng", cat: "nature", icon: "fa-water", lat: 20.7258, lng: 107.0456, tag: "Khu dự trữ sinh quyển", desc: "Đảo Cát Bà, Vịnh Lan Hạ, Bãi tắm Cát Cò, Vườn quốc gia Cát Bà", kw: "cat ba vinh lan ha dao cat ba do son hai phong" },
+      { name: "Quần thể danh thắng Tràng An", province: "Ninh Bình", cat: "sightseeing", icon: "fa-gem", lat: 20.2506, lng: 105.9144, tag: "Di sản Kép UNESCO", desc: "Kỳ quan sông nước non xanh nước biếc, hang động lung linh", kw: "trang an ninh binh di san unesco hang mua" },
+      { name: "Tam Cốc - Bích Động", province: "Ninh Bình", cat: "sightseeing", icon: "fa-water", lat: 20.2217, lng: 105.9367, tag: "Thắng cảnh", desc: "Nam thiên đệ nhị động, mùa lúa chín dòng sông Ngô Đồng", kw: "tam coc bich dong song ngo dong ninh binh" },
+      { name: "Chùa Bái Đính", province: "Ninh Bình", cat: "historic", icon: "fa-place-of-worship", lat: 20.2742, lng: 105.8647, tag: "Tâm linh", desc: "Ngôi chùa quy mô lớn nắm giữ nhiều kỷ lục Đông Nam Á", kw: "bai dinh chua bai dinh gia vien ninh binh" },
+      { name: "Hang Múa (Đỉnh Ngọa Long)", province: "Ninh Bình", cat: "sightseeing", icon: "fa-dragon", lat: 20.2319, lng: 105.9419, tag: "Check-in", desc: "Ngắm trọn toàn cảnh Tam Cốc Tràng An từ trên cao", kw: "hang mua ngoa long ninh binh" },
+      { name: "Chùa Tam Chúc", province: "Hà Nam", cat: "historic", icon: "fa-place-of-worship", lat: 20.5983, lng: 105.8119, tag: "Tâm linh", desc: "Ngôi chùa trên hồ nước lớn nhất thế giới, Kim Bảng", kw: "tam chuc chua tam chuc kim bang ha nam" },
+      { name: "Khu di tích Đền Hùng", province: "Phú Thọ", cat: "historic", icon: "fa-monument", lat: 21.3653, lng: 105.3267, tag: "Cội nguồn", desc: "Khu di tích lịch sử Đền Hùng, Núi Nghĩa Lĩnh, Việt Trì", kw: "den hung phu tho viet tri gio to hung vuong" },
+
+      // BẮC TRUNG BỘ (THANH HÓA, NGHỆ AN, HÀ TĨNH, QUẢNG BÌNH, QUẢNG TRỊ, HUẾ)
+      { name: "Khu bảo tồn Pù Luông", province: "Thanh Hóa", cat: "nature", icon: "fa-tree", lat: 20.4708, lng: 105.1528, tag: "Sinh thái", desc: "Ruộng bậc thang, Bản Đôn, Bản Hiêu, Suối Chàm, Bá Thước", kw: "pu luong ba thuoc ban don thanh hoa" },
+      { name: "Thành Nhà Hồ", province: "Thanh Hóa", cat: "historic", icon: "fa-chess-rook", lat: 20.0817, lng: 105.6083, tag: "UNESCO", desc: "Di sản văn hóa thế giới kiến trúc thành đá độc đáo triều Hồ", kw: "thanh nha ho tay giai vinh loc thanh hoa" },
+      { name: "Bãi biển Sầm Sơn", province: "Thanh Hóa", cat: "nature", icon: "fa-umbrella-beach", lat: 19.7428, lng: 105.9083, tag: "Nghỉ mát", desc: "Bãi biển sôi động nhất Bắc Bộ, Hòn Trống Mái, Đền Độc Cước", kw: "sam son bien sam son thanh hoa" },
+      { name: "Bãi biển Cửa Lò", province: "Nghệ An", cat: "nature", icon: "fa-umbrella-beach", lat: 18.7997, lng: 105.7289, tag: "Biển đảo", desc: "Bãi biển dài phẳng cát mịn nước trong, Đảo Lan Châu", kw: "cua lo bien cua lo nghe an" },
+      { name: "Khu di tích Kim Liên (Quê Bác)", province: "Nghệ An", cat: "historic", icon: "fa-house", lat: 18.6833, lng: 105.5667, tag: "Di tích", desc: "Làng Sen quê nội và Làng Hoàng Trù quê ngoại Bác Hồ, Nam Đàn", kw: "kim lien lang sen que bac nam dan nghe an" },
+      { name: "Bãi biển Thiên Cầm", province: "Hà Tĩnh", cat: "nature", icon: "fa-music", lat: 18.2833, lng: 106.0167, tag: "Cung đàn biển", desc: "Bãi biển hình cánh cung tuyệt đẹp, Núi Thiên Cầm, Cẩm Xuyên", kw: "thien cam bien thien cam cam xuyen ha tinh xa thien cam" },
+      { name: "Ngã ba Đồng Lộc", province: "Hà Tĩnh", cat: "historic", icon: "fa-monument", lat: 18.4239, lng: 105.7483, tag: "Lịch sử", desc: "Di tích lịch sử quốc gia đặc biệt ghi dấu 10 cô gái thanh niên xung phong", kw: "dong loc nga ba dong loc can loc ha tinh" },
+      { name: "Vườn quốc gia Phong Nha - Kẻ Bàng", province: "Quảng Bình", cat: "nature", icon: "fa-mountain-sun", lat: 17.5894, lng: 106.2828, tag: "Di sản thế giới", desc: "Vương quốc hang động thế giới: Động Phong Nha, Thiên Đường, Suối Moọc", kw: "phong nha ke bang dong thien duong suoi mooc quang binh" },
+      { name: "Hang Sơn Đoòng", province: "Quảng Bình", cat: "nature", icon: "fa-gem", lat: 17.4569, lng: 106.2872, tag: "Kỳ quan số 1", desc: "Hang động tự nhiên lớn nhất thế giới ẩn mình trong đại ngàn Kẻ Bàng", kw: "son doong hang son doong bo trach quang binh" },
+      { name: "Bãi biển Nhật Lệ & Bãi Đá Nhảy", province: "Quảng Bình", cat: "nature", icon: "fa-water", lat: 17.5022, lng: 106.6347, tag: "Thắng cảnh", desc: "Biển Đồng Hới thơ mộng và thắng cảnh Đá Nhảy kỳ thú", kw: "nhat le da nhay dong hoi quang binh" },
+      { name: "Thành Cổ Quảng Trị", province: "Quảng Trị", cat: "historic", icon: "fa-monument", lat: 16.7456, lng: 107.1897, tag: "Lịch sử thiêng liêng", desc: "Mảnh đất huyền thoại ghi dấu 81 ngày đêm rực lửa năm 1972", kw: "thanh co quang tri thi xa quang tri song thach han" },
+      { name: "Nghĩa trang Liệt sĩ Trường Sơn", province: "Quảng Trị", cat: "historic", icon: "fa-monument", lat: 16.9536, lng: 107.0069, tag: "Tri ân", desc: "Nghĩa trang liệt sĩ quốc gia lớn nhất cả nước, Gio Linh", kw: "nghia trang truong son gio linh quang tri" },
+      { name: "Cầu Hiền Lương - Sông Bến Hải", province: "Quảng Trị", cat: "historic", icon: "fa-bridge", lat: 17.0078, lng: 107.1039, tag: "Vĩ tuyến 17", desc: "Di tích lịch sử chứng nhân khát vọng thống nhất non sông", kw: "hien luong ben hai vi tuyen 17 quang tri" },
+      { name: "Đại Nội Huế (Hoàng Thành Huế)", province: "Thừa Thiên Huế", cat: "historic", icon: "fa-chess-rook", lat: 16.4697, lng: 107.5786, tag: "Di sản Thế giới", desc: "Quần thể di tích Cố đô Huế, Ngọ Môn, Điện Thái Hòa, Tử Cấm Thành", kw: "dai noi hue hoang thanh tu cam thanh ngo mon co do hue" },
+      { name: "Chùa Thiên Mụ & Sông Hương", province: "Thừa Thiên Huế", cat: "historic", icon: "fa-place-of-worship", lat: 16.4528, lng: 107.5453, tag: "Biểu tượng Huế", desc: "Ngôi chùa cổ kính soi bóng dòng sông Hương, Đồi Hà Khê", kw: "thien mu chua thien mu song huong cau trang tien hue" },
+      { name: "Lăng Khải Định & Lăng Tự Đức", province: "Thừa Thiên Huế", cat: "historic", icon: "fa-archway", lat: 16.3989, lng: 107.5906, tag: "Lăng tẩm", desc: "Kiệt tác kiến trúc lăng tẩm triều Nguyễn đỉnh cao", kw: "lang khai dinh lang tu duc lang minh mang hue" },
+      { name: "Vịnh Lăng Cô & Đèo Hải Vân", province: "Thừa Thiên Huế", cat: "nature", icon: "fa-water", lat: 16.2306, lng: 108.0056, tag: "Vịnh đẹp thế giới", desc: "Vịnh biển đẹp bậc nhất thế giới, Phá Tam Giang, Đầm Lập An", kw: "lang co vinh lang co deo hai van dam lap an hue" },
+
+      // ĐÀ NẴNG, QUẢNG NAM, QUẢNG NGÃI, BÌNH ĐỊNH, PHÚ YÊN
+      { name: "Cầu Rồng & Bến Cầu Tình Yêu", province: "Đà Nẵng", cat: "sightseeing", icon: "fa-dragon", lat: 16.0611, lng: 108.2272, tag: "Biểu tượng", desc: "Cây cầu phun lửa phun nước nổi tiếng thế giới, sông Hàn", kw: "cau rong song han cau tinh yeu da nang" },
+      { name: "Bà Nà Hills (Cầu Vàng)", province: "Đà Nẵng", cat: "sightseeing", icon: "fa-hands", lat: 15.9989, lng: 107.9958, tag: "Check-in quốc tế", desc: "Cây cầu bàn tay khổng lồ vươn giữa mây trời, Làng Pháp", kw: "ba na hills cau vang lang phap hoa vang da nang" },
+      { name: "Bán đảo Sơn Trà & Chùa Linh Ứng", province: "Đà Nẵng", cat: "nature", icon: "fa-tree", lat: 16.1006, lng: 108.2778, tag: "Lá phổi xanh", desc: "Tượng Phật Bà Quan Âm cao 67m, Đỉnh Bàn Cờ, Cây đa ngàn năm", kw: "son tra ban dao son tra linh ung dinh ban co da nang" },
+      { name: "Bãi biển Mỹ Khê", province: "Đà Nẵng", cat: "nature", icon: "fa-umbrella-beach", lat: 16.0603, lng: 108.2464, tag: "Top bãi biển", desc: "Một trong những bãi biển quyến rũ nhất hành tinh", kw: "my khe bien my khe son tra ngu hanh son da nang" },
+      { name: "Phố cổ Hội An", province: "Quảng Nam", cat: "historic", icon: "fa-house-flag", lat: 15.8801, lng: 108.3380, tag: "Di sản Thế giới", desc: "Thành phố di sản lung linh đèn lồng, Chùa Cầu, Sông Hoài", kw: "hoi an pho co hoi an chua cau song hoai quang nam" },
+      { name: "Thánh địa Mỹ Sơn", province: "Quảng Nam", cat: "historic", icon: "fa-monument", lat: 15.7958, lng: 108.1242, tag: "UNESCO", desc: "Quần thể đền tháp Chăm Pa cổ kính giữa thung lũng, Duy Xuyên", kw: "my son thanh dia my son cham pa duy xuyen quang nam" },
+      { name: "Cù Lao Chàm", province: "Quảng Nam", cat: "nature", icon: "fa-water", lat: 15.9606, lng: 108.5147, tag: "Khu dự trữ sinh quyển", desc: "Quần đảo biển xanh cát trắng lặn ngắm san hô", kw: "cu lao cham dao cu lao cham tan hiep hoi an quang nam" },
+      { name: "Rừng dừa Bảy Mẫu (Cẩm Thanh)", province: "Quảng Nam", cat: "sightseeing", icon: "fa-sailboat", lat: 15.8653, lng: 108.3689, tag: "Trải nghiệm", desc: "Đi thuyền thúng xoay tròn trong rừng dừa nước miền Trung", kw: "rung dua bay mau cam thanh thuyen thung hoi an" },
+      { name: "Đảo Lý Sơn", province: "Quảng Ngãi", cat: "nature", icon: "fa-volcano", lat: 15.3789, lng: 109.1172, tag: "Vương quốc tỏi", desc: "Đỉnh Thới Lới, Cổng Tò Vò, Hang Câu, Đảo Bé An Bình", kw: "ly son dao ly son cong to vo thoi loi quang ngai" },
+      { name: "Kỳ Co & Eo Gió", province: "Bình Định", cat: "nature", icon: "fa-wind", lat: 13.8822, lng: 109.2894, tag: "Thiên đường biển", desc: "Eo biển lộng gió đẹp nhất miền Trung, Quy Nhơn, Nhơn Lý", kw: "ky co eo gio quy nhon nhon ly binh dinh" },
+      { name: "Ghềnh Ráng Tiên Sa (Mộ Hàn Mặc Tử)", province: "Bình Định", cat: "historic", icon: "fa-pen-nib", lat: 13.7483, lng: 109.2222, tag: "Thắng cảnh", desc: "Bãi tắm Hoàng Hậu (Bãi Đá Trứng), Đồi Thi Nhân Quy Nhơn", kw: "ghenh rang tien sa han mac tu bai trung quy nhon binh dinh" },
+      { name: "Ghềnh Đá Đĩa & Gành Đèn", province: "Phú Yên", cat: "nature", icon: "fa-gem", lat: 13.3647, lng: 109.2978, tag: "Kỳ quan đá", desc: "Hiện tượng địa chất bazan dạng cột tổ ong độc nhất vô nhị, Tuy An", kw: "ghenh da dia ganh den tuy an phu yen" },
+      { name: "Mũi Điện (Mũi Đại Lãnh)", province: "Phú Yên", cat: "nature", icon: "fa-sun", lat: 12.8833, lng: 109.4583, tag: "Cực Đông", desc: "Nơi đón ánh bình minh đầu tiên trên đất liền Việt Nam, Bãi Môn", kw: "mui dien mui dai lanh bai mon hai dang dai lanh phu yen" },
+      { name: "Bãi Xép (Tôi thấy hoa vàng trên cỏ xanh)", province: "Phú Yên", cat: "sightseeing", icon: "fa-seedling", lat: 13.1833, lng: 109.3083, tag: "Check-in", desc: "Bãi cỏ xanh mướt ngắm biển sóng vỗ, An Chấn, Tuy An", kw: "bai xep hoa vang tren co xanh tuy an phu yen" },
+
+      // KHÁNH HÒA, NINH THUẬN, BÌNH THUẬN
+      { name: "Tháp Bà Ponagar", province: "Khánh Hòa", cat: "historic", icon: "fa-monument", lat: 12.2653, lng: 109.1958, tag: "Văn hóa Chăm", desc: "Quần thể kiến trúc đền tháp Chăm Pa cổ kính bên sông Cái, Nha Trang", kw: "ponagar thap ba ponagar nha trang khanh hoa" },
+      { name: "VinWonders & Đảo Hòn Tre", province: "Khánh Hòa", cat: "sightseeing", icon: "fa-cable-car", lat: 12.2178, lng: 109.2458, tag: "Khu vui chơi", desc: "Tổ hợp giải trí đẳng cấp quốc tế, Cáp treo vượt biển Nha Trang", kw: "vinwonders vinpearl hon tre nha trang khanh hoa" },
+      { name: "Bình Ba - Bình Hưng - Bình Lập", province: "Khánh Hòa", cat: "nature", icon: "fa-shrimp", lat: 11.8333, lng: 109.2167, tag: "Tứ Bình", desc: "Thiên đường đảo tôm hùm, biển xanh như ngọc bích, Cam Ranh", kw: "binh ba binh hung binh lap cam ranh khanh hoa" },
+      { name: "Vịnh Vĩnh Hy & Hang Rái", province: "Ninh Thuận", cat: "nature", icon: "fa-water", lat: 11.7139, lng: 109.1958, tag: "Vườn quốc gia Núi Chúa", desc: "Vịnh biển đẹp hoang sơ, thác nước đổ ra biển, san hô cổ ngàn năm", kw: "vinh hy hang rai nui chua ninh thuan" },
+      { name: "Tháp Po Klong Garai", province: "Ninh Thuận", cat: "historic", icon: "fa-chess-rook", lat: 11.6028, lng: 108.9486, tag: "Di tích quốc gia đặc biệt", desc: "Cụm tháp Chăm nguyên vẹn và lộng lẫy nhất, Phan Rang - Tháp Chàm", kw: "po klong garai thap cham phan rang ninh thuan" },
+      { name: "Mũi Né & Đồi Cát Bay", province: "Bình Thuận", cat: "nature", icon: "fa-wind", lat: 10.9333, lng: 108.2833, tag: "Thủ đô Resort", desc: "Đồi Cát Hồng, Bàu Trắng Sahara Việt Nam, Suối Tiên Mũi Né, Phan Thiết", kw: "mui ne doi cat bay bau trang suoi tien phan thiet binh thuan" },
+      { name: "Đảo Phú Quý", province: "Bình Thuận", cat: "nature", icon: "fa-umbrella-beach", lat: 10.5167, lng: 108.9500, tag: "Đảo ngọc", desc: "Hòn Tranh, Dốc Phượt, Bờ kè Ngũ Phụng, Vịnh Triều Dương hoang sơ", kw: "phu quy dao phu quy hon tranh doc phuot binh thuan" },
+      { name: "Hải đăng Kê Gà", province: "Bình Thuận", cat: "sightseeing", icon: "fa-tower-broadcast", lat: 10.6978, lng: 107.9947, tag: "Hải đăng cổ", desc: "Ngọn hải đăng cổ và cao nhất Việt Nam, Hàm Thuận Nam", kw: "ke ga mui ke ga hai dang ke ga binh thuan" },
+
+      // TÂY NGUYÊN (LÂM ĐỒNG, ĐẮK LẮK, ĐẮK NÔNG, GIA LAI, KON TUM)
+      { name: "Hồ Xuân Hương & Quảng trường Lâm Viên", province: "Lâm Đồng", cat: "sightseeing", icon: "fa-heart", lat: 11.9404, lng: 108.4453, tag: "Trái tim Đà Lạt", desc: "Biểu tượng hoa Atiso, hoa Dã Quỳ bên hồ nước thơ mộng trung tâm Đà Lạt", kw: "ho xuan huong quang truong lam vien atiso da lat lam dong" },
+      { name: "Hồ Tuyền Lâm & Thiền viện Trúc Lâm", province: "Lâm Đồng", cat: "sightseeing", icon: "fa-tree", lat: 11.9039, lng: 108.4358, tag: "Thắng cảnh", desc: "Hồ nước thơ mộng giữa rừng thông, ngôi thiền viện thanh tịnh", kw: "tuyen lam ho tuyen lam truc lam da lat lam dong" },
+      { name: "Đỉnh Langbiang (2.167m)", province: "Lâm Đồng", cat: "nature", icon: "fa-mountain", lat: 12.0467, lng: 108.4394, tag: "Huyền thoại", desc: "Nóc nhà Đà Lạt nhìn ngắm toàn cảnh Suối Vàng, Suối Bạc", kw: "langbiang lang biang lac duong da lat lam dong" },
+      { name: "Thác Pongour & Thác Datanla", province: "Lâm Đồng", cat: "nature", icon: "fa-water", lat: 11.6917, lng: 108.2611, tag: "Đại ngàn", desc: "Nam thiên đệ nhất thác 7 tầng kỳ vĩ và máng trượt xuyên rừng", kw: "pongour datanla thac voi dambri da lat lam dong" },
+      { name: "Đồi chè Cầu Đất", province: "Lâm Đồng", cat: "sightseeing", icon: "fa-cloud-sun", lat: 11.9125, lng: 108.5442, tag: "Săn mây", desc: "Thảm chè xanh ngát bạt ngàn đón bình minh và tuabin gió khổng lồ", kw: "cau dat doi che cau dat san may da lat" },
+      { name: "Thác Dambri (Bảo Lộc)", province: "Lâm Đồng", cat: "nature", icon: "fa-water", lat: 11.6444, lng: 107.7472, tag: "Thác nước", desc: "Thác nước cao và đẹp hùng vĩ nhất vùng Bảo Lộc", kw: "dambri thac dam bri bao loc lam dong" },
+      { name: "Bảo tàng Thế giới Cà phê (Buôn Ma Thuột)", province: "Đắk Lắk", cat: "sightseeing", icon: "fa-mug-hot", lat: 12.6989, lng: 108.0536, tag: "Kiến trúc", desc: "Biểu tượng văn hóa kiến trúc nhà dài Tây Nguyên, Buôn Ma Thuột", kw: "buon ma thuot bao tang ca phe trung nguyen dak lak" },
+      { name: "Hồ Lắk & Buôn Đôn", province: "Đắk Lắk", cat: "nature", icon: "fa-water", lat: 12.4089, lng: 108.1817, tag: "Bản sắc", desc: "Hồ nước ngọt tự nhiên lớn nhất Tây Nguyên, Cầu treo Buôn Đôn", kw: "ho lak buon don cu jut buon ma thuot dak lak" },
+      { name: "Cụm Thác Dray Nur & Dray Sap", province: "Đắk Lắk", cat: "nature", icon: "fa-water", lat: 12.5358, lng: 107.8931, tag: "Hùng vĩ", desc: "Thác Chồng - Thác Vợ kỳ vĩ nối liền Đắk Lắk và Đắk Nông", kw: "dray nur dray sap thac gia long dak lak dak nong" },
+      { name: "Hồ Tà Đùng (Vịnh Hạ Long Tây Nguyên)", province: "Đắk Nông", cat: "nature", icon: "fa-gem", lat: 11.8667, lng: 107.9667, tag: "Kỳ quan", desc: "Tuyệt tác lòng hồ với hơn 40 ốc đảo xanh biếc nổi trên mặt nước", kw: "ta dung ho ta dung dak glei dak glong dak nong" },
+      { name: "Biển Hồ Tơ Nưng & Núi lửa Chư Đăng Ya", province: "Gia Lai", cat: "nature", icon: "fa-water", lat: 14.0506, lng: 108.0017, tag: "Đôi mắt Pleiku", desc: "Hồ nước miệng núi lửa nguyên sơ nghìn năm, Hàng thông trăm tuổi", kw: "bien ho to nung chu dang ya pleiku gia lai" },
+      { name: "Thị trấn Măng Đen", province: "Kon Tum", cat: "nature", icon: "fa-tree", lat: 14.6006, lng: 108.2889, tag: "Đà Lạt thứ hai", desc: "Thác Pa Sỹ, Hồ Đắk Ke, Tượng Đức Mẹ Măng Đen giữa rừng thông", kw: "mang den thac pa sy ho dak ke kon plong kon tum" },
+      { name: "Nhà thờ Gỗ Kon Tum & Cầu treo Kon Klor", province: "Kon Tum", cat: "historic", icon: "fa-church", lat: 14.3467, lng: 108.0108, tag: "Kiến trúc", desc: "Nhà thờ chính tòa bằng gỗ cà chít hơn 100 năm tuổi", kw: "nha tho go kon klor song dak bla kon tum" },
+
+      // ĐÔNG NAM BỘ & TP. HỒ CHÍ MINH
+      { name: "Dinh Độc Lập", province: "TP. Hồ Chí Minh", cat: "historic", icon: "fa-landmark", lat: 10.7770, lng: 106.6953, tag: "Lịch sử", desc: "Di tích lịch sử quốc gia đặc biệt, biểu tượng thống nhất đất nước", kw: "dinh doc lap dinh thong nhat quan 1 sai gon ho chi minh" },
+      { name: "Nhà thờ Đức Bà & Bưu điện Trung tâm", province: "TP. Hồ Chí Minh", cat: "historic", icon: "fa-church", lat: 10.7798, lng: 106.6990, tag: "Biểu tượng Sài Gòn", desc: "Kiến trúc Pháp cổ kính tuyệt đẹp giữa lòng Quận 1", kw: "nha tho duc ba buu dien sai gon cong truong paris quan 1" },
+      { name: "Chợ Bến Thành", province: "TP. Hồ Chí Minh", cat: "sightseeing", icon: "fa-shop", lat: 10.7725, lng: 106.6981, tag: "Văn hóa", desc: "Khu chợ trăm năm biểu tượng mua sắm và ẩm thực TP.HCM", kw: "cho ben thanh quan 1 sai gon ho chi minh" },
+      { name: "Landmark 81 & Bến Bạch Đằng", province: "TP. Hồ Chí Minh", cat: "sightseeing", icon: "fa-building", lat: 10.7950, lng: 106.7219, tag: "Tòa nhà cao nhất", desc: "Tòa tháp biểu tượng hiện đại của Việt Nam vươn lên bầu trời", kw: "landmark 81 ben bach dang vinhomes quan binh thanh sai gon" },
+      { name: "Phố đi bộ Nguyễn Huệ", province: "TP. Hồ Chí Minh", cat: "entertainment", icon: "fa-person-walking", lat: 10.7744, lng: 106.7036, tag: "Nhộn nhịp", desc: "Tuyến phố đi bộ sầm uất, Ủy ban Nhân dân Thành phố", kw: "pho di bo nguyen hue quan 1 ho chi minh" },
+      { name: "Địa đạo Củ Chi", province: "TP. Hồ Chí Minh", cat: "historic", icon: "fa-dungeon", lat: 11.1417, lng: 106.4633, tag: "Di tích", desc: "Hệ thống đường hầm ngầm kỳ vĩ trong kháng chiến", kw: "dia dao cu chi ben duoc ben dinh ho chi minh" },
+      { name: "Núi Bà Đen (986m)", province: "Tây Ninh", cat: "nature", icon: "fa-mountain", lat: 11.3789, lng: 106.1683, tag: "Nóc nhà Nam Bộ", desc: "Tượng Phật Bà Tây Bổ Đà Sơn bằng đồng cao nhất Châu Á, Chùa Bà", kw: "nui ba den tay bo da son chua ba tay ninh" },
+      { name: "Tòa Thánh Tây Ninh", province: "Tây Ninh", cat: "historic", icon: "fa-place-of-worship", lat: 11.3094, lng: 106.1361, tag: "Đạo Cao Đài", desc: "Thánh địa Đạo Cao Đài kiến trúc nguy nga rực rỡ", kw: "toa thanh tay ninh dao cao dai hoa thanh tay ninh" },
+      { name: "Tượng Chúa Kytô Vua & Mũi Nghinh Phong", province: "Bà Rịa - Vũng Tàu", cat: "sightseeing", icon: "fa-cross", lat: 10.3253, lng: 107.0847, tag: "Vũng Tàu", desc: "Tượng Chúa dang tay trên đỉnh Núi Nhỏ, Bãi Sau, Bãi Trước", kw: "tuong chua kito vua nui nho mui nghinh phong bai sau vung tau" },
+      { name: "Quần đảo Côn Đảo", province: "Bà Rịa - Vũng Tàu", cat: "historic", icon: "fa-monument", lat: 8.6833, lng: 106.6000, tag: "Thiêng liêng", desc: "Nghĩa trang Hàng Dương, Mộ Cô Sáu, Nhà tù Côn Đảo, Bãi Đầm Trầu", kw: "con dao dao con dao hang duong co sau nha tu con dao dam trau" },
+      { name: "Khu bảo tồn Hồ Tràm - Hồ Cốc", province: "Bà Rịa - Vũng Tàu", cat: "nature", icon: "fa-umbrella-beach", lat: 10.4833, lng: 107.4500, tag: "Nghỉ dưỡng", desc: "Bãi biển nguyên sơ rừng dương rì rào, Xuyên Mộc", kw: "ho tram ho coc binh chau xuyen moc vung tau" },
+      { name: "Vườn quốc gia Cát Tiên", province: "Đồng Nai", cat: "nature", icon: "fa-paw", lat: 11.4289, lng: 107.4286, tag: "Rừng mưa nhiệt đới", desc: "Bàu Sấu, Đảo Tiên, khám phá thế giới động vật hoang dã", kw: "cat tien vuon quoc gia cat tien bau sau dong nai" },
+
+      // ĐỒNG BẰNG SÔNG CỬU LONG (MIỀN TÂY)
+      { name: "Bến Ninh Kiều & Chợ nổi Cái Răng", province: "Cần Thơ", cat: "sightseeing", icon: "fa-sailboat", lat: 10.0056, lng: 105.7464, tag: "Thủ phủ Miền Tây", desc: "Chợ nổi sầm uất trên sông Hậu, Cầu đi bộ Tình Yêu Ninh Kiều", kw: "ninh kieu ben ninh kieu cho noi cai rang song hau can tho" },
+      { name: "Nhà Cổ Bình Thủy", province: "Cần Thơ", cat: "historic", icon: "fa-landmark", lat: 10.0617, lng: 105.7461, tag: "Kiến trúc Pháp - Việt", desc: "Ngôi nhà cổ 5 gian hơn 150 tuổi bối cảnh phim Người Tình", kw: "nha co binh thuy can tho" },
+      { name: "Đảo Phú Quốc (Bãi Sao & Grand World)", province: "Kiên Giang", cat: "nature", icon: "fa-umbrella-beach", lat: 10.2289, lng: 103.9572, tag: "Đảo Ngọc", desc: "Bãi Sao cát trắng như kem, Cáp treo Hòn Thơm, Cầu Hôn, Safari", kw: "phu quoc dao phu quoc bai sao grand world hon thom vinwonders kien giang" },
+      { name: "Quần đảo Nam Du & Hòn Sơn", province: "Kiên Giang", cat: "nature", icon: "fa-water", lat: 9.6833, lng: 104.3500, tag: "Biển đảo hoang sơ", desc: "Hòn Mấu, Bãi Cây Mến, Bãi Bàng hoang sơ nước biển xanh ngọc", kw: "nam du hon son dao nam du kien hai kien giang" },
+      { name: "Hà Tiên & Thạch Động", province: "Kiên Giang", cat: "sightseeing", icon: "fa-mountain-sun", lat: 10.3833, lng: 104.4833, tag: "Hà Tiên Thập Cảnh", desc: "Mũi Nai, Núi Đá Dựng, Lăng Mạc Cửu, Chùa Hang", kw: "ha tien thach dong mui nai kien giang" },
+      { name: "Rừng tràm Trà Sư", province: "An Giang", cat: "nature", icon: "fa-tree", lat: 10.5167, lng: 105.0500, tag: "Sinh thái", desc: "Thảm bèo xanh mướt ngút ngàn, đi tắc ráng ngắm chim nước, Tịnh Biên", kw: "tra su rung tram tra su tinh bien chau doc an giang" },
+      { name: "Miếu Bà Chúa Xứ Núi Sam", province: "An Giang", cat: "historic", icon: "fa-place-of-worship", lat: 10.6694, lng: 105.1056, tag: "Lễ hội Quốc gia", desc: "Trung tâm hành hương linh thiêng bậc nhất Nam Bộ, Châu Đốc", kw: "ba chua xu nui sam chau doc an giang" },
+      { name: "Vườn quốc gia Tràm Chim", province: "Đồng Tháp", cat: "nature", icon: "fa-dove", lat: 10.7167, lng: 105.5167, tag: "Khu Ramsar thế giới", desc: "Xứ sở sếu đầu đỏ, ngắm hoa sen, hoa hoàng đầu ấn, Tam Nông", kw: "tram chim tam nong dong thap seu dau do" },
+      { name: "Làng hoa Sa Đéc", province: "Đồng Tháp", cat: "sightseeing", icon: "fa-flower", lat: 10.3006, lng: 105.7483, tag: "Thủ phủ hoa", desc: "Làng hoa kiểng trăm năm tuổi rực rỡ bên dòng sông Tiền", kw: "sa dec lang hoa sa dec nha co huynh thuy le dong thap" },
+      { name: "Cồn Phụng & Du lịch sinh thái Bến Tre", province: "Bến Tre", cat: "sightseeing", icon: "fa-leaf", lat: 10.3428, lng: 106.3506, tag: "Xứ Dừa", desc: "Di tích Đạo Dừa, thưởng thức kẹo dừa và đờn ca tài tử", kw: "con phung dao dua chau thanh ben tre" },
+      { name: "Chùa Dơi & Chùa Chén Kiểu", province: "Sóc Trăng", cat: "historic", icon: "fa-place-of-worship", lat: 9.5856, lng: 105.9819, tag: "Chùa Khmer", desc: "Ngôi chùa Khmer ngàn con dơi và kiến trúc ốp chén đĩa độc đáo", kw: "chua doi chua chen kieu chua som rong soc trang" },
+      { name: "Nhà Công tử Bạc Liêu & Cánh đồng Gió", province: "Bạc Liêu", cat: "historic", icon: "fa-wind", lat: 9.2942, lng: 105.7278, tag: "Check-in", desc: "Dinh thự bề thế và cánh đồng tuabin quạt gió khổng lồ sát biển", kw: "cong tu bac lieu quat gio bac lieu nha tho tac say cha diep" },
+      { name: "Mũi Cà Mau (Cực Nam Tổ quốc)", province: "Cà Mau", cat: "historic", icon: "fa-flag", lat: 8.6086, lng: 104.7175, tag: "Mốc GPS 0001", desc: "Cột mốc tọa độ quốc gia, Cột cờ Hà Nội tại Đất Mũi, Rừng đước Năm Căn", kw: "mui ca mau dat mui nam can cot moc toa do gps 0001 ca mau" },
+      { name: "Vườn quốc gia U Minh Hạ", province: "Cà Mau", cat: "nature", icon: "fa-tree", lat: 9.2333, lng: 104.9833, tag: "Rừng tràm", desc: "Trải nghiệm gác kèo ong, ăn lẩu mắm cá đồng giữa đại ngàn U Minh", kw: "u minh ha rung u minh ca mau" }
     ];
 
     function getSearchInputElement() {
@@ -12227,7 +12436,7 @@
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
           performLocationSearch(query);
-        }, 300);
+        }, 250);
       });
 
       searchInput.addEventListener('keydown', (e) => {
@@ -12275,29 +12484,40 @@
       dropdown.classList.remove('hidden');
 
       let html = `
-        <div class="p-3 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/80 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <div class="p-3 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 dark:from-slate-800 dark:to-slate-800/90 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div class="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-300">
-            <i class="fa-solid fa-earth-americas text-sky-500"></i>
-            <span>Gợi ý điểm đến nổi tiếng tại Việt Nam</span>
+            <i class="fa-solid fa-earth-asia text-sky-500"></i>
+            <span>Khám phá 150+ Địa danh & Tỉnh thành Việt Nam</span>
           </div>
-          <span class="text-[11px] font-medium text-slate-400">Nhấp để bay tới</span>
+          <span class="text-[10.5px] font-semibold text-slate-400">Nhấp để bay tới</span>
         </div>
+        
+        <!-- Popular Quick Filter Categories -->
+        <div class="p-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <button type="button" onclick="filterQuickDestinations('all')" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-500 text-white shadow-xs">Tất cả</button>
+          <button type="button" onclick="performLocationSearch('biển')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-sky-50 border border-slate-200/60 dark:border-slate-600 transition whitespace-nowrap">🌊 Biển đảo</button>
+          <button type="button" onclick="performLocationSearch('núi')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-sky-50 border border-slate-200/60 dark:border-slate-600 transition whitespace-nowrap">⛰️ Núi & Đèo</button>
+          <button type="button" onclick="performLocationSearch('di tích')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-sky-50 border border-slate-200/60 dark:border-slate-600 transition whitespace-nowrap">🏛️ Lịch sử</button>
+          <button type="button" onclick="performLocationSearch('chùa')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-sky-50 border border-slate-200/60 dark:border-slate-600 transition whitespace-nowrap">🛕 Tâm linh</button>
+        </div>
+
         <div class="p-1.5 max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
       `;
 
-      html += POPULAR_DESTINATIONS.map(d => `
-        <div onclick="selectQuickDestination(${d.lat}, ${d.lng}, '${escapeHtml(d.name)}')" class="p-3 hover:bg-sky-50 dark:hover:bg-slate-800/80 rounded-xl cursor-pointer flex items-center gap-3 transition group">
-          <div class="w-9 h-9 rounded-2xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-200 shadow-xs">
+      html += VIETNAM_LANDMARKS_DATABASE.slice(0, 15).map(d => `
+        <div onclick="selectQuickDestination(${d.lat}, ${d.lng}, '${escapeHtml(d.name)}', '${escapeHtml(d.province)}')" class="p-2.5 hover:bg-sky-50 dark:hover:bg-slate-800/80 rounded-xl cursor-pointer flex items-center gap-3 transition group">
+          <div class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs shrink-0 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-200 shadow-xs">
             <i class="fa-solid ${d.icon}"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-0.5">
-              <p class="text-xs font-bold text-slate-800 dark:text-slate-100">${d.name}</p>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold shrink-0">${d.tag}</span>
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${d.name}</p>
+              <span class="text-[9.5px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold shrink-0">${d.tag}</span>
+              <span class="text-[9.5px] text-slate-400 shrink-0">• ${d.province}</span>
             </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug break-words">${d.desc}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-1">${d.desc}</p>
           </div>
-          <i class="fa-solid fa-arrow-right text-xs text-slate-300 dark:text-slate-600 group-hover:text-sky-500 group-hover:translate-x-1 transition-all"></i>
+          <i class="fa-solid fa-location-arrow text-xs text-slate-300 dark:text-slate-600 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all"></i>
         </div>
       `).join('');
 
@@ -12306,17 +12526,25 @@
       searchInput?.focus();
     }
 
-    function selectQuickDestination(lat, lng, name) {
+    function selectQuickDestination(lat, lng, name, province = '') {
       const dropdown = document.getElementById('search-results-dropdown');
       const searchInput = getSearchInputElement();
       if (dropdown) dropdown.classList.add('hidden');
       if (searchInput) searchInput.value = name;
       getSearchClearButton()?.classList.remove('hidden');
 
-      map.flyTo([lat, lng], 13, { duration: 1.5 });
-      showToast(`Đã di chuyển tới ${name}`, 'info');
+      map.flyTo([lat, lng], 13, { duration: 1.4 });
+      showToast(`Đã di chuyển tới ${name}${province ? ` (${province})` : ''}`, 'info');
+
+      // Highlight landmark with pulse marker
+      highlightLocationOnMap(lat, lng, name, province);
     }
 
+    // High-performance location search combining 4 layers:
+    // Layer 1: User's saved memory pins
+    // Layer 2: Comprehensive 150+ Vietnam Top Landmarks Database (instant offline)
+    // Layer 3: 63 Vietnam Provinces & Regional Hubs
+    // Layer 4: Online OSM Nominatim & Photon Geocoders (parallel with VN bias)
     async function performLocationSearch(query, autoSelectFirst = false) {
       const dropdown = document.getElementById('search-results-dropdown');
       const spinner = document.getElementById('search-spinner');
@@ -12328,192 +12556,341 @@
       dropdown.innerHTML = `
         <div class="p-4 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2.5">
           <i class="fa-solid fa-circle-notch fa-spin text-sky-500 text-base"></i> 
-          <span class="font-semibold">Đang tìm kiếm thông tin chi tiết "${escapeHtml(query)}"...</span>
+          <span class="font-semibold">Đang tra cứu danh lam thắng cảnh "${escapeHtml(query)}"...</span>
         </div>
       `;
 
-      // 1. Search in local saved pins
-      const lowerQuery = query.toLowerCase();
-      const matchedPins = pins.filter(p => 
-        (p.title && p.title.toLowerCase().includes(lowerQuery)) || 
-        (p.notes && p.notes.toLowerCase().includes(lowerQuery)) ||
-        (p.locationName && p.locationName.toLowerCase().includes(lowerQuery))
-      );
+      const lowerQuery = query.toLowerCase().trim();
+      const normQuery = removeVietnameseTones(lowerQuery);
+      const queryTokens = normQuery.split(/\s+/).filter(t => t.length > 0);
 
-      // 2. Search OpenStreetMap Nominatim API with structured address details
+      // 1. Search in local saved pins
+      const matchedPins = pins.filter(p => {
+        const titleNorm = removeVietnameseTones(p.title || '');
+        const notesNorm = removeVietnameseTones(p.notes || '');
+        const locNorm = removeVietnameseTones(p.locationName || '');
+        const full = `${titleNorm} ${notesNorm} ${locNorm}`;
+        return queryTokens.every(token => full.includes(token));
+      });
+
+      // 2. Search in rich Built-in Vietnam Landmarks Catalog
+      const matchedLandmarks = VIETNAM_LANDMARKS_DATABASE.filter(lm => {
+        const nameNorm = removeVietnameseTones(lm.name);
+        const provNorm = removeVietnameseTones(lm.province);
+        const kwNorm = removeVietnameseTones(lm.kw || '');
+        const descNorm = removeVietnameseTones(lm.desc || '');
+        const full = `${nameNorm} ${provNorm} ${kwNorm} ${descNorm}`;
+        return queryTokens.every(token => full.includes(token));
+      });
+
+      // 3. Search in Vietnam Provinces
+      const matchedProvinces = (typeof VIETNAM_PROVINCES !== 'undefined') ? VIETNAM_PROVINCES.filter(prov => {
+        const provNameNorm = removeVietnameseTones(prov.name);
+        const aliasesNorm = (prov.aliases || []).map(a => removeVietnameseTones(a)).join(' ');
+        const full = `${provNameNorm} ${aliasesNorm} ${prov.regionName || ''}`;
+        return queryTokens.some(token => provNameNorm.includes(token) || full.includes(token));
+      }) : [];
+
+      // 4. Online OpenStreetMap Geocoding (Nominatim & Photon in parallel)
       let externalResults = [];
       try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}&limit=10&accept-language=vi,en`;
-        const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (resp.ok) {
-          externalResults = await resp.json();
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=vn&q=${encodeURIComponent(query)}&limit=8&accept-language=vi,en`;
+        const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=8&lat=16.0&lon=107.5`;
+
+        const [nomResp, photResp] = await Promise.allSettled([
+          fetch(nominatimUrl, { headers: { 'Accept': 'application/json' } }),
+          fetch(photonUrl, { headers: { 'Accept': 'application/json' } })
+        ]);
+
+        const rawList = [];
+        if (nomResp.status === 'fulfilled' && nomResp.value.ok) {
+          const nomData = await nomResp.value.json();
+          if (Array.isArray(nomData)) {
+            nomData.forEach(item => {
+              rawList.push({
+                source: 'osm',
+                lat: parseFloat(item.lat),
+                lon: parseFloat(item.lon),
+                name: item.name || (item.display_name ? item.display_name.split(',')[0].trim() : 'Địa điểm'),
+                display_name: item.display_name,
+                type: item.type || item.class || 'place',
+                address: item.address
+              });
+            });
+          }
         }
+
+        if (photResp.status === 'fulfilled' && photResp.value.ok) {
+          const photData = await photResp.value.json();
+          if (photData && Array.isArray(photData.features)) {
+            photData.features.forEach(feat => {
+              const props = feat.properties || {};
+              const coords = feat.geometry?.coordinates || [0, 0];
+              const addrParts = [props.street, props.district, props.city, props.state, props.country].filter(Boolean);
+              rawList.push({
+                source: 'photon',
+                lat: coords[1],
+                lon: coords[0],
+                name: props.name || addrParts[0] || 'Địa điểm',
+                display_name: [props.name, ...addrParts].filter(Boolean).join(', '),
+                type: props.osm_value || props.type || 'place',
+                address: { state: props.state, city: props.city }
+              });
+            });
+          }
+        }
+
+        // Deduplicate online results by proximity
+        const unique = [];
+        rawList.forEach(item => {
+          if (!item.lat || !item.lon) return;
+          const isDup = unique.some(u => {
+            const dLat = Math.abs(u.lat - item.lat);
+            const dLng = Math.abs(u.lon - item.lon);
+            return (dLat < 0.003 && dLng < 0.003) || (u.name.toLowerCase() === item.name.toLowerCase());
+          });
+          if (!isDup) unique.push(item);
+        });
+        externalResults = unique.slice(0, 10);
       } catch (e) {
-        console.warn('Online search error:', e);
+        console.warn('Online geocoding warning:', e);
       } finally {
         if (spinner) spinner.classList.add('hidden');
       }
+
+      // Cache current search results
+      lastSearchResultsCache = {
+        query,
+        matchedPins,
+        matchedLandmarks,
+        matchedProvinces,
+        externalResults
+      };
 
       if (autoSelectFirst) {
         if (matchedPins.length > 0) {
           selectSearchPin(matchedPins[0].id);
           return;
+        } else if (matchedLandmarks.length > 0) {
+          const lm = matchedLandmarks[0];
+          selectQuickDestination(lm.lat, lm.lng, lm.name, lm.province);
+          return;
+        } else if (matchedProvinces.length > 0) {
+          const prov = matchedProvinces[0];
+          focusProvinceOnMap(prov.id);
+          dropdown.classList.add('hidden');
+          return;
         } else if (externalResults.length > 0) {
           const first = externalResults[0];
-          selectSearchOsmLocation(parseFloat(first.lat), parseFloat(first.lon), first.display_name);
+          selectSearchOsmLocation(first.lat, first.lon, first.name, first.display_name);
           return;
         }
       }
 
-      if (matchedPins.length === 0 && externalResults.length === 0) {
+      renderSearchResultsUI();
+    }
+
+    function setSearchFilterTab(tab) {
+      currentSearchFilterTab = tab;
+      renderSearchResultsUI();
+    }
+
+    function renderSearchResultsUI() {
+      const dropdown = document.getElementById('search-results-dropdown');
+      if (!dropdown) return;
+
+      const { query, matchedPins, matchedLandmarks, matchedProvinces, externalResults } = lastSearchResultsCache;
+      const totalCount = matchedPins.length + matchedLandmarks.length + matchedProvinces.length + externalResults.length;
+
+      if (totalCount === 0) {
         dropdown.innerHTML = `
-          <div class="p-6 text-xs text-slate-400 text-center space-y-1.5">
-            <i class="fa-regular fa-compass text-3xl text-slate-300 dark:text-slate-600 block mb-1"></i>
+          <div class="p-6 text-xs text-slate-400 text-center space-y-2">
+            <i class="fa-regular fa-compass text-3xl text-sky-400/80 block mb-1 animate-pulse"></i>
             <p class="font-bold text-sm text-slate-700 dark:text-slate-200">Không tìm thấy địa điểm "${escapeHtml(query)}"</p>
-            <p class="text-xs text-slate-500">Hãy thử gõ tên xã, huyện, tỉnh thành, hoặc địa danh du lịch phổ biến.</p>
+            <p class="text-xs text-slate-500 max-w-xs mx-auto">Hãy thử tìm theo tên danh lam (Hồ Gươm, Thiên Cầm, Fansipan, Bà Nà...), tên xã, huyện, hoặc tỉnh thành.</p>
           </div>
         `;
         return;
       }
 
-      let html = '';
+      let html = `
+        <!-- Sticky Header & Category Filter Tabs -->
+        <div class="sticky top-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-2.5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              <i class="fa-solid fa-magnifying-glass-location text-sky-500"></i>
+              <span>Kết quả tìm kiếm (${totalCount})</span>
+            </span>
+            <span class="text-[10px] text-slate-400">Từ khóa: "${escapeHtml(query)}"</span>
+          </div>
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
+            <button type="button" onclick="setSearchFilterTab('all')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${currentSearchFilterTab === 'all' ? 'bg-sky-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}">
+              Tất cả (${totalCount})
+            </button>
+            ${matchedLandmarks.length > 0 ? `
+              <button type="button" onclick="setSearchFilterTab('landmarks')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${currentSearchFilterTab === 'landmarks' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50'}">
+                🏛️ Danh lam (${matchedLandmarks.length})
+              </button>
+            ` : ''}
+            ${matchedPins.length > 0 ? `
+              <button type="button" onclick="setSearchFilterTab('pins')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${currentSearchFilterTab === 'pins' ? 'bg-sky-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 hover:bg-sky-50'}">
+                ⭐ Kỷ niệm (${matchedPins.length})
+              </button>
+            ` : ''}
+            ${matchedProvinces.length > 0 ? `
+              <button type="button" onclick="setSearchFilterTab('provinces')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${currentSearchFilterTab === 'provinces' ? 'bg-teal-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50'}">
+                🗺️ Tỉnh thành (${matchedProvinces.length})
+              </button>
+            ` : ''}
+            ${externalResults.length > 0 ? `
+              <button type="button" onclick="setSearchFilterTab('osm')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${currentSearchFilterTab === 'osm' ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50'}">
+                🌐 Trực tuyến (${externalResults.length})
+              </button>
+            ` : ''}
+          </div>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-slate-800/80">
+      `;
 
-      // Render Matched Saved Memories with Maximum Information
-      if (matchedPins.length > 0) {
+      // SECTION 1: Matched Famous Landmarks
+      if ((currentSearchFilterTab === 'all' || currentSearchFilterTab === 'landmarks') && matchedLandmarks.length > 0) {
         html += `
-          <div class="px-3.5 py-2.5 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-950/60 dark:to-indigo-950/40 border-b border-sky-100 dark:border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
-              <i class="fa-solid fa-bookmark text-sky-600 dark:text-sky-400"></i>
-              <span>Kỷ niệm của bạn</span>
+          <div class="px-3.5 py-2 bg-gradient-to-r from-indigo-50/90 to-sky-50/80 dark:from-indigo-950/60 dark:to-slate-800 flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-monument text-indigo-500"></i> Danh lam thắng cảnh nổi tiếng (${matchedLandmarks.length})
+            </span>
+          </div>
+        `;
+        html += matchedLandmarks.map(lm => `
+          <div class="p-3 hover:bg-indigo-50/50 dark:hover:bg-slate-800/80 transition flex items-start gap-3 group">
+            <div onclick="selectQuickDestination(${lm.lat}, ${lm.lng}, '${escapeHtml(lm.name)}', '${escapeHtml(lm.province)}')" class="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-sm shrink-0 shadow-md group-hover:scale-105 transition cursor-pointer mt-0.5">
+              <i class="fa-solid ${lm.icon}"></i>
             </div>
-            <span class="px-2 py-0.5 rounded-full bg-sky-200 dark:bg-sky-900 text-sky-800 dark:text-sky-200 text-xs font-bold">${matchedPins.length} kết quả</span>
+            <div class="flex-1 min-w-0">
+              <div onclick="selectQuickDestination(${lm.lat}, ${lm.lng}, '${escapeHtml(lm.name)}', '${escapeHtml(lm.province)}')" class="cursor-pointer">
+                <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition">${escapeHtml(lm.name)}</h4>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold">${lm.tag}</span>
+                  <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i> ${lm.province}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-1.5">${escapeHtml(lm.desc)}</p>
+              </div>
+              <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                <span class="font-mono text-[10px] text-slate-400">${lm.lat.toFixed(4)}, ${lm.lng.toFixed(4)}</span>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="selectQuickDestination(${lm.lat}, ${lm.lng}, '${escapeHtml(lm.name)}', '${escapeHtml(lm.province)}')" class="px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-location-arrow"></i> Bay tới
+                  </button>
+                  <button type="button" onclick="openAddMemoryFromSearch(${lm.lat}, ${lm.lng}, '${escapeHtml(lm.name).replace(/'/g, "\\'")}', '${escapeHtml(lm.province).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition">
+                    <i class="fa-solid fa-plus"></i> Ghim
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // SECTION 2: User Saved Memories
+      if ((currentSearchFilterTab === 'all' || currentSearchFilterTab === 'pins') && matchedPins.length > 0) {
+        html += `
+          <div class="px-3.5 py-2 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/60 dark:to-slate-800 flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-700 dark:text-sky-300 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-bookmark text-sky-500"></i> Kỷ niệm của bạn (${matchedPins.length})
+            </span>
           </div>
         `;
         html += matchedPins.map(p => {
           const cat = CATEGORIES[p.category] || CATEGORIES.sightseeing;
           const starsStr = '★'.repeat(p.rating || 5);
-          const photoCount = Array.isArray(p.photos) ? p.photos.length : 0;
           return `
-            <div onclick="selectSearchPin('${p.id}')" class="p-3.5 hover:bg-sky-50/70 dark:hover:bg-slate-800/80 cursor-pointer flex items-start gap-3 transition border-b border-slate-100 dark:border-slate-800/60 group">
+            <div onclick="selectSearchPin('${p.id}')" class="p-3 hover:bg-sky-50/70 dark:hover:bg-slate-800/80 cursor-pointer flex items-start gap-3 transition group">
               <div class="w-10 h-10 rounded-2xl ${cat.bgClass} text-white flex items-center justify-center text-sm shrink-0 shadow-md group-hover:scale-105 transition mt-0.5">
                 <i class="fa-solid ${cat.icon}"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
-                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">${escapeHtml(p.title)}</h4>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full ${cat.bgClass} text-white font-semibold shadow-xs">${cat.name}</span>
-                  <span class="text-xs text-amber-500 font-bold tracking-tight">${starsStr}</span>
+                <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-sky-600 transition">${escapeHtml(p.title)}</h4>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full ${cat.bgClass} text-white font-semibold">${cat.name}</span>
+                  <span class="text-xs text-amber-500 font-bold">${starsStr}</span>
                 </div>
-                
-                <!-- Full Location & Date -->
-                <div class="flex items-center gap-2 flex-wrap text-xs text-slate-600 dark:text-slate-300 mb-1.5">
-                  <span class="flex items-center gap-1 font-medium"><i class="fa-solid fa-location-dot text-rose-500"></i> ${escapeHtml(p.locationName || 'Việt Nam')}</span>
-                  <span>•</span>
-                  <span class="flex items-center gap-1"><i class="fa-regular fa-calendar text-slate-400"></i> ${p.date || 'Chưa ghi ngày'}</span>
-                  ${photoCount > 0 ? `<span>•</span><span class="flex items-center gap-1 text-sky-600 dark:text-sky-400 font-semibold"><i class="fa-solid fa-image"></i> ${photoCount} ảnh</span>` : ''}
-                </div>
-
-                <!-- Full Notes (No Truncate) -->
-                ${p.notes ? `
-                  <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/50 text-xs text-slate-700 dark:text-slate-300 italic mb-2 break-words leading-relaxed">
-                    "${escapeHtml(p.notes)}"
-                  </div>
-                ` : ''}
-
-                <!-- Coordinates & Action -->
-                <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-                  <span class="font-mono text-[10px]"><i class="fa-solid fa-crosshairs"></i> ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</span>
-                  <span class="text-xs font-bold text-sky-600 dark:text-sky-400 group-hover:underline flex items-center gap-1">
-                    Xem kỷ niệm <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                  </span>
-                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">${escapeHtml(p.locationName || '')} • ${p.date || ''}</p>
+                ${p.notes ? `<p class="text-xs text-slate-600 dark:text-slate-300 italic mb-1 line-clamp-2">"${escapeHtml(p.notes)}"</p>` : ''}
               </div>
+              <i class="fa-solid fa-arrow-right text-xs text-slate-300 group-hover:text-sky-500 transition-all self-center"></i>
             </div>
           `;
         }).join('');
       }
 
-      // Render OpenStreetMap Map Locations with Full Administrative Details
-      if (externalResults.length > 0) {
+      // SECTION 3: Matched Provinces
+      if ((currentSearchFilterTab === 'all' || currentSearchFilterTab === 'provinces') && matchedProvinces.length > 0) {
         html += `
-          <div class="px-3.5 py-2.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/60 dark:to-slate-800 border-b border-indigo-100 dark:border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
-              <i class="fa-solid fa-map-location-dot text-indigo-600 dark:text-indigo-400"></i>
-              <span>Địa điểm trên bản đồ</span>
-            </div>
-            <span class="px-2 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs font-bold">${externalResults.length} địa điểm</span>
+          <div class="px-3.5 py-2 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/60 dark:to-slate-800 flex items-center justify-between">
+            <span class="text-xs font-bold text-teal-700 dark:text-teal-300 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-map-location-dot text-teal-500"></i> Tỉnh / Thành phố (${matchedProvinces.length})
+            </span>
           </div>
         `;
-        html += externalResults.map((item) => {
-          const lat = parseFloat(item.lat);
-          const lon = parseFloat(item.lon);
+        html += matchedProvinces.map(prov => `
+          <div onclick="focusProvinceOnMap('${prov.id}'); document.getElementById('search-results-dropdown')?.classList.add('hidden');" class="p-3 hover:bg-teal-50/60 dark:hover:bg-slate-800/80 cursor-pointer flex items-center justify-between gap-3 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-teal-500 text-white flex items-center justify-center text-sm shrink-0 shadow-md group-hover:scale-105 transition">
+                <i class="fa-solid fa-city"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-teal-600 transition">${escapeHtml(prov.name)}</h4>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold">${prov.regionName || 'Việt Nam'}</span>
+                  ${prov.isCoastal ? `<span class="text-[10px] text-sky-600 font-semibold">📍 ${prov.coastlineKm}km biển</span>` : ''}
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Xem tổng quan dấu chân & địa danh tại ${prov.name}</p>
+              </div>
+            </div>
+            <button type="button" class="px-2.5 py-1 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+              Khám phá
+            </button>
+          </div>
+        `).join('');
+      }
+
+      // SECTION 4: Online Map Locations (Nominatim / Photon)
+      if ((currentSearchFilterTab === 'all' || currentSearchFilterTab === 'osm') && externalResults.length > 0) {
+        html += `
+          <div class="px-3.5 py-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/60 dark:to-slate-800 flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-globe text-amber-500"></i> Bản đồ trực tuyến & Hành chính (${externalResults.length})
+            </span>
+          </div>
+        `;
+        html += externalResults.map(item => {
+          const lat = item.lat;
+          const lon = item.lon;
           const parts = item.display_name.split(',').map(s => s.trim());
-          const mainTitle = parts[0];
+          const mainTitle = item.name || parts[0];
           const addressRest = parts.slice(1).join(', ');
 
-          // Place type detection
-          const typeNames = {
-            administrative: 'Khu vực hành chính',
-            village: 'Xã / Thôn',
-            town: 'Thị trấn',
-            city: 'Thành phố',
-            state: 'Tỉnh / Thành',
-            suburb: 'Phường / Khóm',
-            neighbourhood: 'Khu phố',
-            tourism: 'Điểm du lịch',
-            attraction: 'Thắng cảnh',
-            historic: 'Di tích lịch sử',
-            viewpoint: 'Điểm ngắm cảnh',
-            peak: 'Đỉnh núi',
-            beach: 'Bãi biển',
-            water: 'Sông hồ',
-            park: 'Công viên',
-            restaurant: 'Ẩm thực',
-            cafe: 'Quán Cafe',
-            hotel: 'Lưu trú'
-          };
-          const rawType = item.type || item.class || 'place';
-          const typeLabel = typeNames[rawType] || rawType;
-
-          // Extract province/state if available
-          const provinceName = item.address?.state || item.address?.city || (parts.length > 2 ? parts[parts.length - 2] : '');
-
           return `
-            <div class="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition border-b border-slate-100 dark:border-slate-800/60 group">
-              <div class="flex items-start gap-3">
-                <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base shrink-0 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-105 transition shadow-sm cursor-pointer mt-0.5">
-                  <i class="fa-solid fa-location-dot"></i>
+            <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition flex items-start gap-3 group">
+              <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-sm shrink-0 shadow-md group-hover:scale-105 transition cursor-pointer mt-0.5">
+                <i class="fa-solid fa-map-pin"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="cursor-pointer">
+                  <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition mb-0.5">${escapeHtml(mainTitle)}</h4>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-1.5 break-words">${escapeHtml(addressRest || item.display_name)}</p>
                 </div>
-
-                <div class="flex-1 min-w-0">
-                  <!-- Title & Badges -->
-                  <div onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="cursor-pointer">
-                    <div class="flex items-center gap-2 flex-wrap mb-1">
-                      <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">${escapeHtml(mainTitle)}</h4>
-                      <span class="text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold">${typeLabel}</span>
-                      ${provinceName ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium"><i class="fa-solid fa-map-pin text-[9px] mr-1 text-slate-400"></i>${escapeHtml(provinceName)}</span>` : ''}
-                    </div>
-
-                    <!-- Complete Address (No truncation, full text wrapping) -->
-                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words mb-2 font-normal">
-                      ${escapeHtml(addressRest || item.display_name)}
-                    </p>
-                  </div>
-
-                  <!-- Footer with coordinates and Quick Actions -->
-                  <div class="flex items-center justify-between gap-2 flex-wrap pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-                    <span class="font-mono text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                      <i class="fa-solid fa-crosshairs text-slate-400"></i> ${lat.toFixed(5)}, ${lon.toFixed(5)}
-                    </span>
-                    
-                    <div class="flex items-center gap-2">
-                      <button type="button" onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-location-arrow"></i> Xem trên bản đồ
-                      </button>
-                      <button type="button" onclick="openAddMemoryFromSearch(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
-                        <i class="fa-solid fa-plus"></i> Ghim
-                      </button>
-                    </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                  <span class="font-mono text-[10px] text-slate-400">${lat.toFixed(4)}, ${lon.toFixed(4)}</span>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="selectSearchOsmLocation(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/70 hover:bg-amber-100 text-amber-700 dark:text-amber-300 font-bold text-xs flex items-center gap-1 transition">
+                      <i class="fa-solid fa-location-arrow"></i> Xem trên map
+                    </button>
+                    <button type="button" onclick="openAddMemoryFromSearch(${lat}, ${lon}, '${escapeHtml(mainTitle).replace(/'/g, "\\'")}', '${escapeHtml(addressRest).replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition">
+                      <i class="fa-solid fa-plus"></i> Ghim
+                    </button>
                   </div>
                 </div>
               </div>
@@ -12522,7 +12899,39 @@
         }).join('');
       }
 
+      html += `</div>`;
       dropdown.innerHTML = html;
+    }
+
+    function highlightLocationOnMap(lat, lng, name, address = '') {
+      const tempMarker = L.circleMarker([lat, lng], {
+        radius: 14,
+        color: '#4f46e5',
+        fillColor: '#818cf8',
+        fillOpacity: 0.85,
+        weight: 3
+      }).addTo(map);
+
+      tempMarker.bindPopup(`
+        <div class="p-3.5 max-w-[280px] text-left space-y-2">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+            <i class="fa-solid fa-monument"></i>
+            <span>Địa danh Việt Nam</span>
+          </div>
+          <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(name)}</h4>
+          ${address ? `<p class="text-xs text-slate-600 dark:text-slate-300 break-words leading-relaxed">${escapeHtml(address)}</p>` : ''}
+          <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+            <span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+          </div>
+          <button onclick="openAddMemoryFromSearch(${lat}, ${lng}, '${escapeHtml(name).replace(/'/g, "\\'")}', '${escapeHtml(address).replace(/'/g, "\\'")}'); map.removeLayer(this._tempMarker || map);" class="w-full py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Ghim kỷ niệm tại đây
+          </button>
+        </div>
+      `, { offset: [0, -5] }).openPopup();
+
+      setTimeout(() => {
+        try { map.removeLayer(tempMarker); } catch(e) {}
+      }, 25000);
     }
 
     function selectSearchPin(pinId) {
@@ -12541,35 +12950,7 @@
       map.flyTo([lat, lng], 14, { duration: 1.2 });
       showToast(`Đang chuyển đến ${name}`, 'info');
 
-      // Create a temporary highlighted pulse marker
-      const tempMarker = L.circleMarker([lat, lng], {
-        radius: 12,
-        color: '#0284c7',
-        fillColor: '#38bdf8',
-        fillOpacity: 0.8,
-        weight: 3
-      }).addTo(map);
-
-      tempMarker.bindPopup(`
-        <div class="p-3.5 max-w-[280px] text-left space-y-2">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>Địa điểm tìm kiếm</span>
-          </div>
-          <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(name)}</h4>
-          ${address ? `<p class="text-xs text-slate-600 dark:text-slate-300 break-words leading-relaxed">${escapeHtml(address)}</p>` : ''}
-          <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-            <span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
-          </div>
-          <button onclick="openAddMemoryFromSearch(${lat}, ${lng}, '${escapeHtml(name).replace(/'/g, "\\'")}', '${escapeHtml(address).replace(/'/g, "\\'")}'); map.removeLayer(this._tempMarker || map);" class="w-full py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-plus"></i> Ghim kỷ niệm tại đây
-          </button>
-        </div>
-      `, { offset: [0, -5] }).openPopup();
-
-      setTimeout(() => {
-        try { map.removeLayer(tempMarker); } catch(e) {}
-      }, 20000);
+      highlightLocationOnMap(lat, lng, name, address);
     }
 
     async function openAddMemoryFromSearch(lat, lng, name, address) {
