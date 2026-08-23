@@ -675,16 +675,8 @@
               <i class="fa-solid fa-route text-indigo-400 text-[11px]"></i>
               <span id="route-summary-mode-label" class="font-bold text-indigo-200">Lộ trình</span>
             </span>
-            <div class="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10 shrink-0" id="trip-direction-toggle-group">
-              <button type="button" id="btn-trip-outbound" onclick="setTripDirection('outbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5" title="Toàn tuyến: Từ điểm đầu đến điểm cuối (1 chiều)">
-                <i class="fa-solid fa-arrow-right text-[8px]"></i> <span>Toàn tuyến</span>
-              </button>
-              <button type="button" id="btn-trip-roundtrip" onclick="setTripDirection('roundtrip')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Khứ hồi: Cả lượt đi và lượt về (x2 quãng đường)">
-                <i class="fa-solid fa-arrows-left-right text-[8px]"></i> <span>Khứ hồi (x2)</span>
-              </button>
-              <button type="button" id="btn-trip-inbound" onclick="setTripDirection('inbound')" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5" title="Chiều về: Từ điểm cuối về điểm đầu">
-                <i class="fa-solid fa-arrow-left text-[8px]"></i> <span>Chiều về</span>
-              </button>
+            <div class="flex items-center bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30 text-emerald-300 text-[10px] font-bold shrink-0">
+              <i class="fa-solid fa-arrow-right text-[8px] mr-1"></i> <span>Toàn tuyến</span>
             </div>
           </div>
 
@@ -693,17 +685,17 @@
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Quãng đường</span>
               <p id="summary-total-dist" class="text-xs sm:text-sm font-black text-white tracking-tight">0.0 km</p>
-              <span id="summary-dist-sub" class="text-[9px] text-emerald-300 font-medium block truncate">Đi: 0 km • Về: 0 km</span>
+              <span id="summary-dist-sub" class="text-[9px] text-emerald-300 font-medium block truncate">Toàn tuyến</span>
             </div>
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Thời gian</span>
               <p id="summary-total-time" class="text-xs sm:text-sm font-black text-amber-300 tracking-tight">0 phút</p>
-              <span id="summary-time-sub" class="text-[9px] text-amber-200/80 font-medium block truncate">Khứ hồi</span>
+              <span id="summary-time-sub" class="text-[9px] text-amber-200/80 font-medium block truncate">Toàn tuyến</span>
             </div>
             <div class="flex-1 px-1">
               <span class="text-[9px] text-slate-400 uppercase font-medium block">Điểm dừng</span>
               <p class="text-xs sm:text-sm font-black text-emerald-400 tracking-tight"><span id="route-stops-count-badge">0</span> điểm</p>
-              <span id="summary-stops-sub" class="text-[9px] text-slate-300 font-medium block truncate">1 tuyến</span>
+              <span id="summary-stops-sub" class="text-[9px] text-slate-300 font-medium block truncate">Tuyến đang chọn</span>
             </div>
           </div>
 
@@ -755,7 +747,7 @@
           
           <!-- Top Row: 2 Key Metric Blocks -->
           <div class="grid grid-cols-2 gap-3 divide-x divide-slate-800">
-            <!-- Metric 1: Total Distance (Roundtrip) -->
+            <!-- Metric 1: Total Distance -->
             <div class="space-y-1">
               <div class="flex items-center gap-1 text-[10.5px] font-semibold text-slate-400 uppercase tracking-wider">
                 <i class="fa-solid fa-route text-sky-400 text-xs"></i>
@@ -765,7 +757,7 @@
                 <span id="stat-total-all-routes-km" class="text-xl sm:text-2xl font-black text-white tracking-tight">0.0 km</span>
               </div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">Khứ hồi</span>
+                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">Toàn tuyến</span>
                 <span class="text-[10px] text-slate-400 truncate" id="stat-total-routes-count"><i class="fa-solid fa-signs-post mr-1"></i>0 hành trình</span>
               </div>
             </div>
@@ -7799,27 +7791,16 @@
       showToast(`Đã tối ưu hóa lộ trình ngắn nhất cho ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}!`, 'success');
     }
 
-    // Active trip direction: 'outbound' (Toàn tuyến / 1 Chiều - Mặc định), 'roundtrip' (Khứ hồi - x2), 'inbound' (Chiều về)
+    // Active trip direction: 'outbound' (Toàn tuyến)
     let activeTripDirection = 'outbound';
 
     function setTripDirection(dir) {
-      activeTripDirection = dir;
-      const btnRound = document.getElementById('btn-trip-roundtrip');
-      const btnOut = document.getElementById('btn-trip-outbound');
-      const btnIn = document.getElementById('btn-trip-inbound');
-
-      const activeClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-500 text-white shadow-2xs transition flex items-center gap-0.5';
-      const inactiveClass = 'px-1.5 py-0.5 rounded text-[9.5px] font-bold text-slate-300 hover:text-white transition flex items-center gap-0.5';
-
-      if (btnOut) btnOut.className = (dir === 'outbound') ? activeClass : inactiveClass;
-      if (btnRound) btnRound.className = (dir === 'roundtrip') ? activeClass : inactiveClass;
-      if (btnIn) btnIn.className = (dir === 'inbound') ? activeClass : inactiveClass;
-
+      activeTripDirection = 'outbound';
       updateRouteSummaryUI();
       renderRouteStops();
     }
 
-    // Single Route Metrics Calculator (Outbound, Return, Round-trip)
+    // Single Route Metrics Calculator (Toàn tuyến)
     function calculateSingleRouteMetrics(route) {
       if (!route) {
         return {
@@ -7841,23 +7822,13 @@
         ? route.durationSeconds
         : Math.round((outboundKm * 1000) / speedMps);
 
-      const returnKm = (typeof route.returnDistanceKm === 'number' && route.returnDistanceKm > 0)
-        ? route.returnDistanceKm
-        : outboundKm;
-      const returnSec = (typeof route.returnDurationSeconds === 'number' && route.returnDurationSeconds > 0)
-        ? route.returnDurationSeconds
-        : outboundSec;
-
-      const roundTripKm = parseFloat((outboundKm + returnKm).toFixed(1));
-      const roundTripSec = outboundSec + returnSec;
-
       return {
         outboundKm,
-        returnKm,
-        roundTripKm,
+        returnKm: outboundKm,
+        roundTripKm: outboundKm,
         outboundSec,
-        returnSec,
-        roundTripSec,
+        returnSec: outboundSec,
+        roundTripSec: outboundSec,
         stopsCount
       };
     }
@@ -7866,22 +7837,14 @@
     function calculateAllRoutesAggregateMetrics() {
       const validRoutes = (routes || []).filter(r => Array.isArray(r.pinIds) && r.pinIds.length >= 2);
       let totalOutboundKm = 0;
-      let totalReturnKm = 0;
-      let totalRoundTripKm = 0;
       let totalOutboundSec = 0;
-      let totalReturnSec = 0;
-      let totalRoundTripSec = 0;
       let totalStopsCount = 0;
       const uniquePinIdsSet = new Set();
 
       const routeBreakdowns = validRoutes.map(r => {
         const m = calculateSingleRouteMetrics(r);
         totalOutboundKm += m.outboundKm;
-        totalReturnKm += m.returnKm;
-        totalRoundTripKm += m.roundTripKm;
         totalOutboundSec += m.outboundSec;
-        totalReturnSec += m.returnSec;
-        totalRoundTripSec += m.roundTripSec;
         totalStopsCount += m.stopsCount;
         (r.pinIds || []).forEach(id => uniquePinIdsSet.add(id));
         return {
@@ -7894,11 +7857,11 @@
         routesCount: validRoutes.length,
         totalRoutesCount: (routes || []).length,
         totalOutboundKm: parseFloat(totalOutboundKm.toFixed(1)),
-        totalReturnKm: parseFloat(totalReturnKm.toFixed(1)),
-        totalRoundTripKm: parseFloat(totalRoundTripKm.toFixed(1)),
+        totalReturnKm: parseFloat(totalOutboundKm.toFixed(1)),
+        totalRoundTripKm: parseFloat(totalOutboundKm.toFixed(1)),
         totalOutboundSec,
-        totalReturnSec,
-        totalRoundTripSec,
+        totalReturnSec: totalOutboundSec,
+        totalRoundTripSec: totalOutboundSec,
         totalStopsCount,
         uniquePinsCount: uniquePinIdsSet.size,
         routeBreakdowns
@@ -7935,11 +7898,9 @@
           if (timeEl) timeEl.textContent = totalDuration;
           if (stopsBadgeEl) stopsBadgeEl.textContent = totalStops;
           if (distSubEl) {
-            const outKm = sharedRoutePayload.outboundKm || parseFloat((totalKm / 2).toFixed(1));
-            const retKm = sharedRoutePayload.returnKm || parseFloat((totalKm / 2).toFixed(1));
-            distSubEl.textContent = `Đi: ${outKm.toLocaleString('vi-VN')} km • Về: ${retKm.toLocaleString('vi-VN')} km`;
+            distSubEl.textContent = `Toàn tuyến: ${totalKm.toLocaleString('vi-VN')} km`;
           }
-          if (timeSubEl) timeSubEl.textContent = `Khứ hồi (${routesCount} tuyến)`;
+          if (timeSubEl) timeSubEl.textContent = `Toàn tuyến (${routesCount} tuyến)`;
           if (stopsSubEl) stopsSubEl.textContent = `${routesCount} tuyến (${totalStops} điểm)`;
 
           if (pillDist) pillDist.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
@@ -7966,11 +7927,9 @@
           if (timeEl) timeEl.textContent = totalDuration;
           if (stopsBadgeEl) stopsBadgeEl.textContent = totalStops;
           if (distSubEl) {
-            const outKm = sharedRoutePayload.outboundKm || totalKm;
-            const retKm = sharedRoutePayload.returnKm || totalKm;
-            distSubEl.textContent = `Đi: ${outKm.toLocaleString('vi-VN')} km • Về: ${retKm.toLocaleString('vi-VN')} km`;
+            distSubEl.textContent = `Toàn tuyến: ${totalKm.toLocaleString('vi-VN')} km`;
           }
-          if (timeSubEl) timeSubEl.textContent = `Khứ hồi 2 chiều`;
+          if (timeSubEl) timeSubEl.textContent = `Toàn tuyến`;
           if (stopsSubEl) stopsSubEl.textContent = `1 tuyến (${totalStops} điểm)`;
 
           if (pillDist) pillDist.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
@@ -7994,22 +7953,10 @@
           modeLabelEl.textContent = `Tổng hợp ${routesCount} tuyến`;
         }
 
-        let displayedKm = agg.totalOutboundKm;
-        let displayedSec = agg.totalOutboundSec;
-        let distSubText = `Toàn tuyến: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
-        let timeSubText = `Toàn tuyến (${routesCount} tuyến)`;
-
-        if (activeTripDirection === 'roundtrip') {
-          displayedKm = agg.totalRoundTripKm;
-          displayedSec = agg.totalRoundTripSec;
-          distSubText = `Khứ hồi: Đi ${agg.totalOutboundKm.toLocaleString('vi-VN')} km + Về ${agg.totalReturnKm.toLocaleString('vi-VN')} km`;
-          timeSubText = `Khứ hồi (${routesCount} tuyến)`;
-        } else if (activeTripDirection === 'inbound') {
-          displayedKm = agg.totalReturnKm;
-          displayedSec = agg.totalReturnSec;
-          distSubText = `Tổng chiều về (${routesCount} tuyến)`;
-          timeSubText = `Lượt về`;
-        }
+        const displayedKm = agg.totalOutboundKm;
+        const displayedSec = agg.totalOutboundSec;
+        const distSubText = `Toàn tuyến: ${agg.totalOutboundKm.toLocaleString('vi-VN')} km`;
+        const timeSubText = `Toàn tuyến (${routesCount} tuyến)`;
 
         const timeStr = formatTravelTime(displayedSec);
 
@@ -8037,7 +7984,7 @@
           } else {
             pillsBreakdown.innerHTML = agg.routeBreakdowns.map(b => {
               const r = b.route;
-              const rKm = activeTripDirection === 'roundtrip' ? b.roundTripKm : activeTripDirection === 'inbound' ? b.returnKm : b.outboundKm;
+              const rKm = b.outboundKm;
               return `
                 <button type="button" onclick="handleSelectRoute('${r.id}'); setDisplayViewMode('active');" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/10 text-white text-[10px] transition truncate" title="Chuyển sang xem riêng tuyến ${escapeHtml(r.name)}">
                   <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${r.color || '#6366f1'};"></span>
@@ -8061,7 +8008,7 @@
         if (distEl) distEl.textContent = '0.0 km';
         if (timeEl) timeEl.textContent = '0 phút';
         if (stopsBadgeEl) stopsBadgeEl.textContent = routePinIds.length;
-        if (distSubEl) distSubEl.textContent = 'Toàn tuyến: 0 km • Khứ hồi: 0 km';
+        if (distSubEl) distSubEl.textContent = 'Toàn tuyến: 0 km';
         if (timeSubEl) timeSubEl.textContent = 'Toàn tuyến';
         if (stopsSubEl) stopsSubEl.textContent = 'Tuyến đang chọn';
         if (pill) {
@@ -8075,22 +8022,10 @@
       if (modeLabelEl) modeLabelEl.textContent = active.name;
 
       const m = calculateSingleRouteMetrics(active);
-      let displayedKm = m.outboundKm;
-      let displayedSec = m.outboundSec;
-      let distSubText = `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km • Khứ hồi: ${m.roundTripKm.toLocaleString('vi-VN')} km`;
-      let timeSubText = `Toàn tuyến (Chiều đi)`;
-
-      if (activeTripDirection === 'roundtrip') {
-        displayedKm = m.roundTripKm;
-        displayedSec = m.roundTripSec;
-        distSubText = `Khứ hồi: Đi ${m.outboundKm.toLocaleString('vi-VN')} km + Về ${m.returnKm.toLocaleString('vi-VN')} km`;
-        timeSubText = `Khứ hồi 2 chiều`;
-      } else if (activeTripDirection === 'inbound') {
-        displayedKm = m.returnKm;
-        displayedSec = m.returnSec;
-        distSubText = `Chiều về (Điểm cuối về đầu)`;
-        timeSubText = `Lượt về`;
-      }
+      const displayedKm = m.outboundKm;
+      const displayedSec = m.outboundSec;
+      const distSubText = `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km`;
+      const timeSubText = `Toàn tuyến`;
 
       const timeStr = formatTravelTime(displayedSec);
 
@@ -8183,19 +8118,9 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-1 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-center text-[10.5px]">
-                  <div>
-                    <span class="text-[9px] text-slate-400 uppercase font-medium block">Đi</span>
-                    <span class="font-bold text-slate-700 dark:text-slate-200">${r.outboundKm || ((r.distKm||0)/2).toFixed(1)} km</span>
-                  </div>
-                  <div>
-                    <span class="text-[9px] text-slate-400 uppercase font-medium block">Về</span>
-                    <span class="font-bold text-slate-700 dark:text-slate-200">${r.returnKm || ((r.distKm||0)/2).toFixed(1)} km</span>
-                  </div>
-                  <div>
-                    <span class="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase font-extrabold block">Khứ hồi</span>
-                    <span class="font-black text-emerald-600 dark:text-emerald-400">${r.distKm} km</span>
-                  </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-[11px]">
+                  <span class="text-slate-500 dark:text-slate-400 font-medium">Chiều dài toàn tuyến:</span>
+                  <span class="font-extrabold text-emerald-600 dark:text-emerald-400">${r.outboundKm || r.distKm || 0} km</span>
                 </div>
 
                 <details class="text-xs" open>
@@ -8325,19 +8250,9 @@
               </div>
 
               <!-- Route Distance & Time Breakdown -->
-              <div class="grid grid-cols-3 gap-1 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-center text-[10.5px]">
-                <div>
-                  <span class="text-[9px] text-slate-400 uppercase font-medium block">Đi</span>
-                  <span class="font-bold text-slate-700 dark:text-slate-200">${b.outboundKm} km</span>
-                </div>
-                <div>
-                  <span class="text-[9px] text-slate-400 uppercase font-medium block">Về</span>
-                  <span class="font-bold text-slate-700 dark:text-slate-200">${b.returnKm} km</span>
-                </div>
-                <div>
-                  <span class="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase font-extrabold block">Khứ hồi</span>
-                  <span class="font-black text-emerald-600 dark:text-emerald-400">${b.roundTripKm} km</span>
-                </div>
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 text-[11px]">
+                <span class="text-slate-500 dark:text-slate-400 font-medium">Toàn tuyến:</span>
+                <span class="font-extrabold text-emerald-600 dark:text-emerald-400">${b.outboundKm} km</span>
               </div>
 
               <!-- Collapsible Stops List for this Route -->
@@ -8462,25 +8377,7 @@
         `;
       }).join('');
 
-      let roundTripEndCardHtml = '';
-      if (routePinIds.length >= 2 && activeTripDirection === 'roundtrip') {
-        const firstPin = pins.find(p => p.id === routePinIds[0]);
-        roundTripEndCardHtml = `
-          <div class="p-2.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-dashed border-emerald-300 dark:border-emerald-700/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200">
-            <div class="flex items-center gap-2 min-w-0">
-              <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs shrink-0">
-                <i class="fa-solid fa-flag-checkered"></i>
-              </div>
-              <div class="min-w-0 truncate">
-                <span class="font-bold text-[11px]">Vòng về đích (Điểm #1: ${escapeHtml(firstPin ? firstPin.title : 'Xuất phát')})</span>
-              </div>
-            </div>
-            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full shrink-0 ml-2">Khứ hồi</span>
-          </div>
-        `;
-      }
-
-      list.innerHTML = deadEndBannerHtml + stopsCardsHtml + roundTripEndCardHtml;
+      list.innerHTML = deadEndBannerHtml + stopsCardsHtml;
     }
 
     // Resilient Router & Direct Polyline Routing Engine
@@ -8527,15 +8424,8 @@
         return;
       }
 
-      // Handle Direction (outbound, roundtrip, inbound)
-      let waypoints = [];
-      if (activeTripDirection === 'roundtrip') {
-        waypoints = [...rawPoints, rawPoints[0]];
-      } else if (activeTripDirection === 'inbound') {
-        waypoints = [...rawPoints].reverse();
-      } else {
-        waypoints = [...rawPoints];
-      }
+      // Toàn tuyến: Đi qua toàn bộ các điểm dừng
+      const waypoints = [...rawPoints];
 
       const primaryColor = routeColor || '#6366f1';
 
@@ -11557,17 +11447,17 @@
         activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500'}"></i> ${isMoto ? 'Xe máy' : 'Ô tô'}`;
       }
 
-      // 3. Cumulative Distance of ALL Routes (Outbound, Return & Roundtrip)
+      // 3. Cumulative Distance of ALL Routes
       const agg = calculateAllRoutesAggregateMetrics();
 
       const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
       if (statTotalAllKm) {
-        statTotalAllKm.textContent = `${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
+        statTotalAllKm.textContent = `${agg.totalOutboundKm.toLocaleString('vi-VN')} km`;
       }
 
       const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
       if (totalRoutesCountEl) {
-        totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${routes.length}</b> hành trình <span class="opacity-50 mx-1">•</span> Chiều đi: <b>${agg.totalOutboundKm.toLocaleString('vi-VN')} km</b>`;
+        totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${routes.length}</b> hành trình <span class="opacity-50 mx-1">•</span> Tổng: <b>${agg.totalOutboundKm.toLocaleString('vi-VN')} km</b>`;
       }
 
       const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -11578,7 +11468,7 @@
       // 4. Calculate 63 Provinces & 3,260 km Coastline
       calculateVietnamFootprint();
 
-      // 5. Render Breakdown List of EACH Route with individual km & roundtrip
+      // 5. Render Breakdown List of EACH Route with individual km
       const breakdownListContainer = document.getElementById('stat-routes-breakdown-list');
       if (breakdownListContainer) {
         if (!routes || routes.length === 0) {
@@ -11604,13 +11494,11 @@
                     <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
                     <span>•</span>
                     <span>${stopsCount} điểm</span>
-                    <span>•</span>
-                    <span class="text-slate-400">Chiều đi: ${m.outboundKm.toLocaleString('vi-VN')} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toLocaleString('vi-VN')} km</span>
-                  <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Khứ hồi</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
+                  <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Toàn tuyến</span>
                   ${!isCurrentActive ? `
                     <button onclick="handleSelectRoute('${r.id}'); switchTab('route');" class="block text-[11px] text-sky-600 dark:text-sky-400 font-bold hover:underline mt-0.5">
                       Xem lộ trình
