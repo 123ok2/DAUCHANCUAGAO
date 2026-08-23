@@ -298,7 +298,83 @@
     }
 
     /* Map Zoom Responsive Scaling for Pin & Place Name Labels */
-    /* Low Zoom (Overview / Country View zoom <= 7): Compact pin + crisp legible place name badge */
+    /* Photo thumbnail bubble attached to pin */
+    .custom-marker-photo-box {
+      display: none;
+      position: absolute;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.9);
+      transform-origin: bottom center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: #0f172a;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, opacity 0.25s ease;
+      z-index: 20;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    .custom-marker-photo-box::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 7px;
+      height: 7px;
+      background-color: #ffffff;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+      z-index: 1;
+    }
+    .custom-marker-photo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .custom-marker-photo-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 15px;
+      height: 15px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.95);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      z-index: 2;
+    }
+    @keyframes popInPhoto {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.4) translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1) translateY(0);
+      }
+    }
+    .custom-marker-wrapper:hover .custom-marker-photo-box {
+      transform: translateX(-50%) scale(1.3) translateY(-6px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+      border-color: #38bdf8;
+      z-index: 10001 !important;
+    }
+    .custom-marker-wrapper:hover .custom-marker-photo-img {
+      transform: scale(1.12);
+    }
+
+    /* Low Zoom (Overview / Country View zoom <= 10): Compact pin + crisp legible place name badge (photos hidden for uncluttered view) */
+    .map-zoom-low .custom-marker-photo-box {
+      display: none !important;
+    }
     .map-zoom-low .custom-marker-pin {
       width: 28px;
       height: 28px;
@@ -324,7 +400,15 @@
       max-width: 96px;
     }
 
-    /* Mid Zoom (Province / Regional View zoom 8 to 12): Medium pin, balanced place name label */
+    /* Mid Zoom (Province / Regional View zoom 11 to 13): Reveal compact photo badge */
+    .map-zoom-mid .custom-marker-photo-box {
+      display: block !important;
+      width: 48px;
+      height: 48px;
+      bottom: 40px;
+      opacity: 0.98;
+      animation: popInPhoto 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
     .map-zoom-mid .custom-marker-pin {
       width: 34px;
       height: 34px;
@@ -350,7 +434,16 @@
       max-width: 118px;
     }
 
-    /* High Zoom (City / Street Level zoom >= 13): Full high-detail pin and prominent place name badge */
+    /* High Zoom (City / Street Level zoom >= 14): Expanded high-detail photo badge and prominent place name badge */
+    .map-zoom-high .custom-marker-photo-box {
+      display: block !important;
+      width: 60px;
+      height: 60px;
+      bottom: 46px;
+      border-radius: 14px;
+      opacity: 1;
+      animation: popInPhoto 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
     .map-zoom-high .custom-marker-pin {
       width: 40px;
       height: 40px;
@@ -3455,9 +3548,9 @@
       if (!mapEl) return;
 
       mapEl.classList.remove('map-zoom-low', 'map-zoom-mid', 'map-zoom-high');
-      if (zoom <= 7) {
+      if (zoom <= 10) {
         mapEl.classList.add('map-zoom-low');
-      } else if (zoom <= 12) {
+      } else if (zoom <= 13) {
         mapEl.classList.add('map-zoom-mid');
       } else {
         mapEl.classList.add('map-zoom-high');
@@ -3616,18 +3709,84 @@
     }
 
     // ==========================================
-    // MARKERS & PINS MANAGEMENT (CLASSIC TEARDROP PIN WITH PLACE NAME)
+    // MARKERS & PINS MANAGEMENT (CLASSIC TEARDROP PIN WITH PLACE NAME & PHOTO BUBBLE ON ZOOM)
     // ==========================================
+    function getPhotoForPin(pinOrCategory) {
+      if (!pinOrCategory) return null;
+      if (typeof pinOrCategory === 'object') {
+        if (pinOrCategory.photo) return pinOrCategory.photo;
+        const title = (pinOrCategory.title || '').toLowerCase();
+        const notes = (pinOrCategory.notes || '').toLowerCase();
+        const combined = title + ' ' + notes;
+
+        // Specialized Vietnam Landmark & Scenic recognition
+        if (combined.includes('điện gió') || combined.includes('đầm nại') || combined.includes('turbine') || combined.includes('wind')) {
+          return 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('po klong') || combined.includes('chăm') || combined.includes('champa') || combined.includes('tháp bà') || combined.includes('tháp chàm') || combined.includes('mỹ sơn') || combined.includes('tháp')) {
+          return 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('đồi cát') || combined.includes('nam cương') || combined.includes('mũi né') || combined.includes('bàu trắng') || combined.includes('sa mạc')) {
+          return 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('san hô') || combined.includes('hòn đỏ') || combined.includes('đá đen') || combined.includes('hang rái') || combined.includes('vĩnh hy') || combined.includes('công viên đá')) {
+          return 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('biển') || combined.includes('bãi') || combined.includes('ninh chữ') || combined.includes('nha trang') || combined.includes('phú quốc') || combined.includes('mỹ khê') || combined.includes('beach')) {
+          return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('chùa') || combined.includes('đền') || combined.includes('thiên tràng') || combined.includes('linh ứng') || combined.includes('bái đính') || combined.includes('tam chúc') || combined.includes('trùng sơn')) {
+          return 'https://images.unsplash.com/photo-1548625361-195fe57876a4?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('thác') || combined.includes('bản giốc') || combined.includes('dray nur') || combined.includes('pongour') || combined.includes('waterfall')) {
+          return 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('đèo') || combined.includes('hải vân') || combined.includes('mã pí lèng') || combined.includes('ô quy hồ') || combined.includes('pha đin') || combined.includes('núi') || combined.includes('hà giang') || combined.includes('sapa') || combined.includes('fansipan')) {
+          return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('hạ long') || combined.includes('lan hạ') || combined.includes('bái tử long') || combined.includes('tràng an') || combined.includes('tam cốc')) {
+          return 'https://images.unsplash.com/photo-1528127269322-539801943592?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('hội an') || combined.includes('phố cổ') || combined.includes('đèn lồng')) {
+          return 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('huế') || combined.includes('đại nội') || combined.includes('lăng')) {
+          return 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('cà phê') || combined.includes('cafe') || combined.includes('coffee')) {
+          return 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('chợ') || combined.includes('bến thành') || combined.includes('phương cựu') || combined.includes('đầm') || combined.includes('hàn') || combined.includes('market') || combined.includes('ẩm thực') || combined.includes('ăn')) {
+          return 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&auto=format&fit=crop&q=80';
+        }
+        if (combined.includes('khách sạn') || combined.includes('resort') || combined.includes('homestay') || combined.includes('hotel')) {
+          return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&auto=format&fit=crop&q=80';
+        }
+
+        // Category-based fallback
+        const cat = pinOrCategory.category;
+        if (cat === 'beach') return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'mountain') return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'food') return 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'hotel') return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'cafe') return 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'historical') return 'https://images.unsplash.com/photo-1548625361-195fe57876a4?w=300&auto=format&fit=crop&q=80';
+        if (cat === 'sightseeing') return 'https://images.unsplash.com/photo-1528127269322-539801943592?w=300&auto=format&fit=crop&q=80';
+      }
+      return null;
+    }
+
     function createCustomMarkerIcon(pinOrCategory, options = {}) {
       let color = '#0ea5e9';
       let icon = 'fa-camera-retro';
       let title = '';
       let labelBgColor = '#0f172a';
       let labelTextColor = '#ffffff';
+      let photoUrl = null;
 
       if (typeof pinOrCategory === 'object' && pinOrCategory !== null) {
         const cat = CATEGORIES[pinOrCategory.category] || CATEGORIES.sightseeing;
-        color = pinOrCategory.color || cat.color;
+        color = options.customColor || pinOrCategory.color || cat.color;
         icon = cat.icon;
         title = pinOrCategory.title || '';
         
@@ -3638,9 +3797,10 @@
           labelBgColor = pinOrCategory.labelBgColor || '#0f172a';
         }
         labelTextColor = pinOrCategory.labelTextColor || '#ffffff';
+        photoUrl = getPhotoForPin(pinOrCategory);
       } else {
         const cat = CATEGORIES[pinOrCategory] || CATEGORIES.sightseeing;
-        color = cat.color;
+        color = options.customColor || cat.color;
         icon = cat.icon;
       }
 
@@ -3665,19 +3825,29 @@
         </div>
       ` : '';
 
+      const photoBubbleHtml = photoUrl ? `
+        <div class="custom-marker-photo-box" title="${escapeHtml(title)}">
+          <img src="${photoUrl}" alt="${escapeHtml(title)}" class="custom-marker-photo-img" loading="lazy" onerror="this.parentElement.style.display='none'" />
+          <span class="custom-marker-photo-badge" style="background-color: ${color};">
+            <i class="fa-solid ${icon} text-[8px] text-white"></i>
+          </span>
+        </div>
+      ` : '';
+
       return L.divIcon({
         className: 'custom-div-icon',
         html: `
           <div class="custom-marker-wrapper">
+            ${photoBubbleHtml}
             <div class="custom-marker-pin" style="background-color: ${color};">
               ${innerContent}
             </div>
             ${labelHtml}
           </div>
         `,
-        iconSize: [160, 76],
-        iconAnchor: [80, 36],
-        popupAnchor: [0, -38]
+        iconSize: [160, 110],
+        iconAnchor: [80, 52],
+        popupAnchor: [0, -56]
       });
     }
 
@@ -10262,8 +10432,9 @@
 
           const imgWrap = document.getElementById('cinema-popup-img-wrap');
           const imgEl = document.getElementById('cinema-popup-img');
-          if (closestStop.photo) {
-            imgEl.src = closestStop.photo;
+          const stopPhoto = getPhotoForPin(closestStop);
+          if (stopPhoto) {
+            imgEl.src = stopPhoto;
             imgWrap.classList.remove('hidden');
           } else {
             imgWrap.classList.add('hidden');
