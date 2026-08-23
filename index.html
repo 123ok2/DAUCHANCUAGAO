@@ -2764,7 +2764,7 @@
     let pins = [];
     
     // Multi-Route Model
-    // Each route: { id, name, description, color, pinIds: [], customWaypoints: [], travelMode: 'driving'|'walking', createdAt, updatedAt }
+    // Each route: { id, name, description, color, pinIds: [], customWaypoints: [], travelMode: 'driving'|'motorcycle', createdAt, updatedAt }
     let routes = [];
     let activeRouteId = '';
     
@@ -2772,11 +2772,13 @@
     let routePinIds = []; // Current active route pin IDs
     let routeColor = '#6366f1';
     let customRouteWaypoints = null;
-    let activeTravelMode = 'driving'; // 'driving' or 'walking'
+    let activeTravelMode = 'driving'; // 'driving' or 'motorcycle'
     
     // Multi-Route Simultaneous Display on Map State
     let showAllRoutesOnMap = false;
     let allRoutesLayerGroup = null;
+    let activeRouteLayerGroup = null;
+    let activeRouteCalculationToken = 0;
     const routeGeometryCache = new Map();
     
     let routingControl = null;
@@ -3322,7 +3324,7 @@
 
       // Update travel mode UI (Ô tô / Xe máy)
       const driveBtn = document.getElementById('mode-driving');
-      const motoBtn = document.getElementById('mode-motorcycle') || document.getElementById('mode-walking');
+      const motoBtn = document.getElementById('mode-motorcycle');
       const speedLabel = document.getElementById('summary-speed-label');
       if (driveBtn && motoBtn) {
         if (activeTravelMode === 'motorcycle') {
@@ -4758,15 +4760,11 @@
 
       async function fetchChunk(chunkPoints) {
         const coordsString = chunkPoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
-        const isWalking = (travelMode === 'walking');
+        const isMotorcycle = (travelMode === 'motorcycle');
 
-        const endpoints = isWalking ? [
-          { url: `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordsString}?overview=full&geometries=geojson`, timeout: 3500, isFoot: true },
-          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false },
-          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false }
-        ] : [
-          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false },
-          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000, isFoot: false }
+        const endpoints = [
+          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000 },
+          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000 }
         ];
 
         for (const ep of endpoints) {
@@ -4786,7 +4784,9 @@
                 }
                 if (coords.length > 0) {
                   const dist = r.distance || 0;
-                  const dur = isWalking && !ep.isFoot ? Math.round(dist / 1.2) : (r.duration || 0);
+                  // For motorcycle: realistic average speed in Vietnam ~38 km/h (10.5 m/s)
+                  // For car: ~50-60 km/h (from OSRM duration or 15 m/s)
+                  const dur = isMotorcycle ? Math.round(dist / 10.5) : (r.duration || Math.round(dist / 15.0));
                   return {
                     coords: coords,
                     distance: dist,
@@ -4847,6 +4847,18 @@
       }
 
       return null;
+    }
+
+    function calculateRoadRoute(points, mode) {
+      return fetchOsrmRoadGeometry(points, mode);
+    }
+    window.calculateRoadRoute = calculateRoadRoute;
+
+    function getActiveRouteLayerGroup() {
+      if (!activeRouteLayerGroup && typeof map !== 'undefined' && map) {
+        activeRouteLayerGroup = L.layerGroup().addTo(map);
+      }
+      return activeRouteLayerGroup;
     }
 
     function getAllRoutesLayerGroup() {
@@ -5863,8 +5875,9 @@
         if (countEl) countEl.textContent = `${activePins.length} điểm`;
         if (colorDot) colorDot.style.backgroundColor = targetRoute.color || '#6366f1';
         if (modeBadge) {
-          modeBadge.textContent = targetRoute.travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
-          modeBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0';
+          const isMoto = targetRoute.travelMode === 'motorcycle';
+          modeBadge.textContent = isMoto ? '🛵 Xe máy' : '🚗 Ô tô';
+          modeBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isMoto ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'} shrink-0`;
         }
 
         const photoCount = activePins.filter(p => !!p.photo).length;
@@ -6520,8 +6533,9 @@
       const footprint = calculateRouteGeographicFootprint(stops);
       const totalKm = data.distKm || (data.distanceKm || footprint.totalEstimatedKm);
       const travelMode = data.travelMode || (data.mode || 'driving');
-      const travelModeLabel = travelMode === 'walking' ? '🚶 Đi bộ' : '🚗 Ô tô / Xe máy';
-      const timeStr = data.durationStr || (data.distanceKm ? formatTravelTime(data.distanceKm * 1000 / (travelMode === 'walking' ? 1.2 : 12)) : `${Math.max(10, Math.round(totalKm / 45 * 60))} phút`);
+      const isMoto = (travelMode === 'motorcycle');
+      const travelModeLabel = isMoto ? '🛵 Xe máy' : '🚗 Ô tô';
+      const timeStr = data.durationStr || (data.distanceKm ? formatTravelTime(data.distanceKm * 1000 / (isMoto ? 10.5 : 15)) : `${Math.max(10, Math.round(totalKm / (isMoto ? 38 : 55) * 60))} phút`);
 
       // Fill Header
       const titleEl = document.getElementById('insights-modal-title');
@@ -6752,9 +6766,10 @@
 
         const activePins = (active.pinIds || []).map(id => pins.find(pin => pin.id === id)).filter(Boolean);
         const totalKm = calculateRouteDistanceKm(active);
+        const isMoto = (active.travelMode === 'motorcycle');
         const estTimeStr = active.distanceKm 
-          ? formatTravelTime(active.distanceKm * 1000 / (active.travelMode === 'walking' ? 1.2 : 12))
-          : `${activePins.length * 25} phút`;
+          ? formatTravelTime(active.distanceKm * 1000 / (isMoto ? 10.5 : 15))
+          : `${Math.round(totalKm / (isMoto ? 38 : 55) * 60)} phút`;
 
         const mockPayload = {
           isMultiRoute: false,
@@ -7207,78 +7222,76 @@
         } else if (sharedData.stops.length >= 2) {
           // SINGLE ROUTE MAP RENDERING
           const waypoints = (sharedData.waypoints && Array.isArray(sharedData.waypoints) && sharedData.waypoints.length >= 2)
-            ? sharedData.waypoints.map(wp => L.latLng(wp.lat, wp.lng))
-            : sharedData.stops.map(s => L.latLng(s.lat, s.lng));
+            ? sharedData.waypoints.map(wp => [wp.lat, wp.lng])
+            : sharedData.stops.map(s => [s.lat, s.lng]);
 
-          const routerService = createSafeCustomRouter(sharedData.mode || 'driving');
-
-          routingControl = L.Routing.control({
-            waypoints: waypoints,
-            router: routerService,
-            routeWhileDragging: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: false,
-            show: false,
-            lineOptions: {
-              styles: [
-                { color: '#0f172a', opacity: 0.3, weight: 8 },
-                { color: sharedData.color || '#6366f1', opacity: 0.9, weight: 5 }
-              ]
-            },
-            createMarker: function(i, wp) {
-              const stopInfo = sharedData.stops.find(s => Math.abs(s.lat - wp.latLng.lat) < 0.0005 && Math.abs(s.lng - wp.latLng.lng) < 0.0005);
-              if (!stopInfo) {
-                return null;
-              }
-              const stopIndex = sharedData.stops.indexOf(stopInfo);
-              const num = stopIndex + 1;
-              const isFirst = (stopIndex === 0);
-              const isLast = (stopIndex === sharedData.stops.length - 1 && sharedData.stops.length > 1);
-              
-              const marker = L.marker(wp.latLng, {
-                icon: createCustomMarkerIcon(stopInfo, {
-                  routeIndex: num,
-                  isFirst: isFirst,
-                  isLast: isLast
-                }),
-                title: stopInfo.title || `Điểm #${num}`
-              });
-              
-              if (stopInfo) {
-                const cat = CATEGORIES[stopInfo.category] || CATEGORIES.sightseeing;
-                const popupHtml = `
-                  <div class="p-2.5 max-w-[260px] space-y-2">
-                    ${stopInfo.photo ? `
-                      <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
-                        <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
-                      </div>
-                    ` : ''}
-                    <div>
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400">
-                        <i class="fa-solid ${cat.icon}"></i> ${cat.name}
-                        ${stopInfo.rating ? `<span class="text-amber-500 ml-auto font-bold">${'★'.repeat(stopInfo.rating)}</span>` : ''}
-                      </div>
-                      <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
-                      ${stopInfo.locationName ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
-                      ${stopInfo.notes ? `<p class="text-xs text-slate-700 dark:text-slate-300 italic mt-1.5 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
-                    </div>
-                  </div>
-                `;
-                marker.bindPopup(popupHtml);
-              }
-              return marker;
-            }
+          const polyCoords = waypoints.map(wp => [wp[0], wp[1]]);
+          const glowLine = L.polyline(polyCoords, {
+            color: '#0f172a',
+            opacity: 0.25,
+            weight: 7.5,
+            lineCap: 'round',
+            lineJoin: 'round'
           }).addTo(map);
 
-          // Populate currentRouteCoordinates for cinema simulation & video export
-          routingControl.on('routesfound', function(e) {
-            const foundRoutes = e.routes;
-            if (foundRoutes && foundRoutes.length > 0) {
-              if (foundRoutes[0].coordinates && foundRoutes[0].coordinates.length > 0) {
-                currentRouteCoordinates = foundRoutes[0].coordinates;
-              }
+          const mainLine = L.polyline(polyCoords, {
+            color: sharedData.color || '#6366f1',
+            opacity: 0.95,
+            weight: 5,
+            lineCap: 'round',
+            lineJoin: 'round'
+          }).addTo(map);
+
+          sharedRouteMultiLayers.push(glowLine, mainLine);
+          currentRouteCoordinates = waypoints.map(wp => L.latLng(wp[0], wp[1]));
+
+          // Render stop markers
+          sharedData.stops.forEach((stopInfo, stopIndex) => {
+            const num = stopIndex + 1;
+            const isFirst = (stopIndex === 0);
+            const isLast = (stopIndex === sharedData.stops.length - 1 && sharedData.stops.length > 1);
+
+            const marker = L.marker([stopInfo.lat, stopInfo.lng], {
+              icon: createCustomMarkerIcon(stopInfo, {
+                routeIndex: num,
+                isFirst: isFirst,
+                isLast: isLast
+              }),
+              title: stopInfo.title || `Điểm #${num}`
+            }).addTo(map);
+
+            const cat = CATEGORIES[stopInfo.category] || CATEGORIES.sightseeing;
+            const popupHtml = `
+              <div class="p-2.5 max-w-[260px] space-y-2">
+                ${stopInfo.photo ? `
+                  <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+                    <img src="${stopInfo.photo}" alt="${escapeHtml(stopInfo.title)}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition" onclick="openImageLightbox('${stopInfo.photo}', '${escapeHtml(stopInfo.title)}')" />
+                  </div>
+                ` : ''}
+                <div>
+                  <div class="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400">
+                    <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+                    ${stopInfo.rating ? `<span class="text-amber-500 ml-auto font-bold">${'★'.repeat(stopInfo.rating)}</span>` : ''}
+                  </div>
+                  <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 mt-1">${escapeHtml(stopInfo.title || `Điểm #${num}`)}</h4>
+                  ${stopInfo.locationName ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(stopInfo.locationName)}</p>` : ''}
+                  ${stopInfo.notes ? `<p class="text-xs text-slate-700 dark:text-slate-300 italic mt-1.5 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700">"${escapeHtml(stopInfo.notes)}"</p>` : ''}
+                </div>
+              </div>
+            `;
+            marker.bindPopup(popupHtml);
+            sharedRouteMultiLayers.push(marker);
+          });
+
+          // Enhance with OSRM real-road geometry
+          fetchOsrmRoadGeometry(polyCoords, sharedData.mode || 'driving').then(geo => {
+            if (geo && geo.coordinates && geo.coordinates.length >= 2) {
+              glowLine.setLatLngs(geo.coordinates);
+              mainLine.setLatLngs(geo.coordinates);
+              currentRouteCoordinates = geo.coordinates.map(c => L.latLng(c[0], c[1]));
             }
+          }).catch(e => {
+            console.warn('Shared route road geometry fallback to direct line:', e);
           });
         } else if (sharedData.stops.length === 1) {
           map.setView([sharedData.stops[0].lat, sharedData.stops[0].lng], 15);
@@ -7484,7 +7497,7 @@
     function setTravelMode(mode) {
       activeTravelMode = (mode === 'motorcycle') ? 'motorcycle' : 'driving';
       const driveBtn = document.getElementById('mode-driving');
-      const motoBtn = document.getElementById('mode-motorcycle') || document.getElementById('mode-walking');
+      const motoBtn = document.getElementById('mode-motorcycle');
       const speedLabel = document.getElementById('summary-speed-label');
 
       if (activeTravelMode === 'motorcycle') {
@@ -7634,7 +7647,7 @@
                   <h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(r.name)}</h5>
                   ${isActiveCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-200/80 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold shrink-0">Đang xem</span>' : ''}
                 </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">${stopCount} điểm dừng ${r.travelMode === 'walking' ? '• Đi bộ' : '• Ô tô / Xe máy'}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">${stopCount} điểm dừng • ${r.travelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}</p>
               </div>
             </div>
 
@@ -7719,7 +7732,7 @@
       showToast('Đã xóa toàn bộ điểm trong lộ trình này!', 'info');
     }
 
-    // TSP Nearest-Neighbor heuristic to optimize stop order
+    // TSP Nearest-Neighbor + 2-Opt Optimization for shortest vehicle travel order
     function optimizeRouteOrder() {
       if (isSharedViewMode) {
         showToast('Chế độ chỉ xem: Không thể tối ưu hóa thứ tự của lộ trình chia sẻ.', 'info');
@@ -7733,11 +7746,12 @@
       const routePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
       if (routePins.length < 3) return;
 
+      // 1. Nearest Neighbor start
       let unvisited = [...routePins];
-      let optimized = [unvisited.shift()]; // Start with the first stop
+      let tour = [unvisited.shift()];
 
       while (unvisited.length > 0) {
-        const last = optimized[optimized.length - 1];
+        const last = tour[tour.length - 1];
         let nearestIdx = 0;
         let minDistance = Infinity;
 
@@ -7749,15 +7763,40 @@
           }
         });
 
-        optimized.push(unvisited.splice(nearestIdx, 1)[0]);
+        tour.push(unvisited.splice(nearestIdx, 1)[0]);
       }
 
-      routePinIds = optimized.map(p => p.id);
+      // 2. 2-Opt local search refinement to eliminate crossing paths
+      function getTourDist(t) {
+        let sum = 0;
+        for (let i = 0; i < t.length - 1; i++) {
+          sum += Math.hypot(t[i+1].lat - t[i].lat, t[i+1].lng - t[i].lng);
+        }
+        return sum;
+      }
+
+      let improved = true;
+      let iterations = 0;
+      while (improved && iterations < 50) {
+        improved = false;
+        iterations++;
+        for (let i = 1; i < tour.length - 1; i++) {
+          for (let k = i + 1; k < tour.length; k++) {
+            const newTour = tour.slice(0, i).concat(tour.slice(i, k + 1).reverse(), tour.slice(k + 1));
+            if (getTourDist(newTour) < getTourDist(tour) - 1e-6) {
+              tour = newTour;
+              improved = true;
+            }
+          }
+        }
+      }
+
+      routePinIds = tour.map(p => p.id);
       customRouteWaypoints = null;
       saveRoutesToStorage();
       renderRouteStops();
       updateRouteCalculation();
-      showToast('Đã sắp xếp tối ưu thứ tự lộ trình ngắn nhất!', 'success');
+      showToast(`Đã tối ưu hóa lộ trình ngắn nhất cho ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}!`, 'success');
     }
 
     // Active trip direction: 'outbound' (Toàn tuyến / 1 Chiều - Mặc định), 'roundtrip' (Khứ hồi - x2), 'inbound' (Chiều về)
@@ -7796,8 +7835,8 @@
 
       const stopsCount = Array.isArray(route.pinIds) ? route.pinIds.length : 0;
       const outboundKm = calculateRouteDistanceKm(route);
-      const isWalking = route.travelMode === 'walking';
-      const speedMps = isWalking ? 1.2 : 12.5; // ~4.3 km/h walking vs ~45 km/h driving
+      const isMotorcycle = route.travelMode === 'motorcycle';
+      const speedMps = isMotorcycle ? 10.5 : 15.0; // ~38 km/h motorcycle vs ~54 km/h car
       const outboundSec = (typeof route.durationSeconds === 'number' && route.durationSeconds > 0)
         ? route.durationSeconds
         : Math.round((outboundKm * 1000) / speedMps);
@@ -8107,9 +8146,9 @@
 
           const routesCardsHtml = routesList.map((r, idx) => {
             const rColor = r.color || '#6366f1';
-            const isWalking = r.travelMode === 'walking';
-            const modeIcon = isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
-            const modeName = isWalking ? 'Đi bộ' : 'Ô tô / Xe máy';
+            const isMoto = r.travelMode === 'motorcycle';
+            const modeIcon = isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500';
+            const modeName = isMoto ? 'Xe máy' : 'Ô tô';
             const rStops = r.stops || [];
 
             const stopsMiniListHtml = rStops.map((p, pIdx) => {
@@ -8237,9 +8276,9 @@
           const r = b.route;
           const isSelected = r.id === activeRouteId;
           const rColor = r.color || '#6366f1';
-          const isWalking = r.travelMode === 'walking';
-          const modeIcon = isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
-          const modeName = isWalking ? 'Đi bộ' : 'Ô tô / Xe máy';
+          const isMoto = r.travelMode === 'motorcycle';
+          const modeIcon = isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500';
+          const modeName = isMoto ? 'Xe máy' : 'Ô tô';
           const routePins = (r.pinIds || []).map(id => pins.find(p => p.id === id)).filter(Boolean);
 
           const stopsMiniListHtml = routePins.map((p, pIdx) => {
@@ -8444,85 +8483,18 @@
       list.innerHTML = deadEndBannerHtml + stopsCardsHtml + roundTripEndCardHtml;
     }
 
-    // Resilient Custom Router for Leaflet Routing Machine that prevents circular JSON errors and network crashes
-    function createSafeCustomRouter(mode) {
-      return {
-        route: async function(waypoints, callback, context, options) {
-          try {
-            if (!waypoints || waypoints.length < 2) {
-              if (typeof callback === 'function') callback.call(context, null, []);
-              return;
-            }
-            const pts = waypoints.map(wp => [wp.latLng.lat, wp.latLng.lng]);
-            const roadRes = await calculateRoadRoute(pts, mode);
-
-            let coords = [];
-            let totalMeters = 0;
-            let totalDuration = 0;
-
-            if (roadRes && Array.isArray(roadRes.coordinates) && roadRes.coordinates.length >= 2) {
-              coords = roadRes.coordinates.map(c => L.latLng(c[0], c[1]));
-              totalMeters = Math.round(roadRes.distanceKm * 1000);
-              totalDuration = roadRes.durationSeconds || Math.round(roadRes.distanceKm * 75);
-            } else {
-              coords = waypoints.map(wp => wp.latLng);
-              for (let i = 0; i < coords.length - 1; i++) {
-                totalMeters += coords[i].distanceTo(coords[i + 1]);
-              }
-              totalDuration = Math.round(mode === 'walking' ? (totalMeters / 1.2) : (totalMeters / 12.5));
-            }
-
-            const formattedRoutes = [{
-              name: mode === 'walking' ? 'Lộ trình đi bộ' : 'Lộ trình đường bộ',
-              summary: {
-                totalDistance: totalMeters,
-                totalTime: totalDuration
-              },
-              coordinates: coords,
-              waypoints: waypoints,
-              inputWaypoints: waypoints,
-              instructions: []
-            }];
-
-            if (typeof callback === 'function') {
-              callback.call(context, null, formattedRoutes);
-            }
-          } catch (e) {
-            try {
-              const coords = (waypoints || []).map(wp => wp.latLng);
-              let totalMeters = 0;
-              for (let i = 0; i < coords.length - 1; i++) {
-                totalMeters += coords[i].distanceTo(coords[i + 1]);
-              }
-              const totalDuration = Math.round(totalMeters / 12.5);
-              const fallbackRoute = [{
-                name: 'Lộ trình trực tiếp',
-                summary: { totalDistance: totalMeters, totalTime: totalDuration },
-                coordinates: coords,
-                waypoints: waypoints,
-                inputWaypoints: waypoints,
-                instructions: []
-              }];
-              if (typeof callback === 'function') {
-                callback.call(context, null, fallbackRoute);
-              }
-            } catch (innerFallbackErr) {
-              if (typeof callback === 'function') {
-                callback.call(context, null, []);
-              }
-            }
-          }
-        }
-      };
-    }
-
-    // Call OSRM real-road routing engine with Draggable Line & Custom Color
+    // Resilient Router & Direct Polyline Routing Engine
     function updateRouteCalculation() {
       if (isSharedViewMode) return;
 
       if (routingControl) {
-        map.removeControl(routingControl);
+        try { map.removeControl(routingControl); } catch (e) {}
         routingControl = null;
+      }
+
+      const activeGroup = getActiveRouteLayerGroup();
+      if (activeGroup) {
+        activeGroup.clearLayers();
       }
 
       renderAllRoutesOnMap();
@@ -8531,119 +8503,115 @@
         updateRouteSummaryUI();
       }
 
-      if (routePinIds.length < 2) {
+      if (!Array.isArray(routePinIds) || routePinIds.length < 2) {
         if (!showAllRoutesOnMap && activeFilterRouteId !== 'all_routes') {
           hideRouteSummaryStats();
         }
         return;
       }
 
-      let waypoints = [];
+      let rawPoints = [];
       if (Array.isArray(customRouteWaypoints) && customRouteWaypoints.length >= 2) {
-        waypoints = customRouteWaypoints.map(wp => L.latLng(wp.lat, wp.lng));
+        rawPoints = customRouteWaypoints.map(wp => [wp.lat, wp.lng]);
       } else {
-        waypoints = routePinIds.map(id => {
+        rawPoints = routePinIds.map(id => {
           const p = pins.find(pin => pin.id === id);
-          return p ? L.latLng(p.lat, p.lng) : null;
+          return p ? [p.lat, p.lng] : null;
         }).filter(Boolean);
       }
 
-      if (waypoints.length < 2) {
+      if (rawPoints.length < 2) {
         if (!showAllRoutesOnMap && activeFilterRouteId !== 'all_routes') {
           hideRouteSummaryStats();
         }
         return;
       }
 
-      try {
-        const primaryColor = routeColor || '#6366f1';
-        
-        routingControl = L.Routing.control({
-          waypoints: waypoints,
-          router: createSafeCustomRouter(activeTravelMode),
-          lineOptions: {
-            styles: [
-              { color: '#0f172a', opacity: 0.25, weight: 8 },
-              { color: primaryColor, opacity: 0.9, weight: 5 }
-            ],
-            extendToWaypoints: true,
-            missingRouteTolerance: 10
-          },
-          addWaypoints: true,
-          draggableWaypoints: true,
-          fitSelectedRoutes: false,
-          show: false,
-          createMarker: function(i, wp, n) {
-            return null;
-          }
-        }).addTo(map);
-
-        routingControl.on('routesfound', function(e) {
-          const foundRoutes = e.routes;
-          if (foundRoutes && foundRoutes.length > 0) {
-            const summary = foundRoutes[0].summary;
-            const totalMeters = summary.totalDistance;
-            const totalSeconds = summary.totalTime;
-            
-            // Store high-resolution road coordinates for simulation & GPS navigation
-            if (foundRoutes[0].coordinates && foundRoutes[0].coordinates.length > 0) {
-              currentRouteCoordinates = foundRoutes[0].coordinates;
-            } else {
-              currentRouteCoordinates = waypoints;
-            }
-
-            const totalKm = parseFloat((totalMeters / 1000).toFixed(1));
-
-            // Store distance and road coordinates in active route model
-            const active = getActiveRoute();
-            if (active) {
-              active.distanceKm = totalKm;
-              active.durationSeconds = totalSeconds;
-              active.returnDistanceKm = totalKm;
-              active.returnDurationSeconds = totalSeconds;
-              if (Array.isArray(currentRouteCoordinates) && currentRouteCoordinates.length >= 2) {
-                active.roadCoordinates = currentRouteCoordinates.map(c => ({
-                  lat: typeof c.lat === 'number' ? c.lat : c[0],
-                  lng: typeof c.lng === 'number' ? c.lng : c[1]
-                }));
-              }
-              saveRoutesToStorage(false);
-            }
-
-            updateRouteSummaryUI();
-          }
-        });
-
-        // Listen to dragged route waypoints modifications
-        routingControl.on('waypointschanged', function(e) {
-          if (e.waypoints && e.waypoints.length >= 2) {
-            customRouteWaypoints = e.waypoints.map(wp => ({
-              lat: wp.latLng.lat,
-              lng: wp.latLng.lng
-            }));
-            saveRoutesToStorage();
-          }
-        });
-
-        routingControl.on('routingerror', function() {
-          console.warn('Routing fallback triggered');
-          calculateStraightLineFallback(waypoints);
-        });
-
-      } catch (err) {
-        console.warn('Error initiating route, using straight line fallback');
-        calculateStraightLineFallback(waypoints);
+      // Handle Direction (outbound, roundtrip, inbound)
+      let waypoints = [];
+      if (activeTripDirection === 'roundtrip') {
+        waypoints = [...rawPoints, rawPoints[0]];
+      } else if (activeTripDirection === 'inbound') {
+        waypoints = [...rawPoints].reverse();
+      } else {
+        waypoints = [...rawPoints];
       }
+
+      const primaryColor = routeColor || '#6366f1';
+
+      // 1. INSTANT MAP DISPLAY (0ms delay): Draw route polylines immediately
+      const glowLine = L.polyline(waypoints, {
+        color: '#0f172a',
+        opacity: 0.25,
+        weight: 7.5,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(activeGroup);
+
+      const mainLine = L.polyline(waypoints, {
+        color: primaryColor,
+        opacity: 0.95,
+        weight: 5,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(activeGroup);
+
+      // 2. Compute straight-line baseline stats immediately so UI displays data with zero lag
+      currentRouteCoordinates = waypoints.map(pt => L.latLng(pt[0], pt[1]));
+      let baselineMeters = 0;
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        baselineMeters += L.latLng(waypoints[i][0], waypoints[i][1]).distanceTo(L.latLng(waypoints[i + 1][0], waypoints[i + 1][1]));
+      }
+      const baselineKm = parseFloat((baselineMeters / 1000).toFixed(1));
+      const isMoto = (activeTravelMode === 'motorcycle');
+      const baselineSeconds = Math.round(baselineMeters / (isMoto ? 10.5 : 15.0));
+
+      const active = getActiveRoute();
+      if (active) {
+        active.distanceKm = baselineKm;
+        active.durationSeconds = baselineSeconds;
+        active.returnDistanceKm = baselineKm;
+        active.returnDurationSeconds = baselineSeconds;
+        saveRoutesToStorage(false);
+      }
+      updateRouteSummaryUI();
+
+      // 3. Asynchronously fetch real highway & street road geometry from OSRM
+      const currentToken = ++activeRouteCalculationToken;
+      fetchOsrmRoadGeometry(waypoints, activeTravelMode).then(roadRes => {
+        if (currentToken !== activeRouteCalculationToken) return;
+        if (roadRes && Array.isArray(roadRes.coordinates) && roadRes.coordinates.length >= 2) {
+          glowLine.setLatLngs(roadRes.coordinates);
+          mainLine.setLatLngs(roadRes.coordinates);
+
+          currentRouteCoordinates = roadRes.coordinates.map(c => L.latLng(c[0], c[1]));
+
+          const currActive = getActiveRoute();
+          if (currActive) {
+            currActive.distanceKm = roadRes.distanceKm;
+            currActive.durationSeconds = roadRes.durationSeconds;
+            currActive.returnDistanceKm = roadRes.distanceKm;
+            currActive.returnDurationSeconds = roadRes.durationSeconds;
+            currActive.roadCoordinates = roadRes.coordinates.map(c => ({ lat: c[0], lng: c[1] }));
+            saveRoutesToStorage(false);
+          }
+          updateRouteSummaryUI();
+        }
+      }).catch(err => {
+        console.warn('Real-road routing fallback to direct connection line:', err);
+      });
     }
 
     function calculateStraightLineFallback(waypoints) {
       currentRouteCoordinates = waypoints;
       let totalMeters = 0;
       for (let i = 0; i < waypoints.length - 1; i++) {
-        totalMeters += waypoints[i].distanceTo(waypoints[i + 1]);
+        const p1 = Array.isArray(waypoints[i]) ? L.latLng(waypoints[i][0], waypoints[i][1]) : waypoints[i];
+        const p2 = Array.isArray(waypoints[i + 1]) ? L.latLng(waypoints[i + 1][0], waypoints[i + 1][1]) : waypoints[i + 1];
+        totalMeters += p1.distanceTo(p2);
       }
       const totalKm = parseFloat((totalMeters / 1000).toFixed(1));
-      const estSeconds = activeTravelMode === 'walking' ? (totalMeters / 1.2) : (totalMeters / 12.5);
+      const estSeconds = (totalMeters / (activeTravelMode === 'motorcycle' ? 10.5 : 15.0));
 
       const active = getActiveRoute();
       if (active) {
@@ -8658,6 +8626,8 @@
     }
 
     function hideRouteSummaryStats() {
+      const group = getActiveRouteLayerGroup();
+      if (group) group.clearLayers();
       currentRouteCoordinates = [];
       updateRouteSummaryUI();
     }
@@ -8926,7 +8896,7 @@
         const currentPt = pathCoords[navSimCoordIndex];
         const nextPt = pathCoords[Math.min(navSimCoordIndex + 1, pathCoords.length - 1)];
         const heading = calculateBearing(currentPt.lat, currentPt.lng, nextPt.lat, nextPt.lng);
-        const speedKmH = activeTravelMode === 'walking' ? 5 : (35 + Math.floor(Math.random() * 15));
+        const speedKmH = (activeTravelMode === 'motorcycle') ? (35 + Math.floor(Math.random() * 10)) : (50 + Math.floor(Math.random() * 15));
 
         handleGpsNavPosition({
           coords: {
@@ -9060,7 +9030,7 @@
       }
 
       if (timeLeftEl) {
-        const estSeconds = activeTravelMode === 'walking' ? (distMeters / 1.2) : (distMeters / 10);
+        const estSeconds = (distMeters / (activeTravelMode === 'motorcycle' ? 10.5 : 15.0));
         timeLeftEl.textContent = formatTravelTime(estSeconds);
       }
 
@@ -10682,7 +10652,7 @@
         : (active ? (active.description || 'Lưu giữ những khoảnh khắc và dấu chân đáng nhớ trên mọi nẻo đường Việt Nam') : '');
       const travelModeLabel = agg
         ? `${routes.length} lộ trình`
-        : (active && active.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy');
+        : (active && active.travelMode === 'motorcycle' ? 'Xe máy' : 'Ô tô');
 
       // Calculate dynamic canvas height to fit all stops gracefully
       const totalStops = pinsWithImages.length;
@@ -11583,8 +11553,8 @@
 
       const activeModeBadgeEl = document.getElementById('stat-active-mode-badge');
       if (activeModeBadgeEl && active) {
-        const isWalking = active.travelMode === 'walking';
-        activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isWalking ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500'}"></i> ${isWalking ? 'Đi bộ' : 'Ô tô / Xe máy'}`;
+        const isMoto = active.travelMode === 'motorcycle';
+        activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500'}"></i> ${isMoto ? 'Xe máy' : 'Ô tô'}`;
       }
 
       // 3. Cumulative Distance of ALL Routes (Outbound, Return & Roundtrip)
@@ -11618,8 +11588,9 @@
             const m = calculateSingleRouteMetrics(r);
             const isCurrentActive = r.id === activeRouteId;
             const stopsCount = (r.pinIds || []).length;
-            const modeIcon = r.travelMode === 'walking' ? 'fa-person-walking text-emerald-500' : 'fa-car text-indigo-500';
-            const modeName = r.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy';
+            const isMoto = r.travelMode === 'motorcycle';
+            const modeIcon = isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500';
+            const modeName = isMoto ? 'Xe máy' : 'Ô tô';
 
             return `
               <div class="py-3 px-1 flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
@@ -12240,7 +12211,7 @@
       routes.forEach((r, rIdx) => {
         report += `\nLộ trình #${rIdx + 1}: ${r.name}\n`;
         if (r.description) report += `  Mô tả: ${r.description}\n`;
-        report += `  Phương tiện: ${r.travelMode === 'walking' ? 'Đi bộ' : 'Ô tô / Xe máy'}\n`;
+        report += `  Phương tiện: ${r.travelMode === 'motorcycle' ? 'Xe máy' : 'Ô tô'}\n`;
         report += `  Màu sắc: ${r.color || '#6366f1'}\n`;
         report += `  Điểm dừng (${(r.pinIds || []).length} điểm):\n`;
         (r.pinIds || []).forEach((id, idx) => {
