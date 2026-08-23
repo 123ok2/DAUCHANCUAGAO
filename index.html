@@ -59,6 +59,10 @@
   <!-- High Definition Client-Side QR Code Generator -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
+  <!-- Cropper.js CSS & JS for Precision Image Crop & Drag Adjustment -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
   <!-- LZ-String Compression for Fail-Proof Self-Contained Shared URLs -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 
@@ -295,6 +299,40 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
       transform: translateY(1px) scale(1.05);
       z-index: 10000;
+    }
+
+    /* Precision Photo Cropper Overrides & Theme Integration */
+    .cropper-view-box {
+      outline: 2px solid #38bdf8 !important;
+      outline-color: #38bdf8 !important;
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    }
+    .cropper-line {
+      background-color: #38bdf8 !important;
+      opacity: 0.8 !important;
+    }
+    .cropper-point {
+      background-color: #38bdf8 !important;
+      width: 10px !important;
+      height: 10px !important;
+      border-radius: 3px !important;
+      border: 1.5px solid #ffffff !important;
+    }
+    .cropper-point.point-se {
+      width: 13px !important;
+      height: 13px !important;
+      border-radius: 4px !important;
+    }
+    .cropper-modal {
+      background-color: #020617 !important;
+      opacity: 0.82 !important;
+    }
+    .cropper-dashed {
+      border-color: rgba(56, 189, 248, 0.45) !important;
+    }
+    .cropper-center {
+      display: none !important;
     }
 
     /* Map Zoom Responsive Scaling for Pin & Place Name Labels */
@@ -1699,12 +1737,18 @@
                 </label>
               </div>
 
-              <!-- Photo Preview Card -->
-              <div id="photo-preview-box" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-h-48">
+              <!-- Photo Preview Card with Edit / Crop Tool -->
+              <div id="photo-preview-box" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-h-52 group">
                 <img id="photo-preview-img" src="" alt="Preview" class="w-full h-44 object-cover" />
-                <button type="button" onclick="removePhotoPreview()" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-slate-900/75 text-white hover:bg-rose-600 flex items-center justify-center text-xs transition shadow-md">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
+                <div class="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+                  <button type="button" onclick="openPhotoCropModalForCurrent()" title="Cắt & Căn chỉnh ảnh" class="px-2.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md text-white hover:bg-sky-600 flex items-center gap-1.5 text-xs font-semibold transition shadow-md border border-white/20 active:scale-95">
+                    <i class="fa-solid fa-crop-simple text-sky-300"></i>
+                    <span>Cắt / Chỉnh</span>
+                  </button>
+                  <button type="button" onclick="removePhotoPreview()" title="Xóa ảnh" class="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur-md text-white hover:bg-rose-600 flex items-center justify-center text-xs transition shadow-md border border-white/20 active:scale-95">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1751,6 +1795,109 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ==================== PHOTO CROP & DRAG ADJUST MODAL ==================== -->
+    <div id="photo-crop-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md">
+      <div class="relative w-full max-w-xl bg-slate-900 text-white rounded-3xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[96vh] animate-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="px-4 sm:px-5 py-3.5 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm border border-sky-500/30">
+              <i class="fa-solid fa-crop-simple"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-white tracking-wide">Cắt & Căn chỉnh ảnh kỷ niệm</h3>
+              <p class="text-[10px] sm:text-[11px] text-slate-400">Kéo di chuyển, phóng to thu nhỏ & chọn khung ảnh mong muốn</p>
+            </div>
+          </div>
+          <button type="button" onclick="closePhotoCropModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Crop Canvas Viewport Area -->
+        <div class="relative bg-slate-950 flex-1 min-h-[260px] max-h-[46vh] sm:max-h-[50vh] flex items-center justify-center overflow-hidden p-2">
+          <div class="w-full h-full flex items-center justify-center max-h-[46vh] sm:max-h-[50vh]">
+            <img id="cropper-image-target" src="" alt="Crop Target" class="max-w-full block" />
+          </div>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="p-3 sm:p-4 bg-slate-900 border-t border-slate-800 space-y-2.5">
+          <!-- Aspect Ratio Presets -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">Tỷ lệ khung hình</span>
+              <span class="text-[10px] sm:text-[11px] font-medium text-sky-400" id="current-crop-ratio-label">1:1 (Vuông - Tối ưu ghim)</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5">
+              <button type="button" onclick="setCropAspectRatio(1, '1:1 (Vuông - Tối ưu ghim)')" id="crop-ratio-1-1" class="crop-ratio-btn active py-1.5 px-1 rounded-xl text-xs font-semibold bg-sky-600 text-white transition flex flex-col items-center justify-center gap-0.5">
+                <i class="fa-regular fa-square text-xs"></i>
+                <span class="text-[10px]">1:1 Vuông</span>
+              </button>
+              <button type="button" onclick="setCropAspectRatio(4/3, '4:3 (Ngang tiêu chuẩn)')" id="crop-ratio-4-3" class="crop-ratio-btn py-1.5 px-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex flex-col items-center justify-center gap-0.5">
+                <i class="fa-solid fa-table-cells-large text-xs"></i>
+                <span class="text-[10px]">4:3 Ngang</span>
+              </button>
+              <button type="button" onclick="setCropAspectRatio(16/9, '16:9 (Toàn cảnh)')" id="crop-ratio-16-9" class="crop-ratio-btn py-1.5 px-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex flex-col items-center justify-center gap-0.5">
+                <i class="fa-solid fa-panorama text-xs"></i>
+                <span class="text-[10px]">16:9 Rộng</span>
+              </button>
+              <button type="button" onclick="setCropAspectRatio(3/4, '3:4 (Dọc Portrait)')" id="crop-ratio-3-4" class="crop-ratio-btn py-1.5 px-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex flex-col items-center justify-center gap-0.5">
+                <i class="fa-solid fa-mobile-screen text-xs"></i>
+                <span class="text-[10px]">3:4 Dọc</span>
+              </button>
+              <button type="button" onclick="setCropAspectRatio(NaN, 'Tự do (Free Crop)')" id="crop-ratio-free" class="crop-ratio-btn py-1.5 px-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex flex-col items-center justify-center gap-0.5">
+                <i class="fa-solid fa-expand text-xs"></i>
+                <span class="text-[10px]">Tự do</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Zoom & Rotation Tools -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+            <!-- Zoom Controls -->
+            <div class="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-xl border border-slate-700/60">
+              <span class="text-[10px] uppercase font-bold text-slate-400 mr-1">Thu/Phóng:</span>
+              <button type="button" onclick="cropperZoom(-0.1)" title="Thu nhỏ" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <button type="button" onclick="cropperZoom(0.1)" title="Phóng to" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+
+            <!-- Rotate & Flip Controls -->
+            <div class="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-xl border border-slate-700/60">
+              <button type="button" onclick="cropperRotate(-90)" title="Xoay trái 90°" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+              <button type="button" onclick="cropperRotate(90)" title="Xoay phải 90°" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+              <button type="button" onclick="cropperFlipX()" title="Lật ngang ảnh" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </button>
+              <button type="button" onclick="cropperReset()" title="Đặt lại như ban đầu" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 text-amber-400 flex items-center justify-center text-xs transition active:scale-90">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-4 sm:px-5 py-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-3">
+          <button type="button" onclick="closePhotoCropModal()" class="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs sm:text-sm font-medium transition">
+            Hủy bỏ
+          </button>
+          <button type="button" onclick="applyPhotoCrop()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-sky-500/25 active:scale-95 transition flex items-center gap-2">
+            <i class="fa-solid fa-check"></i> Áp dụng & Cắt ảnh
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -4405,9 +4552,16 @@
       currentBase64Photo = '';
     }
 
-    // Photo Compression with HTML5 Canvas (keeps Base64 small for LocalStorage)
+    // ==========================================
+    // INTERACTIVE PHOTO CROPPING, DRAGGING & ZOOM ADJUSTMENT
+    // ==========================================
+    let currentCropperInstance = null;
+    let rawSelectedPhotoDataUrl = '';
+    let currentCropAspectRatio = 1;
+    let isFlippedX = false;
+
     function handlePhotoSelect(e) {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (!file) return;
 
       if (!file.type.startsWith('image/')) {
@@ -4417,49 +4571,204 @@
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          // Scale down max dimension to 800px to maintain crisp quality while keeping size < 100KB
-          const MAX_SIZE = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height *= MAX_SIZE / width;
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width *= MAX_SIZE / height;
-              height = MAX_SIZE;
-            }
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Compress to JPEG 0.75
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
-          currentBase64Photo = compressedDataUrl;
-
-          document.getElementById('photo-preview-img').src = compressedDataUrl;
-          document.getElementById('photo-preview-box').classList.remove('hidden');
-          showToast('Đã tải và nén ảnh thành công!', 'success');
-        };
-        img.src = event.target.result;
+        rawSelectedPhotoDataUrl = event.target.result;
+        openPhotoCropModal(rawSelectedPhotoDataUrl);
       };
       reader.readAsDataURL(file);
+      // Reset input value so selecting same file triggers change
+      e.target.value = '';
+    }
+
+    function openPhotoCropModalForCurrent() {
+      const imgSrc = currentBase64Photo || rawSelectedPhotoDataUrl || document.getElementById('photo-preview-img')?.src;
+      if (!imgSrc) {
+        showToast('Chưa có ảnh nào để chỉnh sửa!', 'info');
+        return;
+      }
+      openPhotoCropModal(imgSrc);
+    }
+
+    function openPhotoCropModal(imageUrl) {
+      const modal = document.getElementById('photo-crop-modal');
+      const targetImg = document.getElementById('cropper-image-target');
+      if (!modal || !targetImg) return;
+
+      modal.classList.remove('hidden');
+      isFlippedX = false;
+
+      // Clean up previous cropper instance
+      if (currentCropperInstance) {
+        try {
+          currentCropperInstance.destroy();
+        } catch (e) {}
+        currentCropperInstance = null;
+      }
+
+      targetImg.onload = () => {
+        initCropperInstance(targetImg);
+      };
+      targetImg.src = imageUrl;
+
+      // Fallback timer if image is cached / already loaded
+      setTimeout(() => {
+        if (!currentCropperInstance) {
+          initCropperInstance(targetImg);
+        }
+      }, 120);
+    }
+
+    function initCropperInstance(targetImg) {
+      if (currentCropperInstance) return;
+      try {
+        if (typeof Cropper !== 'undefined') {
+          currentCropperInstance = new Cropper(targetImg, {
+            aspectRatio: currentCropAspectRatio || 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.9,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            responsive: true,
+            checkOrientation: true,
+            ready() {
+              setCropAspectRatio(1, '1:1 (Vuông - Tối ưu ghim)');
+            }
+          });
+        } else {
+          console.warn('Cropper.js not loaded, fallback active');
+        }
+      } catch (err) {
+        console.error('Error initializing cropper:', err);
+      }
+    }
+
+    function setCropAspectRatio(ratio, labelText) {
+      currentCropAspectRatio = ratio;
+      if (currentCropperInstance) {
+        currentCropperInstance.setAspectRatio(ratio);
+      }
+
+      // Update UI buttons styling
+      document.querySelectorAll('.crop-ratio-btn').forEach(btn => {
+        btn.classList.remove('bg-sky-600', 'text-white', 'active');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+
+      let targetBtnId = 'crop-ratio-1-1';
+      if (Math.abs(ratio - 4/3) < 0.01) targetBtnId = 'crop-ratio-4-3';
+      else if (Math.abs(ratio - 16/9) < 0.01) targetBtnId = 'crop-ratio-16-9';
+      else if (Math.abs(ratio - 3/4) < 0.01) targetBtnId = 'crop-ratio-3-4';
+      else if (isNaN(ratio)) targetBtnId = 'crop-ratio-free';
+
+      const activeBtn = document.getElementById(targetBtnId);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-sky-600', 'text-white', 'active');
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+      }
+
+      const labelEl = document.getElementById('current-crop-ratio-label');
+      if (labelEl && labelText) {
+        labelEl.textContent = labelText;
+      }
+    }
+
+    function cropperZoom(delta) {
+      if (currentCropperInstance) {
+        currentCropperInstance.zoom(delta);
+      }
+    }
+
+    function cropperRotate(degree) {
+      if (currentCropperInstance) {
+        currentCropperInstance.rotate(degree);
+      }
+    }
+
+    function cropperFlipX() {
+      if (currentCropperInstance) {
+        isFlippedX = !isFlippedX;
+        currentCropperInstance.scaleX(isFlippedX ? -1 : 1);
+      }
+    }
+
+    function cropperReset() {
+      if (currentCropperInstance) {
+        isFlippedX = false;
+        currentCropperInstance.reset();
+        setCropAspectRatio(1, '1:1 (Vuông - Tối ưu ghim)');
+      }
+    }
+
+    function closePhotoCropModal() {
+      const modal = document.getElementById('photo-crop-modal');
+      if (modal) modal.classList.add('hidden');
+      if (currentCropperInstance) {
+        try {
+          currentCropperInstance.destroy();
+        } catch (e) {}
+        currentCropperInstance = null;
+      }
+    }
+
+    function applyPhotoCrop() {
+      if (!currentCropperInstance) {
+        if (rawSelectedPhotoDataUrl) {
+          currentBase64Photo = rawSelectedPhotoDataUrl;
+          const previewImg = document.getElementById('photo-preview-img');
+          const previewBox = document.getElementById('photo-preview-box');
+          if (previewImg && previewBox) {
+            previewImg.src = currentBase64Photo;
+            previewBox.classList.remove('hidden');
+          }
+        }
+        closePhotoCropModal();
+        return;
+      }
+
+      // Render high-definition cropped canvas
+      const canvas = currentCropperInstance.getCroppedCanvas({
+        maxWidth: 960,
+        maxHeight: 960,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      if (!canvas) {
+        showToast('Không thể cắt ảnh, vui lòng thử lại!', 'error');
+        return;
+      }
+
+      // High-efficiency JPEG compression (keeps size small & sharp)
+      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      currentBase64Photo = croppedDataUrl;
+
+      const previewImg = document.getElementById('photo-preview-img');
+      const previewBox = document.getElementById('photo-preview-box');
+      if (previewImg && previewBox) {
+        previewImg.src = croppedDataUrl;
+        previewBox.classList.remove('hidden');
+      }
+
+      closePhotoCropModal();
+      showToast('Đã cắt & căn chỉnh ảnh thành công!', 'success');
     }
 
     function removePhotoPreview() {
       currentBase64Photo = '';
-      document.getElementById('photo-preview-img').src = '';
-      document.getElementById('photo-preview-box').classList.add('hidden');
-      document.getElementById('form-photo-input').value = '';
+      rawSelectedPhotoDataUrl = '';
+      const previewImg = document.getElementById('photo-preview-img');
+      const previewBox = document.getElementById('photo-preview-box');
+      if (previewImg) previewImg.src = '';
+      if (previewBox) previewBox.classList.add('hidden');
+      const photoInput = document.getElementById('form-photo-input');
+      const cameraInput = document.getElementById('form-camera-input');
+      if (photoInput) photoInput.value = '';
+      if (cameraInput) cameraInput.value = '';
     }
 
     // Star Rating UI helper
