@@ -10639,10 +10639,10 @@
       }
     }
 
-    let cinemaAspectRatio = '9:16'; // '9:16' (Vertical 1080x1920 by default for Shorts/Reels/TikTok), '16:9' (1920x1080), '1:1' (1080x1080)
+    let cinemaAspectRatio = '16:9'; // '16:9' (1920x1080 Full HD by default), '9:16' (1080x1920), '1:1' (1080x1080)
 
     function changeCinemaAspectRatio(ratio) {
-      cinemaAspectRatio = ratio || '9:16';
+      cinemaAspectRatio = ratio || '16:9';
       const canvas = document.getElementById('cinema-canvas');
       if (!canvas) return;
 
@@ -10665,7 +10665,7 @@
         } else if (cinemaAspectRatio === '1:1') {
           exportBtnText.textContent = 'Ghi Video Vuông (1:1)';
         } else {
-          exportBtnText.textContent = 'Ghi Video Ngang (16:9)';
+          exportBtnText.textContent = 'Ghi & Tải Video (16:9)';
         }
       }
 
@@ -10680,8 +10680,8 @@
       }
       
       const ratioNames = {
-        '9:16': '📱 Dọc 9:16 (1080x1920 - Shorts / Reels / TikTok)',
         '16:9': '💻 Ngang 16:9 (1920x1080 - YouTube / HD)',
+        '9:16': '📱 Dọc 9:16 (1080x1920 - Shorts / Reels / TikTok)',
         '1:1': '⏹️ Vuông 1:1 (1080x1080 - Instagram)'
       };
       showToast(`Đã chuyển khung hình video: ${ratioNames[cinemaAspectRatio] || ratio}`, 'info');
@@ -10832,19 +10832,19 @@
       const selectEl = document.getElementById('cinema-map-style-select');
       if (selectEl) selectEl.value = 'satellite';
 
-      // Default aspect ratio: 9:16 (Vertical) for modern Shorts/Reels/TikTok
-      cinemaAspectRatio = '9:16';
+      // Default aspect ratio: 16:9 (Landscape HD)
+      cinemaAspectRatio = '16:9';
       const aspectSelect = document.getElementById('cinema-aspect-select');
-      if (aspectSelect) aspectSelect.value = '9:16';
+      if (aspectSelect) aspectSelect.value = '16:9';
 
       const canvas = document.getElementById('cinema-canvas');
       if (canvas) {
-        canvas.width = 1080;
-        canvas.height = 1920;
+        canvas.width = 1920;
+        canvas.height = 1080;
       }
 
       const exportBtnText = document.getElementById('export-video-btn-text');
-      if (exportBtnText) exportBtnText.textContent = 'Ghi Video Dọc (9:16)';
+      if (exportBtnText) exportBtnText.textContent = 'Ghi & Tải Video (16:9)';
 
       const modeSelect = document.getElementById('cinema-cam-mode-select');
       if (modeSelect) modeSelect.value = cinemaCameraMode;
@@ -11478,160 +11478,60 @@
         ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
-      // 9. Master Branding & Real-Time Telemetry HUD (Optimized for Portrait 9:16 & Landscape)
-      if (isPortrait) {
-        // --- PORTRAIT 9:16 MASTER TOP CARD ---
-        const cardX = 24 * uiScale;
-        const cardY = 32 * uiScale;
-        const cardW = w - (48 * uiScale);
-        const cardH = 205 * uiScale;
+      // 9. Master Branding & Real-Time Telemetry HUD (Clean Dual-Box Layout like previous version)
+      // Left Branding Box
+      const brandW = Math.min(440 * uiScale, w * 0.45);
+      const brandH = 74 * uiScale;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-        ctx.lineWidth = 1.5 * uiScale;
-        roundRect(ctx, cardX, cardY, cardW, cardH, 18 * uiScale, true, true);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 44 * uiScale);
 
-        // Row 1: Brand & State Badges
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('🇻🇳 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', cardX + (18 * uiScale), cardY + (16 * uiScale));
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
+      ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
+      const dispRt = routeDisplayName.length > 32 ? (routeDisplayName.substring(0, 30) + '...') : routeDisplayName;
+      ctx.fillText(`${dispRt} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 66 * uiScale);
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${jBadge} • ${modeBadge} • ${(progress * 100).toFixed(0)}%`, cardX + cardW - (18 * uiScale), cardY + (16 * uiScale));
+      // Right Telemetry HUD Box
+      const hudW = Math.min(480 * uiScale, w * 0.48);
+      const hudH = 74 * uiScale;
+      const hudX = w - hudW - (20 * uiScale);
+      const hudY = 20 * uiScale;
 
-        // Row 2: Large Route Name
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(20 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        const displayTitle = routeDisplayName.length > 38 ? (routeDisplayName.substring(0, 36) + '...') : routeDisplayName;
-        ctx.fillText(`📍 ${displayTitle}`, cardX + (18 * uiScale), cardY + (44 * uiScale));
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
 
-        // Row 3: Prominent Metric Badges (Highlighted Toàn Tuyến KM & Live Traveled)
-        const metricBoxY = cardY + (82 * uiScale);
-        const metricBoxW = (cardW - (48 * uiScale)) / 2;
-        const metricBoxH = 54 * uiScale;
+      ctx.textAlign = 'left';
+      ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (28 * uiScale));
 
-        // Box A: TOÀN TUYẾN KM
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.15)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.lineWidth = 1 * uiScale;
-        roundRect(ctx, cardX + (18 * uiScale), metricBoxY, metricBoxW, metricBoxH, 10 * uiScale, true, true);
+      ctx.fillStyle = '#c084fc';
+      ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (hudW * 0.5), hudY + (28 * uiScale));
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('TOÀN TUYẾN', cardX + (28 * uiScale), metricBoxY + (10 * uiScale));
+      ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (54 * uiScale));
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
-        ctx.fillText(`${cOutboundKm.toLocaleString('vi-VN')} km`, cardX + (28 * uiScale), metricBoxY + (28 * uiScale));
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`•`, hudX + (hudW * 0.32), hudY + (54 * uiScale));
 
-        // Box B: ĐÃ ĐI KM
-        const boxBX = cardX + (18 * uiScale) + metricBoxW + (12 * uiScale);
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-        ctx.strokeStyle = 'rgba(52, 211, 153, 0.4)';
-        ctx.lineWidth = 1 * uiScale;
-        roundRect(ctx, boxBX, metricBoxY, metricBoxW, metricBoxH, 10 * uiScale, true, true);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (hudW * 0.36), hudY + (54 * uiScale));
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('TIẾN ĐỘ ĐÃ ĐI', boxBX + (10 * uiScale), metricBoxY + (10 * uiScale));
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`•`, hudX + (hudW * 0.65), hudY + (54 * uiScale));
 
-        ctx.fillStyle = '#34d399';
-        ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
-        ctx.fillText(`${cTraveledKm.toLocaleString('vi-VN')} km`, boxBX + (10 * uiScale), metricBoxY + (28 * uiScale));
-
-        // Row 4: Secondary Metrics (Roundtrip, Time, Stops, Provinces)
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km • ⏱️ ~${cTimeStr} • 📍 ${cPassedStops}/${activePins.length} điểm • 🏛️ ${cProvInfo.count} tỉnh/thành`, cardX + (18 * uiScale), cardY + (150 * uiScale));
-
-        // Row 5: Embedded Sleek Glowing Progress Bar
-        const barX = cardX + (18 * uiScale);
-        const barY = cardY + (178 * uiScale);
-        const barW = cardW - (36 * uiScale);
-        const barH = 7 * uiScale;
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        roundRect(ctx, barX, barY, barW, barH, 3.5 * uiScale, true, false);
-
-        const fillWidth = Math.max(barH, Math.min(barW, barW * progress));
-        const progGrad = ctx.createLinearGradient(barX, 0, barX + fillWidth, 0);
-        progGrad.addColorStop(0, '#0ea5e9');
-        progGrad.addColorStop(1, '#10b981');
-        ctx.fillStyle = progGrad;
-        roundRect(ctx, barX, barY, fillWidth, barH, 3.5 * uiScale, true, false);
-
-        // Bottom Sovereignty Footer for Vertical Video
-        ctx.fillStyle = 'rgba(226, 232, 240, 0.75)';
-        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🇻🇳 Quần đảo Hoàng Sa & Trường Sa là của Việt Nam • Gạo Maps', w / 2, h - (24 * uiScale));
-
-      } else {
-        // --- LANDSCAPE 16:9 DUAL-CARD HUD ---
-        // Left Branding Box
-        const brandW = 440 * uiScale;
-        const brandH = 76 * uiScale;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-        ctx.lineWidth = 1.2 * uiScale;
-        roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 44 * uiScale);
-
-        ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
-        ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
-        ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 66 * uiScale);
-
-        ctx.fillStyle = '#34d399';
-        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-        ctx.fillText(`🚗 Đã đi: ${cTraveledKm.toLocaleString('vi-VN')} / ${cOutboundKm.toLocaleString('vi-VN')} km`, 34 * uiScale, 84 * uiScale);
-
-        // Right Telemetry HUD Box
-        const hudW = 480 * uiScale;
-        const hudH = 76 * uiScale;
-        const hudX = w - hudW - (20 * uiScale);
-        const hudY = 20 * uiScale;
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-        ctx.lineWidth = 1.2 * uiScale;
-        roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
-
-        ctx.textAlign = 'left';
-        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (28 * uiScale));
-
-        ctx.fillStyle = '#c084fc';
-        ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (240 * uiScale), hudY + (28 * uiScale));
-
-        ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#fde047';
-        ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (54 * uiScale));
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText(`•`, hudX + (150 * uiScale), hudY + (54 * uiScale));
-
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (165 * uiScale), hudY + (54 * uiScale));
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText(`•`, hudX + (285 * uiScale), hudY + (54 * uiScale));
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (300 * uiScale), hudY + (54 * uiScale));
-      }
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (hudW * 0.69), hudY + (54 * uiScale));
     }
 
     // ==========================================
