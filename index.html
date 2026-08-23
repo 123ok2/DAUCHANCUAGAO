@@ -631,7 +631,11 @@
 
             <!-- Smart Quick Tools -->
             <div class="flex-1 flex items-center justify-end gap-1 min-w-0">
-              <button onclick="optimizeRouteOrder()" class="h-7 px-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 text-[11px] font-bold hover:bg-indigo-100 flex items-center gap-1 transition shrink-0" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất (TSP)">
+              <button id="btn-undo-optimize" onclick="undoRouteOptimization()" class="hidden h-7 px-2 rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 text-[10.5px] font-bold hover:bg-amber-200 flex items-center gap-1 transition shrink-0" title="Hoàn tác thứ tự điểm dừng trước khi tối ưu">
+                <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
+                <span>Hoàn tác</span>
+              </button>
+              <button onclick="optimizeRouteOrder()" class="h-7 px-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 text-[11px] font-bold hover:bg-indigo-100 flex items-center gap-1 transition shrink-0" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất cả đi & về (TSP)">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
                 <span>Tối ưu</span>
               </button>
@@ -7724,7 +7728,23 @@
       showToast('Đã xóa toàn bộ điểm trong lộ trình này!', 'info');
     }
 
-    // TSP Nearest-Neighbor + 2-Opt Optimization for shortest vehicle travel order
+    let lastRouteOptimizationBackup = null;
+
+    function undoRouteOptimization() {
+      if (lastRouteOptimizationBackup && lastRouteOptimizationBackup.routeId === activeRouteId) {
+        routePinIds = [...lastRouteOptimizationBackup.pinIds];
+        customRouteWaypoints = lastRouteOptimizationBackup.customWaypoints ? [...lastRouteOptimizationBackup.customWaypoints] : null;
+        lastRouteOptimizationBackup = null;
+        const undoBtn = document.getElementById('btn-undo-optimize');
+        if (undoBtn) undoBtn.classList.add('hidden');
+        saveRoutesToStorage();
+        renderRouteStops();
+        updateRouteCalculation();
+        showToast('Đã khôi phục lại thứ tự điểm dừng ban đầu!', 'info');
+      }
+    }
+
+    // TSP Nearest-Neighbor + 2-Opt Optimization for shortest vehicle travel order (Cả đi & về)
     function optimizeRouteOrder() {
       if (isSharedViewMode) {
         showToast('Chế độ chỉ xem: Không thể tối ưu hóa thứ tự của lộ trình chia sẻ.', 'info');
@@ -7738,7 +7758,16 @@
       const routePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
       if (routePins.length < 3) return;
 
-      // 1. Nearest Neighbor start
+      // Save backup for immediate Undo
+      lastRouteOptimizationBackup = {
+        routeId: activeRouteId,
+        pinIds: [...routePinIds],
+        customWaypoints: customRouteWaypoints ? [...customRouteWaypoints] : null
+      };
+      const undoBtn = document.getElementById('btn-undo-optimize');
+      if (undoBtn) undoBtn.classList.remove('hidden');
+
+      // 1. Nearest Neighbor starting from departure point #1
       let unvisited = [...routePins];
       let tour = [unvisited.shift()];
 
@@ -7758,12 +7787,14 @@
         tour.push(unvisited.splice(nearestIdx, 1)[0]);
       }
 
-      // 2. 2-Opt local search refinement to eliminate crossing paths
+      // 2. 2-Opt local search refinement for closed-circuit roundtrip (Cả đi lẫn về)
       function getTourDist(t) {
         let sum = 0;
         for (let i = 0; i < t.length - 1; i++) {
           sum += Math.hypot(t[i+1].lat - t[i].lat, t[i+1].lng - t[i].lng);
         }
+        // Include return segment back to starting point (Điểm 1)
+        sum += Math.hypot(t[0].lat - t[t.length - 1].lat, t[0].lng - t[t.length - 1].lng);
         return sum;
       }
 
@@ -7788,7 +7819,7 @@
       saveRoutesToStorage();
       renderRouteStops();
       updateRouteCalculation();
-      showToast(`Đã tối ưu hóa lộ trình ngắn nhất cho ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}!`, 'success');
+      showToast(`Đã tối ưu hóa lộ trình ngắn nhất trọn vẹn cả đi lẫn về cho ${activeTravelMode === 'motorcycle' ? '🛵 Xe máy' : '🚗 Ô tô'}!`, 'success');
     }
 
     // Active trip direction: 'outbound' (Toàn tuyến)
@@ -8024,8 +8055,8 @@
       const m = calculateSingleRouteMetrics(active);
       const displayedKm = m.outboundKm;
       const displayedSec = m.outboundSec;
-      const distSubText = `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km`;
-      const timeSubText = `Toàn tuyến`;
+      const distSubText = `Toàn tuyến (Cả đi & về): ${m.outboundKm.toLocaleString('vi-VN')} km`;
+      const timeSubText = `Toàn tuyến (Cả đi & về)`;
 
       const timeStr = formatTravelTime(displayedSec);
 
@@ -8377,7 +8408,29 @@
         `;
       }).join('');
 
-      list.innerHTML = deadEndBannerHtml + stopsCardsHtml;
+      let returnLegCardHtml = '';
+      if (routePinIds.length >= 2) {
+        const firstPin = pins.find(p => p.id === routePinIds[0]);
+        const lastPin = pins.find(p => p.id === routePinIds[routePinIds.length - 1]);
+        if (firstPin && lastPin && firstPin.id !== lastPin.id) {
+          returnLegCardHtml = `
+            <div class="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/40 dark:to-teal-950/40 border border-dashed border-emerald-300 dark:border-emerald-700/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200 shadow-2xs">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs shrink-0">
+                  <i class="fa-solid fa-flag-checkered"></i>
+                </div>
+                <div class="min-w-0 truncate">
+                  <span class="font-bold text-[11px]">Về đích: ${escapeHtml(firstPin.title)} (Điểm #1)</span>
+                  <span class="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-semibold">Trọn vẹn chuyến đi cả đi & về</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full shrink-0 ml-2">Cả đi lẫn về</span>
+            </div>
+          `;
+        }
+      }
+
+      list.innerHTML = deadEndBannerHtml + stopsCardsHtml + returnLegCardHtml;
     }
 
     // Resilient Router & Direct Polyline Routing Engine
@@ -8424,8 +8477,17 @@
         return;
       }
 
-      // Toàn tuyến: Đi qua toàn bộ các điểm dừng
-      const waypoints = [...rawPoints];
+      // Toàn tuyến: Tính trọn vẹn cả đi lẫn về (xuất phát từ điểm 1, đi qua tất cả các điểm và trở về lại điểm xuất phát)
+      let waypoints = [];
+      const isFirstLastSame = (
+        Math.abs(rawPoints[0][0] - rawPoints[rawPoints.length - 1][0]) < 0.0001 &&
+        Math.abs(rawPoints[0][1] - rawPoints[rawPoints.length - 1][1]) < 0.0001
+      );
+      if (!isFirstLastSame) {
+        waypoints = [...rawPoints, rawPoints[0]];
+      } else {
+        waypoints = [...rawPoints];
+      }
 
       const primaryColor = routeColor || '#6366f1';
 
@@ -8578,6 +8640,13 @@
             meters += getHaversineDistance(
               routePins[i].lat, routePins[i].lng,
               routePins[i + 1].lat, routePins[i + 1].lng
+            );
+          }
+          // Include return leg back to starting point #1 if distinct
+          if (routePins[0].id !== routePins[routePins.length - 1].id) {
+            meters += getHaversineDistance(
+              routePins[routePins.length - 1].lat, routePins[routePins.length - 1].lng,
+              routePins[0].lat, routePins[0].lng
             );
           }
           // Road factor approx 1.25x for realistic road curves before full OSRM fetch
