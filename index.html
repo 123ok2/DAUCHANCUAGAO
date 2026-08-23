@@ -798,24 +798,21 @@
           <!-- Hidden helper desc text to preserve bindings -->
           <p id="active-route-desc" class="hidden"></p>
 
-          <!-- 2. View Mode Segmented Control: [Tuyến này | Hiện tất cả tuyến | Tất cả điểm] -->
-          <div class="grid grid-cols-3 p-0.5 bg-slate-100 dark:bg-slate-800/90 rounded-xl text-xs font-semibold border border-slate-200/60 dark:border-slate-700/60">
-            <button id="btn-view-active-route" onclick="setDisplayViewMode('active')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-2xs" title="Chỉ hiển thị lộ trình đang chọn">
-              <i class="fa-solid fa-crosshairs text-[10px] text-indigo-500"></i>
+          <!-- 2. View Mode Segmented Control: [Tuyến này | Hiện tất cả tuyến] -->
+          <div class="grid grid-cols-2 p-0.5 bg-slate-100 dark:bg-slate-800/90 rounded-xl text-xs font-semibold border border-slate-200/60 dark:border-slate-700/60">
+            <button id="btn-view-active-route" onclick="setDisplayViewMode('active')" class="py-1 px-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-2xs" title="Chỉ hiển thị lộ trình đang chọn">
+              <i class="fa-solid fa-crosshairs text-[11px] text-indigo-500"></i>
               <span class="truncate">Tuyến này</span>
             </button>
-            <button id="btn-view-all-routes" onclick="setDisplayViewMode('all_routes')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" title="Hiển thị đồng thời tất cả các lộ trình trên cùng 1 bản đồ">
-              <i class="fa-solid fa-layer-group text-[10px] text-emerald-500"></i>
+            <button id="btn-view-all-routes" onclick="setDisplayViewMode('all_routes')" class="py-1 px-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" title="Hiển thị đồng thời tất cả các lộ trình trên cùng 1 bản đồ">
+              <i class="fa-solid fa-layer-group text-[11px] text-emerald-500"></i>
               <span class="truncate">Tất cả tuyến (<span id="view-routes-count-badge">0</span>)</span>
-            </button>
-            <button id="btn-view-all-pins" onclick="setDisplayViewMode('all_pins')" class="py-1 px-1 rounded-lg text-[10.5px] font-bold transition flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" title="Hiển thị toàn bộ các điểm kỷ niệm">
-              <i class="fa-solid fa-globe text-[10px] text-sky-500"></i>
-              <span class="truncate">Tất cả điểm</span>
             </button>
           </div>
 
           <!-- Hidden legacy buttons to preserve any external listeners -->
           <div class="hidden">
+            <button id="btn-view-all-pins"></button>
             <button id="btn-display-all-pins"></button>
             <button id="btn-display-route-pins"></button>
           </div>
