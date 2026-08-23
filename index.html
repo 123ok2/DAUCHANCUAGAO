@@ -2666,6 +2666,17 @@
             </select>
           </div>
 
+          <!-- Video Aspect Ratio (Vertical 9:16 vs Landscape 16:9 vs Square 1:1) -->
+          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-rose-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Khung hình video: Dọc 9:16 (TikTok/Reels/Shorts) hoặc Ngang 16:9 (YouTube)">
+            <i class="fa-solid fa-mobile-screen-button text-[11px] sm:text-xs text-rose-400 shrink-0"></i>
+            <span class="text-[10px] sm:text-[11px] font-bold text-rose-300 hidden xs:inline">Khung hình:</span>
+            <select id="cinema-aspect-select" onchange="changeCinemaAspectRatio(this.value)" class="bg-transparent text-[11px] sm:text-xs font-black text-rose-200 outline-none cursor-pointer">
+              <option value="9:16" class="bg-slate-900 text-rose-300" selected>📱 Dọc 9:16 (Shorts/Reels/TikTok)</option>
+              <option value="16:9" class="bg-slate-900 text-white">💻 Ngang 16:9 (YouTube/HD)</option>
+              <option value="1:1" class="bg-slate-900 text-white">⏹️ Vuông 1:1 (Instagram)</option>
+            </select>
+          </div>
+
           <!-- Journey Mode (Roundtrip vs Outbound vs Return) -->
           <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-emerald-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Chế độ mô phỏng hành trình (Điểm 1 là nơi xuất phát và về đích khi khứ hồi)">
             <i class="fa-solid fa-arrows-spin text-[11px] sm:text-xs text-emerald-400 shrink-0"></i>
@@ -2724,7 +2735,7 @@
         <!-- 3. Cinema Viewport with Canvas & Overlays -->
         <div class="relative flex-1 bg-slate-950 flex items-center justify-center min-h-[220px] xs:min-h-[260px] sm:min-h-[380px] max-h-[55vh] sm:max-h-[480px] overflow-hidden select-none">
           <!-- Canvas for 2D/3D Route Journey Visualization & High-Bitrate Video Recording Stream (1080p Full HD) -->
-          <canvas id="cinema-canvas" width="1920" height="1080" class="w-full h-full max-h-[480px] object-contain rounded-xl shadow-2xl bg-slate-950"></canvas>
+          <canvas id="cinema-canvas" width="1080" height="1920" class="w-full h-full max-h-[480px] object-contain rounded-xl shadow-2xl bg-slate-950"></canvas>
 
           <!-- Active Stop Hover Popover during Simulation -->
           <div id="cinema-stop-popup" class="hidden absolute top-2.5 left-2.5 sm:top-4 sm:left-4 max-w-[calc(100%-20px)] sm:max-w-xs bg-slate-900/95 backdrop-blur-md rounded-2xl p-3 border border-indigo-500/50 shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none z-10">
@@ -2743,6 +2754,34 @@
           <div id="cinema-rec-badge" class="hidden absolute top-2.5 right-2.5 sm:top-4 sm:right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-rose-600/95 text-white text-[10px] sm:text-xs font-black flex items-center gap-1.5 sm:gap-2 shadow-2xl border border-white/20 z-10">
             <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white animate-ping"></span>
             <span>REC • ĐANG GHI VIDEO</span>
+          </div>
+
+          <!-- Video Exporting Modal Overlay with Live Progress Bar -->
+          <div id="cinema-export-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 z-30 animate-in fade-in duration-200 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center text-2xl mb-3 animate-pulse">
+              <i class="fa-solid fa-video"></i>
+            </div>
+            <h3 class="text-base sm:text-lg font-black text-white">Đang Ghi Video Lộ Trình HD</h3>
+            <p id="cinema-export-format-hint" class="text-xs text-rose-300 font-bold mt-0.5">Khung hình Dọc 9:16 (Shorts / Reels / TikTok) • 1080p</p>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Đang ghi lại toàn bộ chuyển động kèm thông số km toàn tuyến và các điểm dừng...</p>
+            
+            <div class="w-full max-w-xs mt-4">
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span class="text-slate-300">Tiến độ xuất video</span>
+                <span id="cinema-export-pct-text" class="text-rose-400 font-black">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/10 p-0.5">
+                <div id="cinema-export-bar-fill" class="bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 mt-1.5 font-medium">
+                <span id="cinema-export-time-est">Đang tính toán thời gian...</span>
+                <span>30 FPS • 4.5 Mbps</span>
+              </div>
+            </div>
+
+            <button type="button" onclick="cancelVideoExport()" class="mt-4 px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-xmark"></i> <span>Hủy xuất video</span>
+            </button>
           </div>
 
           <!-- Progress Bar on Canvas Bottom -->
@@ -2767,6 +2806,7 @@
             <!-- Speed Selector -->
             <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2 sm:px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer">
               <option value="1">1x</option>
+              <option value="1.5">1.5x</option>
               <option value="2" selected>2x</option>
               <option value="4">4x</option>
               <option value="8">8x</option>
@@ -2782,9 +2822,9 @@
             </button>
 
             <!-- 2. Record & Export Video -->
-            <button id="btn-export-video" onclick="recordAndExportRouteVideo()" class="h-10 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 hover:from-rose-600 hover:to-orange-600 active:scale-95 text-white text-xs font-bold shadow-lg shadow-rose-500/25 flex items-center justify-center gap-1.5 sm:gap-2 transition whitespace-nowrap" title="Ghi và tải video chuyển động lộ trình (.webm)">
+            <button id="btn-export-video" onclick="recordAndExportRouteVideo()" class="h-10 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 hover:from-rose-600 hover:to-orange-600 active:scale-95 text-white text-xs font-bold shadow-lg shadow-rose-500/25 flex items-center justify-center gap-1.5 sm:gap-2 transition whitespace-nowrap" title="Ghi và tải video chuyển động lộ trình dạng Dọc hoặc Ngang">
               <i class="fa-solid fa-video"></i>
-              <span id="export-video-btn-text" class="truncate">Ghi & Tải Video</span>
+              <span id="export-video-btn-text" class="truncate">Ghi Video Dọc (9:16)</span>
             </button>
           </div>
         </div>
@@ -8637,28 +8677,35 @@
         };
       }
 
-      const stopsCount = Array.isArray(route.pinIds) ? route.pinIds.length : 0;
-      const outboundKm = calculateRouteDistanceKm(route);
+      const stopsCount = Array.isArray(route.pinIds) ? route.pinIds.length : (Array.isArray(route.stops) ? route.stops.length : 0);
+      let outboundKm = calculateRouteDistanceKm(route);
+      if (outboundKm <= 0 && typeof route.distKm === 'number' && route.distKm > 0) {
+        outboundKm = route.distKm;
+      }
+      
       const isMotorcycle = route.travelMode === 'motorcycle';
       const speedMps = isMotorcycle ? 10.5 : 15.0; // ~38 km/h motorcycle vs ~54 km/h car
       const outboundSec = (typeof route.durationSeconds === 'number' && route.durationSeconds > 0)
         ? route.durationSeconds
         : Math.round((outboundKm * 1000) / speedMps);
 
+      const returnKm = outboundKm;
+      const roundTripKm = parseFloat((outboundKm * 2).toFixed(1));
+
       return {
         outboundKm,
-        returnKm: outboundKm,
-        roundTripKm: outboundKm,
+        returnKm,
+        roundTripKm,
         outboundSec,
         returnSec: outboundSec,
-        roundTripSec: outboundSec,
+        roundTripSec: outboundSec * 2,
         stopsCount
       };
     }
 
     // Grand Multi-Route Aggregate Metrics Calculator
     function calculateAllRoutesAggregateMetrics() {
-      const validRoutes = (routes || []).filter(r => Array.isArray(r.pinIds) && r.pinIds.length >= 2);
+      const validRoutes = (routes || []).filter(r => (Array.isArray(r.pinIds) && r.pinIds.length >= 2) || (Array.isArray(r.stops) && r.stops.length >= 2));
       let totalOutboundKm = 0;
       let totalOutboundSec = 0;
       let totalStopsCount = 0;
@@ -8669,22 +8716,27 @@
         totalOutboundKm += m.outboundKm;
         totalOutboundSec += m.outboundSec;
         totalStopsCount += m.stopsCount;
-        (r.pinIds || []).forEach(id => uniquePinIdsSet.add(id));
+        if (Array.isArray(r.pinIds)) {
+          r.pinIds.forEach(id => uniquePinIdsSet.add(id));
+        }
         return {
           route: r,
           ...m
         };
       });
 
+      const totalOutboundKmFixed = parseFloat(totalOutboundKm.toFixed(1));
+      const totalRoundTripKmFixed = parseFloat((totalOutboundKmFixed * 2).toFixed(1));
+
       return {
         routesCount: validRoutes.length,
         totalRoutesCount: (routes || []).length,
-        totalOutboundKm: parseFloat(totalOutboundKm.toFixed(1)),
-        totalReturnKm: parseFloat(totalOutboundKm.toFixed(1)),
-        totalRoundTripKm: parseFloat(totalOutboundKm.toFixed(1)),
+        totalOutboundKm: totalOutboundKmFixed,
+        totalReturnKm: totalOutboundKmFixed,
+        totalRoundTripKm: totalRoundTripKmFixed,
         totalOutboundSec,
         totalReturnSec: totalOutboundSec,
-        totalRoundTripSec: totalOutboundSec,
+        totalRoundTripSec: totalOutboundSec * 2,
         totalStopsCount,
         uniquePinsCount: uniquePinIdsSet.size,
         routeBreakdowns
@@ -9416,6 +9468,21 @@
       if (typeof route.distanceKm === 'number' && !isNaN(route.distanceKm) && route.distanceKm > 0) {
         return route.distanceKm;
       }
+      if (typeof route.distKm === 'number' && !isNaN(route.distKm) && route.distKm > 0) {
+        return route.distKm;
+      }
+
+      // If road coordinates exist (most accurate road distance)
+      if (Array.isArray(route.roadCoordinates) && route.roadCoordinates.length >= 2) {
+        let meters = 0;
+        for (let i = 0; i < route.roadCoordinates.length - 1; i++) {
+          meters += getHaversineDistance(
+            route.roadCoordinates[i].lat, route.roadCoordinates[i].lng,
+            route.roadCoordinates[i + 1].lat, route.roadCoordinates[i + 1].lng
+          );
+        }
+        return parseFloat((meters / 1000).toFixed(1));
+      }
 
       // If custom waypoints exist
       if (Array.isArray(route.customWaypoints) && route.customWaypoints.length >= 2) {
@@ -9429,6 +9496,18 @@
         return parseFloat((meters / 1000).toFixed(1));
       }
 
+      // If stops array exist (e.g. shared route)
+      if (Array.isArray(route.stops) && route.stops.length >= 2) {
+        let meters = 0;
+        for (let i = 0; i < route.stops.length - 1; i++) {
+          meters += getHaversineDistance(
+            route.stops[i].lat, route.stops[i].lng,
+            route.stops[i + 1].lat, route.stops[i + 1].lng
+          );
+        }
+        return parseFloat(((meters * 1.25) / 1000).toFixed(1));
+      }
+
       // If stop pins exist
       if (Array.isArray(route.pinIds) && route.pinIds.length >= 2) {
         const routePins = route.pinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
@@ -9438,13 +9517,6 @@
             meters += getHaversineDistance(
               routePins[i].lat, routePins[i].lng,
               routePins[i + 1].lat, routePins[i + 1].lng
-            );
-          }
-          // Include return leg back to starting point #1 if distinct
-          if (routePins[0].id !== routePins[routePins.length - 1].id) {
-            meters += getHaversineDistance(
-              routePins[routePins.length - 1].lat, routePins[routePins.length - 1].lng,
-              routePins[0].lat, routePins[0].lng
             );
           }
           // Road factor approx 1.25x for realistic road curves before full OSRM fetch
@@ -10497,6 +10569,54 @@
       }
     }
 
+    let cinemaAspectRatio = '9:16'; // '9:16' (Vertical 1080x1920 by default for Shorts/Reels/TikTok), '16:9' (1920x1080), '1:1' (1080x1080)
+
+    function changeCinemaAspectRatio(ratio) {
+      cinemaAspectRatio = ratio || '9:16';
+      const canvas = document.getElementById('cinema-canvas');
+      if (!canvas) return;
+
+      if (cinemaAspectRatio === '9:16') {
+        canvas.width = 1080;
+        canvas.height = 1920;
+      } else if (cinemaAspectRatio === '1:1') {
+        canvas.width = 1080;
+        canvas.height = 1080;
+      } else {
+        // 16:9
+        canvas.width = 1920;
+        canvas.height = 1080;
+      }
+
+      const exportBtnText = document.getElementById('export-video-btn-text');
+      if (exportBtnText && !isRecordingVideo) {
+        if (cinemaAspectRatio === '9:16') {
+          exportBtnText.textContent = 'Ghi Video Dọc (9:16)';
+        } else if (cinemaAspectRatio === '1:1') {
+          exportBtnText.textContent = 'Ghi Video Vuông (1:1)';
+        } else {
+          exportBtnText.textContent = 'Ghi Video Ngang (16:9)';
+        }
+      }
+
+      const aspectSelect = document.getElementById('cinema-aspect-select');
+      if (aspectSelect) aspectSelect.value = cinemaAspectRatio;
+
+      const pathCoords = getInterpolatedRouteCoords();
+      if (pathCoords && pathCoords.length >= 2) {
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
+      }
+      
+      const ratioNames = {
+        '9:16': '📱 Dọc 9:16 (1080x1920 - Shorts / Reels / TikTok)',
+        '16:9': '💻 Ngang 16:9 (1920x1080 - YouTube / HD)',
+        '1:1': '⏹️ Vuông 1:1 (1080x1080 - Instagram)'
+      };
+      showToast(`Đã chuyển khung hình video: ${ratioNames[cinemaAspectRatio] || ratio}`, 'info');
+    }
+
     async function changeCinemaRoute(routeId) {
       cinemaTargetRouteId = routeId;
       cinemaProgress = 0.0;
@@ -10642,6 +10762,20 @@
       const selectEl = document.getElementById('cinema-map-style-select');
       if (selectEl) selectEl.value = 'satellite';
 
+      // Default aspect ratio: 9:16 (Vertical) for modern Shorts/Reels/TikTok
+      cinemaAspectRatio = '9:16';
+      const aspectSelect = document.getElementById('cinema-aspect-select');
+      if (aspectSelect) aspectSelect.value = '9:16';
+
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas) {
+        canvas.width = 1080;
+        canvas.height = 1920;
+      }
+
+      const exportBtnText = document.getElementById('export-video-btn-text');
+      if (exportBtnText) exportBtnText.textContent = 'Ghi Video Dọc (9:16)';
+
       const modeSelect = document.getElementById('cinema-cam-mode-select');
       if (modeSelect) modeSelect.value = cinemaCameraMode;
 
@@ -10666,7 +10800,6 @@
       // Ensure exact road curve geometry before starting playback
       await ensureCinemaRouteCoordinates(cinemaTargetRouteId);
 
-      const canvas = document.getElementById('cinema-canvas');
       const pathCoords = getInterpolatedRouteCoords();
       if (canvas && pathCoords.length >= 2) {
         await preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height);
@@ -10674,7 +10807,7 @@
       }
 
       requestAnimationFrame(runCinemaLoop);
-      showToast(`Đang phát mô phỏng lộ trình bám đường bộ: ${active.name || 'Lộ trình'}`, 'success');
+      showToast(`Đang phát mô phỏng video dạng dọc (9:16): ${active.name || 'Lộ trình'}`, 'success');
     }
 
     let cinemaExportInterval = null;
@@ -10695,7 +10828,7 @@
       const recBadge = document.getElementById('cinema-rec-badge');
       if (recBadge) recBadge.classList.add('hidden');
       const btnText = document.getElementById('export-video-btn-text');
-      if (btnText) btnText.textContent = 'Ghi & Tải Video';
+      if (btnText) btnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : 'Ghi & Tải Video';
 
       const modal = document.getElementById('route-cinema-modal');
       if (modal) modal.classList.add('hidden');
@@ -10720,7 +10853,7 @@
       const recBadge = document.getElementById('cinema-rec-badge');
       if (recBadge) recBadge.classList.add('hidden');
       const btnText = document.getElementById('export-video-btn-text');
-      if (btnText) btnText.textContent = 'Ghi & Tải Video';
+      if (btnText) btnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : 'Ghi & Tải Video';
       showToast('Đã hủy quá trình xuất video', 'info');
     }
 
@@ -11117,12 +11250,83 @@
       ctx.fill();
       ctx.restore();
 
-      // 7. Draw Mini-Map Radar Inset in Bottom-Right Corner
+      // 7. Calculate Absolute Guaranteed Non-Zero Route Metrics from Geometry & Data
+      let roadPathMeters = 0;
+      for (let i = 0; i < pathCoords.length - 1; i++) {
+        roadPathMeters += getHaversineDistance(
+          pathCoords[i].lat, pathCoords[i].lng,
+          pathCoords[i + 1].lat, pathCoords[i + 1].lng
+        );
+      }
+      const roadPathKm = parseFloat((roadPathMeters / 1000).toFixed(1));
+
+      const active = getCinemaSelectedRoute();
+      const isMultiCinema = cinemaTargetRouteId === 'all';
+      const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
+      const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
+
+      let cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : (active && active.distanceKm ? active.distanceKm : 0));
+      if (!cOutboundKm || cOutboundKm <= 0) {
+        if (cinemaJourneyMode === 'roundtrip') {
+          cOutboundKm = parseFloat((roadPathKm / 2).toFixed(1));
+        } else {
+          cOutboundKm = roadPathKm;
+        }
+      }
+      if (cOutboundKm <= 0) cOutboundKm = roadPathKm > 0 ? roadPathKm : 1.0;
+
+      let cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : cOutboundKm);
+      if (!cReturnKm || cReturnKm <= 0) cReturnKm = cOutboundKm;
+
+      let cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : parseFloat((cOutboundKm * 2).toFixed(1)));
+      if (!cRoundTripKm || cRoundTripKm <= 0) cRoundTripKm = parseFloat((cOutboundKm * 2).toFixed(1));
+
+      // Calculate live real-time traveled distance along route
+      let curTraveledMeters = 0;
+      const curCarIndexFloat = Math.max(0, Math.min(progress, 1.0)) * (pathCoords.length - 1);
+      const curCarIdx = Math.floor(curCarIndexFloat);
+      const curSegT = curCarIndexFloat - curCarIdx;
+      for (let i = 0; i < curCarIdx; i++) {
+        curTraveledMeters += getHaversineDistance(
+          pathCoords[i].lat, pathCoords[i].lng,
+          pathCoords[i + 1].lat, pathCoords[i + 1].lng
+        );
+      }
+      if (curCarIdx < pathCoords.length - 1) {
+        const pA = pathCoords[curCarIdx];
+        const pB = pathCoords[curCarIdx + 1];
+        const pCurLat = pA.lat + (pB.lat - pA.lat) * curSegT;
+        const pCurLng = pA.lng + (pB.lng - pA.lng) * curSegT;
+        curTraveledMeters += getHaversineDistance(pA.lat, pA.lng, pCurLat, pCurLng);
+      }
+      const cTraveledKm = parseFloat((curTraveledMeters / 1000).toFixed(1));
+
+      let curJourneyKm = cOutboundKm;
+      let curJourneySec = aggCinema ? aggCinema.totalOutboundSec : (mCinema ? mCinema.outboundSec : Math.round(cOutboundKm * 75));
+      if (cinemaJourneyMode === 'return') {
+        curJourneyKm = cReturnKm;
+        curJourneySec = aggCinema ? aggCinema.totalReturnSec : (mCinema ? mCinema.returnSec : Math.round(cReturnKm * 75));
+      } else if (cinemaJourneyMode === 'roundtrip') {
+        curJourneyKm = cRoundTripKm;
+        curJourneySec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
+      }
+
+      const cTimeStr = formatTravelTime(curJourneySec);
+      const cProvInfo = getProvincesForPins(activePins);
+      const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
+      const isPortrait = h > w;
+
+      const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
+      const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
+      const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
+      const routeDisplayName = isMultiCinema ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
+
+      // 8. Draw Mini-Map Radar Inset
       if (cinemaCameraMode !== 'overview') {
-        const radarW = 210 * uiScale;
-        const radarH = 145 * uiScale;
+        const radarW = isPortrait ? (320 * uiScale) : (210 * uiScale);
+        const radarH = isPortrait ? (190 * uiScale) : (145 * uiScale);
         const radarX = w - radarW - (24 * uiScale);
-        const radarY = h - radarH - (28 * uiScale);
+        const radarY = isPortrait ? (h - radarH - (64 * uiScale)) : (h - radarH - (28 * uiScale));
 
         ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
@@ -11173,7 +11377,7 @@
         activePins.forEach(pin => {
           const rPinP = mapToRadar(pin.lat, pin.lng);
           ctx.beginPath();
-          ctx.arc(rPinP.x, rPinP.y, 3 * uiScale, 0, Math.PI * 2);
+          ctx.arc(rPinP.x, rPinP.y, 3.5 * uiScale, 0, Math.PI * 2);
           ctx.fillStyle = '#10b981';
           ctx.fill();
         });
@@ -11192,86 +11396,160 @@
         ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
-      // 8. Watermark and Top-Left Metadata Branding Box
-      const active = getCinemaSelectedRoute();
-      const isMultiCinema = cinemaTargetRouteId === 'all';
-      const brandW = 430 * uiScale;
-      const brandH = 68 * uiScale;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-      ctx.lineWidth = 1.2 * uiScale;
-      roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
+      // 9. Master Branding & Real-Time Telemetry HUD (Optimized for Portrait 9:16 & Landscape)
+      if (isPortrait) {
+        // --- PORTRAIT 9:16 MASTER TOP CARD ---
+        const cardX = 24 * uiScale;
+        const cardY = 32 * uiScale;
+        const cardW = w - (48 * uiScale);
+        const cardH = 205 * uiScale;
 
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 45 * uiScale);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.lineWidth = 1.5 * uiScale;
+        roundRect(ctx, cardX, cardY, cardW, cardH, 18 * uiScale, true, true);
 
-      const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
-      const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
-      const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
-      const routeDisplayName = isMultiCinema ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
-      ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
-      ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
-      ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 68 * uiScale);
+        // Row 1: Brand & State Badges
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('🇻🇳 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', cardX + (18 * uiScale), cardY + (16 * uiScale));
 
-      // 9. Top-Right Real-time Telemetry HUD (Outbound, Return, Roundtrip & Provinces)
-      const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
-      const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
-      const cOutboundKm = aggCinema ? aggCinema.totalOutboundKm : (mCinema ? mCinema.outboundKm : (active && active.distanceKm ? active.distanceKm : 0));
-      const cReturnKm = aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : (active && active.distanceKm ? active.distanceKm : 0));
-      const cRoundTripKm = aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : (active && active.distanceKm ? active.distanceKm * 2 : 0));
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.fillText(`${jBadge} • ${modeBadge} • ${(progress * 100).toFixed(0)}%`, cardX + cardW - (18 * uiScale), cardY + (16 * uiScale));
 
-      let curJourneyKm = cOutboundKm;
-      let curJourneySec = aggCinema ? aggCinema.totalOutboundSec : (mCinema ? mCinema.outboundSec : Math.round(cOutboundKm * 75));
-      if (cinemaJourneyMode === 'return') {
-        curJourneyKm = cReturnKm;
-        curJourneySec = aggCinema ? aggCinema.totalReturnSec : (mCinema ? mCinema.returnSec : Math.round(cReturnKm * 75));
-      } else if (cinemaJourneyMode === 'roundtrip') {
-        curJourneyKm = cRoundTripKm;
-        curJourneySec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
+        // Row 2: Large Route Name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(20 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        const displayTitle = routeDisplayName.length > 38 ? (routeDisplayName.substring(0, 36) + '...') : routeDisplayName;
+        ctx.fillText(`📍 ${displayTitle}`, cardX + (18 * uiScale), cardY + (44 * uiScale));
+
+        // Row 3: Prominent Metric Badges (Highlighted Toàn Tuyến KM & Live Traveled)
+        const metricBoxY = cardY + (82 * uiScale);
+        const metricBoxW = (cardW - (48 * uiScale)) / 2;
+        const metricBoxH = 54 * uiScale;
+
+        // Box A: TOÀN TUYẾN KM
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.15)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1 * uiScale;
+        roundRect(ctx, cardX + (18 * uiScale), metricBoxY, metricBoxW, metricBoxH, 10 * uiScale, true, true);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('TOÀN TUYẾN', cardX + (28 * uiScale), metricBoxY + (10 * uiScale));
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+        ctx.fillText(`${cOutboundKm.toLocaleString('vi-VN')} km`, cardX + (28 * uiScale), metricBoxY + (28 * uiScale));
+
+        // Box B: ĐÃ ĐI KM
+        const boxBX = cardX + (18 * uiScale) + metricBoxW + (12 * uiScale);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.4)';
+        ctx.lineWidth = 1 * uiScale;
+        roundRect(ctx, boxBX, metricBoxY, metricBoxW, metricBoxH, 10 * uiScale, true, true);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('TIẾN ĐỘ ĐÃ ĐI', boxBX + (10 * uiScale), metricBoxY + (10 * uiScale));
+
+        ctx.fillStyle = '#34d399';
+        ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+        ctx.fillText(`${cTraveledKm.toLocaleString('vi-VN')} km`, boxBX + (10 * uiScale), metricBoxY + (28 * uiScale));
+
+        // Row 4: Secondary Metrics (Roundtrip, Time, Stops, Provinces)
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km • ⏱️ ~${cTimeStr} • 📍 ${cPassedStops}/${activePins.length} điểm • 🏛️ ${cProvInfo.count} tỉnh/thành`, cardX + (18 * uiScale), cardY + (150 * uiScale));
+
+        // Row 5: Embedded Sleek Glowing Progress Bar
+        const barX = cardX + (18 * uiScale);
+        const barY = cardY + (178 * uiScale);
+        const barW = cardW - (36 * uiScale);
+        const barH = 7 * uiScale;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        roundRect(ctx, barX, barY, barW, barH, 3.5 * uiScale, true, false);
+
+        const fillWidth = Math.max(barH, Math.min(barW, barW * progress));
+        const progGrad = ctx.createLinearGradient(barX, 0, barX + fillWidth, 0);
+        progGrad.addColorStop(0, '#0ea5e9');
+        progGrad.addColorStop(1, '#10b981');
+        ctx.fillStyle = progGrad;
+        roundRect(ctx, barX, barY, fillWidth, barH, 3.5 * uiScale, true, false);
+
+        // Bottom Sovereignty Footer for Vertical Video
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.75)';
+        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🇻🇳 Quần đảo Hoàng Sa & Trường Sa là của Việt Nam • Gạo Maps', w / 2, h - (24 * uiScale));
+
+      } else {
+        // --- LANDSCAPE 16:9 DUAL-CARD HUD ---
+        // Left Branding Box
+        const brandW = 440 * uiScale;
+        const brandH = 76 * uiScale;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 1.2 * uiScale;
+        roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 44 * uiScale);
+
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
+        ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
+        ctx.fillText(`${routeDisplayName} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 66 * uiScale);
+
+        ctx.fillStyle = '#34d399';
+        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+        ctx.fillText(`🚗 Đã đi: ${cTraveledKm.toLocaleString('vi-VN')} / ${cOutboundKm.toLocaleString('vi-VN')} km`, 34 * uiScale, 84 * uiScale);
+
+        // Right Telemetry HUD Box
+        const hudW = 480 * uiScale;
+        const hudH = 76 * uiScale;
+        const hudX = w - hudW - (20 * uiScale);
+        const hudY = 20 * uiScale;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.lineWidth = 1.2 * uiScale;
+        roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
+
+        ctx.textAlign = 'left';
+        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (28 * uiScale));
+
+        ctx.fillStyle = '#c084fc';
+        ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (240 * uiScale), hudY + (28 * uiScale));
+
+        ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
+        ctx.fillStyle = '#fde047';
+        ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (54 * uiScale));
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`•`, hudX + (150 * uiScale), hudY + (54 * uiScale));
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (165 * uiScale), hudY + (54 * uiScale));
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`•`, hudX + (285 * uiScale), hudY + (54 * uiScale));
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (300 * uiScale), hudY + (54 * uiScale));
       }
-
-      const cTimeStr = formatTravelTime(curJourneySec);
-      const cProvInfo = getProvincesForPins(activePins);
-      const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
-
-      const hudW = 460 * uiScale;
-      const hudH = 68 * uiScale;
-      const hudX = w - hudW - (20 * uiScale);
-      const hudY = 20 * uiScale;
-
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-      ctx.lineWidth = 1.2 * uiScale;
-      roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
-
-      // Top Row of HUD: Primary Distance & Roundtrip reference
-      ctx.textAlign = 'left';
-      ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (26 * uiScale));
-
-      ctx.fillStyle = '#c084fc';
-      ctx.fillText(`🔄 Khứ hồi: ${cRoundTripKm.toLocaleString('vi-VN')} km`, hudX + (220 * uiScale), hudY + (26 * uiScale));
-
-      // Bottom Row of HUD: Time, Stops & Provinces
-      ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
-      ctx.fillStyle = '#fde047';
-      ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (16 * uiScale), hudY + (50 * uiScale));
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText(`•`, hudX + (150 * uiScale), hudY + (50 * uiScale));
-
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (165 * uiScale), hudY + (50 * uiScale));
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText(`•`, hudX + (285 * uiScale), hudY + (50 * uiScale));
-
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (300 * uiScale), hudY + (50 * uiScale));
     }
 
     // ==========================================
@@ -11731,7 +12009,33 @@
         return;
       }
 
-      showToast(`Đang chuẩn bị video cho tuyến "${active.name || 'Lộ trình'}"...`, 'info');
+      // Set canvas dimension based on chosen aspect ratio
+      if (cinemaAspectRatio === '9:16') {
+        canvas.width = 1080;
+        canvas.height = 1920;
+      } else if (cinemaAspectRatio === '1:1') {
+        canvas.width = 1080;
+        canvas.height = 1080;
+      } else {
+        canvas.width = 1920;
+        canvas.height = 1080;
+      }
+
+      const formatHints = {
+        '9:16': 'Khung hình Dọc 9:16 (Shorts / Reels / TikTok) • 1080x1920 Full HD',
+        '16:9': 'Khung hình Ngang 16:9 (YouTube / HD) • 1920x1080 Full HD',
+        '1:1': 'Khung hình Vuông 1:1 (Instagram) • 1080x1080 HD'
+      };
+
+      const overlayHint = document.getElementById('cinema-export-format-hint');
+      if (overlayHint) {
+        overlayHint.textContent = formatHints[cinemaAspectRatio] || 'Khung hình Dọc 9:16 • 1080x1920 Full HD';
+      }
+
+      const overlay = document.getElementById('cinema-export-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+
+      showToast(`Đang chuẩn bị video ${cinemaAspectRatio} cho tuyến "${active.name || 'Lộ trình'}"...`, 'info');
       const btnText = document.getElementById('export-video-btn-text');
       if (btnText) btnText.textContent = 'Đang nạp đường chỉ dẫn...';
 
@@ -11740,7 +12044,8 @@
       const pathCoords = getInterpolatedRouteCoords();
       if (pathCoords.length < 2) {
         showToast('Không có tọa độ đường đi hợp lệ để quay video!', 'error');
-        if (btnText) btnText.textContent = 'Ghi & Tải Video';
+        if (overlay) overlay.classList.add('hidden');
+        if (btnText) btnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : 'Ghi & Tải Video';
         return;
       }
       if (btnText) btnText.textContent = 'Đang tải bản đồ HD...';
@@ -11775,7 +12080,8 @@
         } catch (innerErr) {
           console.error('Error creating MediaRecorder:', innerErr);
           showToast('Lỗi khởi tạo bộ ghi video canvas!', 'error');
-          if (btnText) btnText.textContent = 'Ghi & Tải Video';
+          if (overlay) overlay.classList.add('hidden');
+          if (btnText) btnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : 'Ghi & Tải Video';
           return;
         }
       }
@@ -11795,9 +12101,8 @@
 
         const recBadge = document.getElementById('cinema-rec-badge');
         if (recBadge) recBadge.classList.add('hidden');
-        const overlay = document.getElementById('cinema-export-overlay');
         if (overlay) overlay.classList.add('hidden');
-        if (btnText) btnText.textContent = 'Ghi & Tải Video';
+        if (btnText) btnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : 'Ghi & Tải Video';
 
         if (recordedChunks.length === 0) {
           showToast('Không có dữ liệu video được ghi!', 'error');
@@ -11810,14 +12115,15 @@
         const a = document.createElement('a');
         a.href = url;
         const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+        const ratioSlug = (cinemaAspectRatio || '9:16').replace(':', 'x');
         const ext = isMp4 ? 'mp4' : 'webm';
-        a.download = `gaomaps-video-${safeName}-${Date.now()}.${ext}`;
+        a.download = `gaomaps-video-${ratioSlug}-${safeName}-${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-        showToast(`🎉 Đã xuất thành công video lộ trình: "${active.name || 'Lộ trình'}" (1080p, siêu mượt)`, 'success');
+        showToast(`🎉 Đã xuất thành công video lộ trình ${cinemaAspectRatio}: "${active.name || 'Lộ trình'}" (1080p, siêu mượt)`, 'success');
       };
 
       // Start recording
