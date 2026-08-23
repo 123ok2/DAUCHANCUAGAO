@@ -4283,13 +4283,20 @@
       return `
         <div class="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
           ${pin.photo ? `
-            <div class="relative h-40 w-full overflow-hidden bg-slate-900 group cursor-pointer" onclick="openImageLightbox('${pin.photo}', '${escapeHtml(pin.title)}')">
-              <img src="${pin.photo}" alt="${escapeHtml(pin.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-60 group-hover:opacity-40 transition"></div>
+            <div class="relative h-40 w-full overflow-hidden bg-slate-900 group">
+              <img src="${pin.photo}" alt="${escapeHtml(pin.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300 cursor-pointer" onclick="openImageLightbox('${pin.photo}', '${escapeHtml(pin.title)}')" onerror="this.style.display='none'" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/35 opacity-70 group-hover:opacity-50 transition pointer-events-none"></div>
               <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md text-white flex items-center gap-1.5 backdrop-blur-xs" style="background-color: ${currentPinColor};">
                 <i class="fa-solid ${cat.icon}"></i> ${cat.name}
               </span>
-              <span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100">
+              <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                ${!isSharedViewMode ? `
+                  <button type="button" onclick="confirmDeletePinPhoto('${pin.id}')" title="Xóa ảnh khỏi điểm này" class="px-2 py-1 rounded-lg bg-black/75 hover:bg-rose-600 text-rose-300 hover:text-white text-[10px] font-bold flex items-center gap-1 backdrop-blur-md transition shadow border border-white/20 active:scale-95">
+                    <i class="fa-solid fa-trash-can"></i> <span>Gỡ ảnh</span>
+                  </button>
+                ` : ''}
+              </div>
+              <span onclick="openImageLightbox('${pin.photo}', '${escapeHtml(pin.title)}')" class="cursor-pointer absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100 transition">
                 <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
               </span>
             </div>
@@ -4769,6 +4776,25 @@
       const cameraInput = document.getElementById('form-camera-input');
       if (photoInput) photoInput.value = '';
       if (cameraInput) cameraInput.value = '';
+      showToast('Đã gỡ ảnh khỏi biểu mẫu. Hãy bấm "Lưu Kỷ niệm" để cập nhật!', 'info');
+    }
+
+    // Direct remove photo from existing pin
+    function confirmDeletePinPhoto(pinId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể xóa ảnh trong lộ trình chia sẻ.', 'info');
+        return;
+      }
+      const pin = pins.find(p => p.id === pinId);
+      if (!pin || !pin.photo) return;
+
+      if (confirm(`Bạn có chắc chắn muốn xóa ảnh của địa điểm "${pin.title}" không?`)) {
+        pin.photo = '';
+        savePinsToStorage();
+        renderAllPins();
+        renderSidebarList();
+        showToast(`Đã xóa ảnh kỷ niệm của "${pin.title}" thành công!`, 'success');
+      }
     }
 
     // Star Rating UI helper
@@ -4872,7 +4898,7 @@
             date,
             rating,
             notes,
-            photo: photo || pins[index].photo
+            photo: (typeof photo === 'string') ? photo : ''
           };
           showToast('Đã cập nhật kỷ niệm!', 'success');
         }
@@ -5620,15 +5646,20 @@
             
             <div class="flex p-3 gap-3">
               <!-- Thumbnail -->
-              <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0 relative">
+              <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0 relative group/thumb">
                 ${pin.photo ? `
                   <img src="${pin.photo}" alt="${escapeHtml(pin.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'" />
+                  ${!isSharedViewMode ? `
+                    <button type="button" onclick="event.stopPropagation(); confirmDeletePinPhoto('${pin.id}')" title="Xóa ảnh khỏi kỷ niệm này" class="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/75 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] opacity-0 group-hover/thumb:opacity-100 transition shadow z-10">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  ` : ''}
                 ` : `
                   <div class="w-full h-full flex items-center justify-center ${cat.bgClass} text-white text-xl">
                     <i class="fa-solid ${cat.icon}"></i>
                   </div>
                 `}
-                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/80 text-white">
+                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/80 text-white pointer-events-none">
                   ${pin.rating || 5}★
                 </span>
               </div>
