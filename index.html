@@ -6446,12 +6446,11 @@
                 t: p.title,
                 lat: Math.round(p.lat * 1000000) / 1000000,
                 lng: Math.round(p.lng * 1000000) / 1000000,
-                l: (p.locationName || '').substring(0, 50),
+                l: (p.locationName || '').substring(0, 40),
                 c: p.category || 'sightseeing',
                 r: p.rating || 5,
-                n: (p.notes || '').substring(0, 80),
-                d: p.date || '',
-                p: p.photo || ''
+                n: (p.notes || '').substring(0, 50),
+                d: p.date || ''
               }))
             };
           })
@@ -6560,16 +6559,15 @@
           t: estTimeStr,
           c: targetRoute.color || '#6366f1',
           m: targetRoute.travelMode || 'driving',
-          s: activePins.map((p, idx) => ({
+          s: activePins.map((p) => ({
             t: p.title,
             lat: Math.round(p.lat * 1000000) / 1000000,
             lng: Math.round(p.lng * 1000000) / 1000000,
-            l: (p.locationName || p.address || '').substring(0, 50),
+            l: (p.locationName || p.address || '').substring(0, 40),
             c: p.category || 'sightseeing',
             r: p.rating || 5,
-            n: (p.notes || '').substring(0, 80),
-            d: p.date || '',
-            p: stopsPayload[idx]?.photo || ''
+            n: (p.notes || '').substring(0, 50),
+            d: p.date || ''
           }))
         };
       }
@@ -6616,13 +6614,9 @@
       const shareUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}${compressedHash ? '#d=' + compressedHash : ''}`;
       input.value = shareUrl;
 
-      // QR Code uses high-res standalone URL for instant camera scanning
-      let qrUrl = shareUrl;
-      // If full shareUrl is too massive for dense QR scan (> 1500 chars), generate ultra-compact QR payload
-      if (shareUrl.length > 1500 && compactQrPayload && typeof LZString !== 'undefined') {
-        const compactHash = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload));
-        qrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}#d=${compactHash}`;
-      }
+      // QR Code uses short cloud URL for lightning-fast camera scanning and crisp large pixels
+      const shortQrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
+      let qrUrl = shortQrUrl;
 
       // Render High-Definition Vector/Canvas QR Code
       const qrCanvas = document.getElementById('share-qrcode-canvas');
@@ -6632,12 +6626,13 @@
 
       if (qrZoomTitle) qrZoomTitle.textContent = displayTitle;
 
-      if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
-        if (qrCanvas) {
-          qrCanvas.classList.remove('hidden');
-          if (qrImg) qrImg.classList.add('hidden');
-          QRCode.toCanvas(qrCanvas, qrUrl, {
-            width: 320,
+      const renderQrToTarget = (canvasEl, imgEl, targetUrl, targetWidth) => {
+        if (!canvasEl) return;
+        if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+          canvasEl.classList.remove('hidden');
+          if (imgEl) imgEl.classList.add('hidden');
+          QRCode.toCanvas(canvasEl, targetUrl, {
+            width: targetWidth,
             margin: 2,
             errorCorrectionLevel: 'M',
             color: {
@@ -6645,45 +6640,30 @@
               light: '#ffffff'
             }
           }, function (err) {
-            if (err && qrImg) {
-              qrCanvas.classList.add('hidden');
-              qrImg.classList.remove('hidden');
-              qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=4&data=${encodeURIComponent(qrUrl)}`;
+            if (err) {
+              console.warn('QRCode canvas error, rendering with fallback:', err);
+              QRCode.toCanvas(canvasEl, shortQrUrl, {
+                width: targetWidth,
+                margin: 2,
+                errorCorrectionLevel: 'L'
+              }, function (err2) {
+                if (err2 && imgEl) {
+                  canvasEl.classList.add('hidden');
+                  imgEl.classList.remove('hidden');
+                  imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(shortQrUrl)}`;
+                }
+              });
             }
           });
+        } else if (imgEl) {
+          canvasEl.classList.add('hidden');
+          imgEl.classList.remove('hidden');
+          imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(shortQrUrl)}`;
         }
+      };
 
-        if (qrZoomCanvas) {
-          qrZoomCanvas.classList.remove('hidden');
-          if (qrZoomImg) qrZoomImg.classList.add('hidden');
-          QRCode.toCanvas(qrZoomCanvas, qrUrl, {
-            width: 440,
-            margin: 2,
-            errorCorrectionLevel: 'M',
-            color: {
-              dark: '#0f172a',
-              light: '#ffffff'
-            }
-          }, function (err) {
-            if (err && qrZoomImg) {
-              qrZoomCanvas.classList.add('hidden');
-              qrZoomImg.classList.remove('hidden');
-              qrZoomImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=4&data=${encodeURIComponent(qrUrl)}`;
-            }
-          });
-        }
-      } else {
-        // Fallback to high-res Web QR API
-        const fallbackQrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=380x380&margin=6&data=${encodeURIComponent(qrUrl)}`;
-        if (qrImg) {
-          qrImg.classList.remove('hidden');
-          qrImg.src = fallbackQrSrc;
-        }
-        if (qrZoomImg) {
-          qrZoomImg.classList.remove('hidden');
-          qrZoomImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=6&data=${encodeURIComponent(qrUrl)}`;
-        }
-      }
+      renderQrToTarget(qrCanvas, qrImg, qrUrl, 320);
+      renderQrToTarget(qrZoomCanvas, qrZoomImg, qrUrl, 440);
 
       // Update Video Export Button Label to explicitly indicate selected route
       const shareVideoLabel = document.getElementById('share-export-video-btn-label');
