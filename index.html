@@ -12678,7 +12678,7 @@
     // ==========================================
     function loadImageHelper(src) {
       return new Promise((resolve) => {
-        if (!src) return resolve(null);
+        if (!src || typeof src !== 'string' || !src.trim()) return resolve(null);
         const img = new Image();
         if (!src.startsWith('data:') && !src.startsWith('blob:')) {
           img.crossOrigin = 'anonymous';
@@ -12693,7 +12693,13 @@
         img.onerror = () => {
           if (img.crossOrigin) {
             const retryImg = new Image();
-            retryImg.onload = () => resolve(retryImg);
+            retryImg.onload = () => {
+              if (retryImg.naturalWidth > 0 && retryImg.naturalHeight > 0) {
+                resolve(retryImg);
+              } else {
+                resolve(null);
+              }
+            };
             retryImg.onerror = () => resolve(null);
             retryImg.src = src;
           } else {
@@ -12780,9 +12786,8 @@
       const provNamesStr = provInfo.names && provInfo.names.length > 0 ? provInfo.names.join(" • ") : "Việt Nam";
       
       const totalPhotos = activePins.reduce((acc, p) => {
-        if (Array.isArray(p.photos) && p.photos.length > 0) return acc + p.photos.length;
-        if (p.photoUrl || p.img || p.image) return acc + 1;
-        return acc;
+        const photo = getPhotoForPin(p);
+        return (photo && typeof photo === 'string' && photo.trim().length > 0) ? (acc + 1) : acc;
       }, 0);
 
       // 2. Preload route road coordinates
@@ -12796,16 +12801,25 @@
         pathCoords = activePins.map(p => ({ lat: p.lat, lng: p.lng }));
       }
 
-      // 3. Preload all photo thumbnails for the stops
+      // 3. Preload all photo thumbnails for the stops (supporting base64 and remote URLs)
       const pinPhotoMap = new Map();
-      await Promise.all(activePins.map(async (pin) => {
-        const rawUrl = (Array.isArray(pin.photos) && pin.photos.length > 0)
-          ? pin.photos[0]
-          : (pin.photoUrl || pin.img || pin.image || null);
+      await Promise.all(activePins.map(async (pin, idx) => {
+        const rawUrl = getPhotoForPin(pin);
         if (rawUrl) {
-          const loaded = await loadImageHelper(rawUrl);
-          if (loaded) {
-            pinPhotoMap.set(pin.id || pin.title, loaded);
+          try {
+            const loaded = await loadImageHelper(rawUrl);
+            if (loaded) {
+              if (pin.id) {
+                pinPhotoMap.set(pin.id, loaded);
+                pinPhotoMap.set(String(pin.id), loaded);
+              }
+              if (pin.title) {
+                pinPhotoMap.set(pin.title, loaded);
+              }
+              pinPhotoMap.set(`idx_${idx}`, loaded);
+            }
+          } catch (e) {
+            console.warn("Failed to load photo for pin:", pin.title, e);
           }
         }
       }));
@@ -12955,7 +12969,7 @@
           icon: "📸",
           label: "ẢNH KỶ NIỆM & ĐIỂM",
           mainVal: `${totalPhotos} Ảnh chụp`,
-          subVal: `${stopCount} Điểm dừng chân ghi dấu`,
+          subVal: totalPhotos > 0 ? `${totalPhotos}/${stopCount} điểm có gắn ảnh kỷ niệm` : `${stopCount} Điểm dừng chưa gắn ảnh`,
           accent: "#f472b6"
         }
       ];
@@ -13202,7 +13216,12 @@
         pCtx.lineWidth = 1.2;
         roundRect(pCtx, cardX, cardY, cardW, cardH, 16, true, true);
 
-        const photoImg = pinPhotoMap.get(pin.id || pin.title);
+        // Lookup loaded image with fallback keys (id, string id, title, index)
+        const photoImg = (pin.id && pinPhotoMap.get(pin.id)) ||
+                         (pin.id && pinPhotoMap.get(String(pin.id))) ||
+                         (pin.title && pinPhotoMap.get(pin.title)) ||
+                         pinPhotoMap.get(`idx_${i}`) ||
+                         null;
 
         if (cols === 2) {
           // 2-Column Wide Layout (Side-by-side Photo & Info)
