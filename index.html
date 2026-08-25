@@ -11417,7 +11417,7 @@
         // Progress milestone for this pin (0.0 to 1.0)
         const milestoneP = numPins > 1 ? (index / (numPins - 1)) : 0.5;
         const progressDiff = Math.abs(progress - milestoneP);
-        const isApproachingOrCurrent = (distToCar < (170 * uiScale)) || (numPins > 1 && progressDiff <= (0.65 / numPins));
+        const isApproachingOrCurrent = (distToCar < (180 * uiScale)) || (numPins > 1 && progressDiff <= (0.7 / numPins));
 
         if (isApproachingOrCurrent && distToCar < closestDist) {
           closestDist = distToCar;
@@ -11428,7 +11428,7 @@
         const isPassed = numPins > 1 ? (milestoneP <= (progress + 0.03)) : false;
 
         // Only draw on canvas if within viewport margins
-        if (pt.x >= -140 && pt.x <= w + 140 && pt.y >= 10 && pt.y <= h + 140) {
+        if (pt.x >= -160 && pt.x <= w + 160 && pt.y >= 10 && pt.y <= h + 160) {
           // Glow ground pin
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, (isPassed ? 14 : 11) * uiScale, 0, Math.PI * 2);
@@ -11462,35 +11462,35 @@
 
           if (photoImg) {
             // High-Definition Photo Billboard Marker on Map (Crisp & Enlarged)
-            const photoW = 60 * uiScale;
-            const photoH = 60 * uiScale;
+            const photoW = 68 * uiScale;
+            const photoH = 68 * uiScale;
             const photoX = pt.x - (photoW / 2);
-            const photoY = pt.y - photoH - (24 * uiScale);
+            const photoY = pt.y - photoH - (26 * uiScale);
 
             // Stem line down to pin ground point
             ctx.beginPath();
             ctx.moveTo(pt.x, pt.y);
             ctx.lineTo(pt.x, photoY + photoH);
             ctx.strokeStyle = isPassed ? '#10b981' : '#ffffff';
-            ctx.lineWidth = 2 * uiScale;
+            ctx.lineWidth = 2.4 * uiScale;
             ctx.stroke();
 
-            // Photo frame background and double border (No shadowBlur for maximum speed)
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
+            // Photo frame background and double border
+            ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
             ctx.strokeStyle = isPassed ? '#10b981' : (pin.color || '#38bdf8');
-            ctx.lineWidth = 2.5 * uiScale;
-            roundRect(ctx, photoX, photoY, photoW, photoH, 10 * uiScale, true, true);
+            ctx.lineWidth = 2.8 * uiScale;
+            roundRect(ctx, photoX, photoY, photoW, photoH, 12 * uiScale, true, true);
 
             // Draw cropped square image with aspect-fill & high quality smoothing
             ctx.save();
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.beginPath();
-            const innerPX = photoX + (2 * uiScale);
-            const innerPY = photoY + (2 * uiScale);
-            const innerPW = photoW - (4 * uiScale);
-            const innerPH = photoH - (4 * uiScale);
-            roundRect(ctx, innerPX, innerPY, innerPW, innerPH, 8 * uiScale, false, false);
+            const innerPX = photoX + (2.5 * uiScale);
+            const innerPY = photoY + (2.5 * uiScale);
+            const innerPW = photoW - (5 * uiScale);
+            const innerPH = photoH - (5 * uiScale);
+            roundRect(ctx, innerPX, innerPY, innerPW, innerPH, 10 * uiScale, false, false);
             ctx.clip();
 
             if (photoImg.naturalWidth > 0 && photoImg.naturalHeight > 0) {
@@ -11511,57 +11511,65 @@
             ctx.restore();
 
             // Badge number on top-left of photo
-            const badgeW = 18 * uiScale;
+            const badgeW = 20 * uiScale;
             const badgeX = photoX - (4 * uiScale);
             const badgeY = photoY - (4 * uiScale);
             ctx.beginPath();
             ctx.arc(badgeX + (badgeW / 2), badgeY + (badgeW / 2), badgeW / 2, 0, Math.PI * 2);
             ctx.fillStyle = isPassed ? '#10b981' : (pin.color || '#6366f1');
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.8 * uiScale;
+            ctx.lineWidth = 2 * uiScale;
             ctx.fill();
             ctx.stroke();
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${index + 1}`, badgeX + (badgeW / 2), badgeY + (badgeW / 2));
 
             // Title Pill below photo
             const labelText = pin.title;
-            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = Math.min(textMetrics.width + (16 * uiScale), 160 * uiScale);
-            const pillH = 20 * uiScale;
+            const pillW = Math.min(textMetrics.width + (18 * uiScale), 170 * uiScale);
+            const pillH = 22 * uiScale;
             const pillX = pt.x - (pillW / 2);
-            const pillY = photoY + photoH + (3 * uiScale);
+            const pillY = photoY + photoH + (4 * uiScale);
 
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : 'rgba(56, 189, 248, 0.9)';
-            ctx.lineWidth = 1.2 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 6 * uiScale, true, true);
+            ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.95)' : 'rgba(56, 189, 248, 0.95)';
+            ctx.lineWidth = 1.4 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 7 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             let dispText = labelText;
-            if (dispText.length > 18) dispText = dispText.substring(0, 16) + '..';
+            if (dispText.length > 20) dispText = dispText.substring(0, 18) + '..';
             ctx.fillText(dispText, pt.x, pillY + (pillH / 2));
           } else {
             // Standard Upright Billboard Label Pill (no photo)
             const labelText = `${index + 1}. ${pin.title}`;
-            ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = textMetrics.width + (20 * uiScale);
-            const pillH = 26 * uiScale;
+            const pillW = textMetrics.width + (22 * uiScale);
+            const pillH = 28 * uiScale;
             const pillX = pt.x - (pillW / 2);
-            const pillY = pt.y - (38 * uiScale);
+            const pillY = pt.y - (40 * uiScale);
 
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : (pin.color || 'rgba(99, 102, 241, 0.9)');
-            ctx.lineWidth = 1.4 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 7 * uiScale, true, true);
+            // Stem line down to pin ground point
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.lineTo(pt.x, pillY + pillH);
+            ctx.strokeStyle = isPassed ? '#10b981' : '#ffffff';
+            ctx.lineWidth = 2 * uiScale;
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.95)' : (pin.color || 'rgba(99, 102, 241, 0.95)');
+            ctx.lineWidth = 1.6 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 8 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
@@ -11571,155 +11579,26 @@
         }
       });
 
-      // Render Stop Arrival Card directly on Canvas (High-Definition, recorded in video)
-      if (closestStop) {
-        const stopIdx = closestStopIndex >= 0 ? closestStopIndex : activePins.findIndex(p => p.id === closestStop.id);
-        let stopPhotoImg = cinemaPinImageCache.get(closestStop.id) || cinemaPinImageCache.get(String(closestStop.id)) || (closestStop.photo ? cinemaPinImageCache.get(closestStop.photo) : null);
-        const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
-
-        // Sleek floating Stop Showcase Card below Top HUD
-        const isPortrait = h > w;
-        const cardW = isPortrait ? (w - (36 * uiScale)) : Math.min(420 * uiScale, w * 0.44);
-        const cardH = 92 * uiScale;
-        const cardX = 18 * uiScale;
-        const cardY = 100 * uiScale;
-
-        // Card background
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
-        ctx.lineWidth = 1.6 * uiScale;
-        roundRect(ctx, cardX, cardY, cardW, cardH, 16 * uiScale, true, true);
-
-        let textStartX = cardX + (16 * uiScale);
-
-        if (stopPhotoImg || closestStop.photo) {
-          if (!stopPhotoImg && closestStop.photo) {
-            const tempImg = new Image();
-            tempImg.src = closestStop.photo;
-            if (tempImg.naturalWidth > 0) stopPhotoImg = tempImg;
-          }
-
-          if (stopPhotoImg) {
-            // Large HD Thumbnail photo
-            const imgSize = cardH - (16 * uiScale);
-            const imgX = cardX + (8 * uiScale);
-            const imgY = cardY + (8 * uiScale);
-
-            ctx.save();
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, false);
-            ctx.clip();
-            if (stopPhotoImg.naturalWidth > 0 && stopPhotoImg.naturalHeight > 0) {
-              const imgAspect = stopPhotoImg.naturalWidth / stopPhotoImg.naturalHeight;
-              let sx = 0, sy = 0, sw = stopPhotoImg.naturalWidth, sh = stopPhotoImg.naturalHeight;
-              if (imgAspect > 1) {
-                sw = stopPhotoImg.naturalHeight;
-                sx = (stopPhotoImg.naturalWidth - sw) / 2;
-              } else {
-                sh = stopPhotoImg.naturalWidth;
-                sy = (stopPhotoImg.naturalHeight - sh) / 2;
-              }
-              ctx.drawImage(stopPhotoImg, sx, sy, sw, sh, imgX, imgY, imgSize, imgSize);
-            } else {
-              ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
-            }
-            ctx.restore();
-
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.8 * uiScale;
-            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, true);
-
-            textStartX = imgX + imgSize + (14 * uiScale);
-          }
-        }
-
-        const availTextW = cardX + cardW - textStartX - (14 * uiScale);
-
-        // Line 1: Stop Number & Category & Rating
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx + 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (12 * uiScale));
-
-        // Line 2: Stop Title (High contrast crisp white)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(14.5 * uiScale)}px sans-serif`;
-        let dispTitle = closestStop.title || `Điểm #${stopIdx + 1}`;
-        if (ctx.measureText(dispTitle).width > availTextW) {
-          while (dispTitle.length > 3 && ctx.measureText(dispTitle + '..').width > availTextW) {
-            dispTitle = dispTitle.substring(0, dispTitle.length - 1);
-          }
-          dispTitle += '..';
-        }
-        ctx.fillText(dispTitle, textStartX, cardY + (33 * uiScale));
-
-        // Line 3: Location / Notes / Rating
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
-        let dispSub = closestStop.notes || closestStop.locationName || 'Điểm check-in trên lộ trình';
-        if (closestStop.rating) {
-          dispSub = `⭐ ${closestStop.rating}/5 • ` + dispSub;
-        }
-        if (ctx.measureText(dispSub).width > availTextW) {
-          while (dispSub.length > 3 && ctx.measureText(dispSub + '..').width > availTextW) {
-            dispSub = dispSub.substring(0, dispSub.length - 1);
-          }
-          dispSub += '..';
-        }
-        ctx.fillText(dispSub, textStartX, cardY + (58 * uiScale));
-
-        // Also update the UI DOM popup for live preview
-        const popupEl = document.getElementById('cinema-stop-popup');
-        if (popupEl) {
-          popupEl.classList.remove('hidden');
-          const popNum = document.getElementById('cinema-popup-num');
-          if (popNum) popNum.textContent = `${stopIdx + 1}`;
-          const popTitle = document.getElementById('cinema-popup-title');
-          if (popTitle) popTitle.textContent = closestStop.title || `Điểm #${stopIdx + 1}`;
-          const popCat = document.getElementById('cinema-popup-cat');
-          if (popCat) popCat.textContent = catConfig.name;
-          const popNotes = document.getElementById('cinema-popup-notes');
-          if (popNotes) popNotes.textContent = closestStop.notes || closestStop.locationName || 'Điểm check-in trong lộ trình Gạo Maps';
-
-          const imgWrap = document.getElementById('cinema-popup-img-wrap');
-          const imgEl = document.getElementById('cinema-popup-img');
-          const stopPhoto = closestStop.photo || (typeof getPhotoForPin === 'function' ? getPhotoForPin(closestStop) : null);
-          if (stopPhoto && imgWrap && imgEl) {
-            imgEl.src = stopPhoto;
-            imgWrap.classList.remove('hidden');
-          } else if (imgWrap) {
-            imgWrap.classList.add('hidden');
-          }
-        }
-      } else {
-        const popupEl = document.getElementById('cinema-stop-popup');
-        if (popupEl) {
-          popupEl.classList.add('hidden');
-        }
-      }
-
       // 6. Draw Traveling Vehicle (Glowing Marker with Smooth Headlight Beams)
       ctx.save();
       ctx.translate(carScr.x, carScr.y);
       ctx.rotate(vp.headingAngle);
 
       // Forward Headlight Beam
-      const beamGrad = ctx.createLinearGradient(0, 0, 85 * uiScale, 0);
-      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
+      const beamGrad = ctx.createLinearGradient(0, 0, 90 * uiScale, 0);
+      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.6)');
       beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
       ctx.fillStyle = beamGrad;
       ctx.beginPath();
-      ctx.moveTo(9 * uiScale, 0);
-      ctx.lineTo(85 * uiScale, -25 * uiScale);
-      ctx.lineTo(85 * uiScale, 25 * uiScale);
+      ctx.moveTo(10 * uiScale, 0);
+      ctx.lineTo(90 * uiScale, -26 * uiScale);
+      ctx.lineTo(90 * uiScale, 26 * uiScale);
       ctx.closePath();
       ctx.fill();
 
       // Halo pulse
       ctx.beginPath();
-      ctx.arc(0, 0, 24 * uiScale, 0, Math.PI * 2);
+      ctx.arc(0, 0, 26 * uiScale, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(14, 165, 233, 0.45)';
       ctx.fill();
 
@@ -11759,27 +11638,189 @@
 
       const cTimeStr = formatTravelTime(curJourneySec);
       const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
-      const isPortrait = h > w;
+
+      const isPortrait = cinemaAspectRatio === '9:16' || (h > w);
+      const isSquare = cinemaAspectRatio === '1:1' || (Math.abs(w - h) < 60);
 
       const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
       const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
       const active = getCinemaSelectedRoute();
       const routeDisplayName = cinemaTargetRouteId === 'all' ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
 
-      // 8. Draw Mini-Map Radar Inset
+      // 8. Render Stop Arrival Card directly on Canvas (High-Definition, recorded in video)
+      if (closestStop) {
+        const stopIdx = closestStopIndex >= 0 ? closestStopIndex : activePins.findIndex(p => p.id === closestStop.id);
+        let stopPhotoImg = cinemaPinImageCache.get(closestStop.id) || cinemaPinImageCache.get(String(closestStop.id)) || (closestStop.photo ? cinemaPinImageCache.get(closestStop.photo) : null);
+        const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
+
+        let cardX, cardY, cardW, cardH;
+        if (isPortrait) {
+          cardX = 20 * uiScale;
+          cardY = 176 * uiScale; // Positioned neatly under 9:16 Top Telemetry bar
+          cardW = w - (40 * uiScale);
+          cardH = 104 * uiScale;
+        } else if (isSquare) {
+          cardX = 20 * uiScale;
+          cardY = 120 * uiScale;
+          cardW = w - (40 * uiScale);
+          cardH = 100 * uiScale;
+        } else {
+          cardX = 24 * uiScale;
+          cardY = 114 * uiScale;
+          cardW = Math.min(540 * uiScale, w * 0.44);
+          cardH = 104 * uiScale;
+        }
+
+        // Card background
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.lineWidth = 1.8 * uiScale;
+        roundRect(ctx, cardX, cardY, cardW, cardH, 16 * uiScale, true, true);
+
+        let textStartX = cardX + (16 * uiScale);
+
+        if (stopPhotoImg || closestStop.photo) {
+          if (!stopPhotoImg && closestStop.photo) {
+            const tempImg = new Image();
+            tempImg.src = closestStop.photo;
+            if (tempImg.naturalWidth > 0) stopPhotoImg = tempImg;
+          }
+
+          if (stopPhotoImg) {
+            // Large HD Thumbnail photo
+            const imgSize = cardH - (16 * uiScale);
+            const imgX = cardX + (8 * uiScale);
+            const imgY = cardY + (8 * uiScale);
+
+            ctx.save();
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 12 * uiScale, false, false);
+            ctx.clip();
+            if (stopPhotoImg.naturalWidth > 0 && stopPhotoImg.naturalHeight > 0) {
+              const imgAspect = stopPhotoImg.naturalWidth / stopPhotoImg.naturalHeight;
+              let sx = 0, sy = 0, sw = stopPhotoImg.naturalWidth, sh = stopPhotoImg.naturalHeight;
+              if (imgAspect > 1) {
+                sw = stopPhotoImg.naturalHeight;
+                sx = (stopPhotoImg.naturalWidth - sw) / 2;
+              } else {
+                sh = stopPhotoImg.naturalWidth;
+                sy = (stopPhotoImg.naturalHeight - sh) / 2;
+              }
+              ctx.drawImage(stopPhotoImg, sx, sy, sw, sh, imgX, imgY, imgSize, imgSize);
+            } else {
+              ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
+            }
+            ctx.restore();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2 * uiScale;
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 12 * uiScale, false, true);
+
+            // Badge number on top-left of stop thumbnail
+            const sBadgeW = 20 * uiScale;
+            ctx.beginPath();
+            ctx.arc(imgX + (10 * uiScale), imgY + (10 * uiScale), sBadgeW / 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#0ea5e9';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.6 * uiScale;
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${stopIdx + 1}`, imgX + (10 * uiScale), imgY + (10 * uiScale));
+
+            textStartX = imgX + imgSize + (14 * uiScale);
+          }
+        }
+
+        const availTextW = cardX + cardW - textStartX - (16 * uiScale);
+
+        // Line 1: Stop Number & Category & Rating
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx + 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (14 * uiScale));
+
+        if (closestStop.rating) {
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#fde047';
+          ctx.fillText(`⭐ ${closestStop.rating}/5`, cardX + cardW - (16 * uiScale), cardY + (14 * uiScale));
+          ctx.textAlign = 'left';
+        }
+
+        // Line 2: Stop Title (High contrast crisp white)
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(15.5 * uiScale)}px sans-serif`;
+        let dispTitle = closestStop.title || `Điểm #${stopIdx + 1}`;
+        if (ctx.measureText(dispTitle).width > availTextW) {
+          while (dispTitle.length > 3 && ctx.measureText(dispTitle + '..').width > availTextW) {
+            dispTitle = dispTitle.substring(0, dispTitle.length - 1);
+          }
+          dispTitle += '..';
+        }
+        ctx.fillText(dispTitle, textStartX, cardY + (38 * uiScale));
+
+        // Line 3: Location / Notes / Description
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
+        let dispSub = closestStop.notes || closestStop.locationName || 'Điểm check-in trong lộ trình Gạo Maps';
+        if (ctx.measureText(dispSub).width > availTextW) {
+          while (dispSub.length > 3 && ctx.measureText(dispSub + '..').width > availTextW) {
+            dispSub = dispSub.substring(0, dispSub.length - 1);
+          }
+          dispSub += '..';
+        }
+        ctx.fillText(dispSub, textStartX, cardY + (66 * uiScale));
+
+        // Also update the UI DOM popup for live preview
+        const popupEl = document.getElementById('cinema-stop-popup');
+        if (popupEl) {
+          popupEl.classList.remove('hidden');
+          const popNum = document.getElementById('cinema-popup-num');
+          if (popNum) popNum.textContent = `${stopIdx + 1}`;
+          const popTitle = document.getElementById('cinema-popup-title');
+          if (popTitle) popTitle.textContent = closestStop.title || `Điểm #${stopIdx + 1}`;
+          const popCat = document.getElementById('cinema-popup-cat');
+          if (popCat) popCat.textContent = catConfig.name;
+          const popNotes = document.getElementById('cinema-popup-notes');
+          if (popNotes) popNotes.textContent = closestStop.notes || closestStop.locationName || 'Điểm check-in trong lộ trình Gạo Maps';
+
+          const imgWrap = document.getElementById('cinema-popup-img-wrap');
+          const imgEl = document.getElementById('cinema-popup-img');
+          const stopPhoto = closestStop.photo || (typeof getPhotoForPin === 'function' ? getPhotoForPin(closestStop) : null);
+          if (stopPhoto && imgWrap && imgEl) {
+            imgEl.src = stopPhoto;
+            imgWrap.classList.remove('hidden');
+          } else if (imgWrap) {
+            imgWrap.classList.add('hidden');
+          }
+        }
+      } else {
+        const popupEl = document.getElementById('cinema-stop-popup');
+        if (popupEl) {
+          popupEl.classList.add('hidden');
+        }
+      }
+
+      // 9. Draw Mini-Map Radar Inset
       if (cinemaCameraMode !== 'overview') {
-        const radarW = isPortrait ? (320 * uiScale) : (210 * uiScale);
-        const radarH = isPortrait ? (190 * uiScale) : (145 * uiScale);
+        const radarW = isPortrait ? (320 * uiScale) : (230 * uiScale);
+        const radarH = isPortrait ? (190 * uiScale) : (150 * uiScale);
         const radarX = w - radarW - (24 * uiScale);
         const radarY = isPortrait ? (h - radarH - (64 * uiScale)) : (h - radarH - (28 * uiScale));
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-        ctx.lineWidth = 1.5 * uiScale;
-        roundRect(ctx, radarX, radarY, radarW, radarH, 12 * uiScale, true, true);
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.94)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 1.6 * uiScale;
+        roundRect(ctx, radarX, radarY, radarW, radarH, 14 * uiScale, true, true);
 
         ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillText('📡 RADAR TOÀN TUYẾN', radarX + (12 * uiScale), radarY + (10 * uiScale));
@@ -11836,58 +11877,248 @@
         ctx.stroke();
 
         ctx.fillStyle = 'rgba(226, 232, 240, 0.9)';
-        ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
         ctx.textAlign = 'right';
         ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
-      // 9. Master Branding & Real-Time Telemetry HUD
-      const brandW = Math.min(440 * uiScale, w * 0.45);
-      const brandH = 74 * uiScale;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-      ctx.lineWidth = 1.2 * uiScale;
-      roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
+      // 10. Master Branding & Real-Time Telemetry HUD (Custom Tailored for 9:16, 16:9, 1:1)
+      if (isPortrait) {
+        // ================= 9:16 VERTICAL REELS / TIKTOK LAYOUT =================
+        const bannerMargin = 20 * uiScale;
+        const bannerW = w - (bannerMargin * 2);
 
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 44 * uiScale);
+        // Top Header: Branding & Route Title
+        const headerH = 74 * uiScale;
+        const headerY = 20 * uiScale;
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 1.5 * uiScale;
+        roundRect(ctx, bannerMargin, headerY, bannerW, headerH, 16 * uiScale, true, true);
 
-      ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
-      ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
-      const dispRt = routeDisplayName.length > 32 ? (routeDisplayName.substring(0, 30) + '...') : routeDisplayName;
-      ctx.fillText(`${dispRt} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 66 * uiScale);
+        // Brand row
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('📍 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', bannerMargin + (16 * uiScale), headerY + (12 * uiScale));
 
-      // Right Telemetry HUD Box
-      const hudW = Math.min(480 * uiScale, w * 0.48);
-      const hudH = 74 * uiScale;
-      const hudX = w - hudW - (20 * uiScale);
-      const hudY = 20 * uiScale;
+        // Mode badge right
+        ctx.textAlign = 'right';
+        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+        ctx.fillStyle = '#fde047';
+        ctx.fillText(`${jBadge} • ${modeBadge}`, bannerMargin + bannerW - (16 * uiScale), headerY + (12 * uiScale));
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-      ctx.lineWidth = 1.2 * uiScale;
-      roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
+        // Route Title & Progress
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(16 * uiScale)}px sans-serif`;
+        let titleTxt = routeDisplayName;
+        const maxTitleW = bannerW - (100 * uiScale);
+        if (ctx.measureText(titleTxt).width > maxTitleW) {
+          while (titleTxt.length > 3 && ctx.measureText(titleTxt + '..').width > maxTitleW) {
+            titleTxt = titleTxt.substring(0, titleTxt.length - 1);
+          }
+          titleTxt += '..';
+        }
+        ctx.fillText(titleTxt, bannerMargin + (16 * uiScale), headerY + (36 * uiScale));
 
-      ctx.textAlign = 'left';
-      ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`📍 Toàn tuyến: ${curJourneyKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (28 * uiScale));
+        // Progress Pill right
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#10b981';
+        ctx.font = `bold ${Math.round(16 * uiScale)}px sans-serif`;
+        ctx.fillText(`${(progress * 100).toFixed(0)}%`, bannerMargin + bannerW - (16 * uiScale), headerY + (36 * uiScale));
 
-      ctx.fillStyle = '#fde047';
-      ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (hudW * 0.5), hudY + (28 * uiScale));
+        // Telemetry Bar (4 distinct Stats Pills)
+        const teleY = headerY + headerH + (8 * uiScale);
+        const teleH = 64 * uiScale;
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 1.2 * uiScale;
+        roundRect(ctx, bannerMargin, teleY, bannerW, teleH, 14 * uiScale, true, true);
 
-      ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (16 * uiScale), hudY + (54 * uiScale));
+        const colW = bannerW / 4;
+        const metricsList = [
+          { label: '📏 CỰ LY', val: `${curJourneyKm.toLocaleString('vi-VN')} km`, color: '#38bdf8' },
+          { label: '⏱️ DỰ TÍNH', val: `~${cTimeStr}`, color: '#fde047' },
+          { label: '🚩 ĐIỂM DỪNG', val: `${cPassedStops}/${activePins.length}`, color: '#10b981' },
+          { label: '🏛️ ĐỊA PHẬN', val: `${provInfo.count} tỉnh`, color: '#c084fc' }
+        ];
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText(`•`, hudX + (hudW * 0.42), hudY + (54 * uiScale));
+        metricsList.forEach((item, idx) => {
+          const colX = bannerMargin + (idx * colW);
+          if (idx > 0) {
+            ctx.beginPath();
+            ctx.moveTo(colX, teleY + (10 * uiScale));
+            ctx.lineTo(colX, teleY + teleH - (10 * uiScale));
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 1 * uiScale;
+            ctx.stroke();
+          }
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+          ctx.fillText(item.label, colX + (colW / 2), teleY + (10 * uiScale));
 
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`🏛️ ${provInfo.count} tỉnh/thành`, hudX + (hudW * 0.48), hudY + (54 * uiScale));
+          ctx.fillStyle = item.color;
+          ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+          ctx.fillText(item.val, colX + (colW / 2), teleY + (32 * uiScale));
+        });
+
+      } else if (isSquare) {
+        // ================= 1:1 SQUARE INSTAGRAM / FEED LAYOUT =================
+        const bannerMargin = 20 * uiScale;
+        const bannerW = w - (bannerMargin * 2);
+        const hudH = 86 * uiScale;
+        const hudY = 20 * uiScale;
+
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 1.4 * uiScale;
+        roundRect(ctx, bannerMargin, hudY, bannerW, hudH, 16 * uiScale, true, true);
+
+        // Left Half: Brand & Route Title
+        const halfW = bannerW * 0.46;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.fillText(`📍 GẠO MAPS • ${jBadge}`, bannerMargin + (16 * uiScale), hudY + (12 * uiScale));
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+        let titleTxt = routeDisplayName;
+        if (ctx.measureText(titleTxt).width > halfW - (24 * uiScale)) {
+          while (titleTxt.length > 3 && ctx.measureText(titleTxt + '..').width > halfW - (24 * uiScale)) {
+            titleTxt = titleTxt.substring(0, titleTxt.length - 1);
+          }
+          titleTxt += '..';
+        }
+        ctx.fillText(titleTxt, bannerMargin + (16 * uiScale), hudY + (34 * uiScale));
+
+        ctx.fillStyle = '#10b981';
+        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.fillText(`Tiến độ: ${(progress * 100).toFixed(0)}% • ${modeBadge}`, bannerMargin + (16 * uiScale), hudY + (58 * uiScale));
+
+        // Vertical divider
+        ctx.beginPath();
+        ctx.moveTo(bannerMargin + halfW, hudY + (12 * uiScale));
+        ctx.lineTo(bannerMargin + halfW, hudY + hudH - (12 * uiScale));
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1 * uiScale;
+        ctx.stroke();
+
+        // Right Half: 4 Telemetry Stats (2x2 grid)
+        const rightX = bannerMargin + halfW + (16 * uiScale);
+        const rightW = bannerW - halfW - (24 * uiScale);
+        const subColW = rightW / 2;
+
+        // Stat 1: Km
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('📏 Cự ly:', rightX, hudY + (14 * uiScale));
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+        ctx.fillText(`${curJourneyKm.toLocaleString('vi-VN')} km`, rightX + (54 * uiScale), hudY + (14 * uiScale));
+
+        // Stat 2: Time
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('⏱️ Dự tính:', rightX + subColW, hudY + (14 * uiScale));
+        ctx.fillStyle = '#fde047';
+        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+        ctx.fillText(`~${cTimeStr}`, rightX + subColW + (62 * uiScale), hudY + (14 * uiScale));
+
+        // Stat 3: Stops
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('🚩 Điểm:', rightX, hudY + (48 * uiScale));
+        ctx.fillStyle = '#10b981';
+        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+        ctx.fillText(`${cPassedStops}/${activePins.length} trạm`, rightX + (54 * uiScale), hudY + (48 * uiScale));
+
+        // Stat 4: Provinces
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.fillText('🏛️ Tỉnh:', rightX + subColW, hudY + (48 * uiScale));
+        ctx.fillStyle = '#c084fc';
+        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+        ctx.fillText(`${provInfo.count} tỉnh/thành`, rightX + subColW + (62 * uiScale), hudY + (48 * uiScale));
+
+      } else {
+        // ================= 16:9 LANDSCAPE YOUTUBE / HD LAYOUT =================
+        const brandW = Math.min(540 * uiScale, w * 0.44);
+        const brandH = 82 * uiScale;
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1.4 * uiScale;
+        roundRect(ctx, 24 * uiScale, 20 * uiScale, brandW, brandH, 16 * uiScale, true, true);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('📍 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 40 * uiScale, 30 * uiScale);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(15.5 * uiScale)}px sans-serif`;
+        let dispRt = routeDisplayName;
+        if (ctx.measureText(dispRt).width > brandW - (120 * uiScale)) {
+          while (dispRt.length > 3 && ctx.measureText(dispRt + '..').width > brandW - (120 * uiScale)) {
+            dispRt = dispRt.substring(0, dispRt.length - 1);
+          }
+          dispRt += '..';
+        }
+        ctx.fillText(`${dispRt} • ${(progress * 100).toFixed(0)}%`, 40 * uiScale, 54 * uiScale);
+
+        ctx.fillStyle = '#fde047';
+        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.fillText(`${jBadge} • ${modeBadge}`, 24 * uiScale + brandW - (16 * uiScale), 30 * uiScale);
+
+        // Right Telemetry HUD Box
+        const hudW = Math.min(580 * uiScale, w * 0.48);
+        const hudH = 82 * uiScale;
+        const hudX = w - hudW - (24 * uiScale);
+        const hudY = 20 * uiScale;
+
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.lineWidth = 1.4 * uiScale;
+        roundRect(ctx, hudX, hudY, hudW, hudH, 16 * uiScale, true, true);
+
+        // Row 1: Cự ly & Thời gian
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText(`📏 Toàn tuyến: ${curJourneyKm.toLocaleString('vi-VN')} km`, hudX + (20 * uiScale), hudY + (20 * uiScale));
+
+        ctx.fillStyle = '#fde047';
+        ctx.fillText(`⏱️ Dự tính: ~${cTimeStr}`, hudX + (hudW * 0.52), hudY + (20 * uiScale));
+
+        // Row 2: Điểm dừng & Địa phận tỉnh thành
+        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.fillStyle = '#10b981';
+        ctx.fillText(`🚩 Hoàn thành: ${cPassedStops}/${activePins.length} điểm`, hudX + (20 * uiScale), hudY + (48 * uiScale));
+
+        ctx.fillStyle = '#c084fc';
+        ctx.fillText(`🏛️ Đi qua: ${provInfo.count} tỉnh/thành`, hudX + (hudW * 0.52), hudY + (48 * uiScale));
+      }
+
+      // 11. Bottom Glow Journey Progress Line
+      const progH = 6 * uiScale;
+      const progY = h - progH;
+      ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
+      ctx.fillRect(0, progY, w, progH);
+
+      const progGrad = ctx.createLinearGradient(0, 0, w * progress, 0);
+      progGrad.addColorStop(0, '#0ea5e9');
+      progGrad.addColorStop(0.5, '#38bdf8');
+      progGrad.addColorStop(1, '#10b981');
+      ctx.fillStyle = progGrad;
+      ctx.fillRect(0, progY, w * progress, progH);
     }
 
     // ==========================================
