@@ -5848,7 +5848,19 @@
 
     // ==========================================
     // ROBUST OSRM ROAD GEOMETRY ENGINE (REAL HIGHWAY & STREET ROUTING)
+    // Supports sequential distance calculation for dozens/hundreds of pins
     // ==========================================
+    function calculateSequentialDirectMeters(coords) {
+      if (!Array.isArray(coords) || coords.length < 2) return 0;
+      let m = 0;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const p1 = coords[i];
+        const p2 = coords[i + 1];
+        m += getHaversineDistance(p1[0], p1[1], p2[0], p2[1]) * 1.25; // 1.25x road curvature factor
+      }
+      return m;
+    }
+
     async function fetchOsrmRoadGeometry(points, travelMode = 'driving') {
       if (!points || points.length < 2) return null;
 
@@ -5866,18 +5878,20 @@
         return routeGeometryCache.get(cacheKey);
       }
 
-      const CHUNK_SIZE = 20;
+      const isMotorcycle = (travelMode === 'motorcycle');
+      const speedMps = isMotorcycle ? 10.5 : 15.0; // ~38 km/h motorcycle vs ~54 km/h car
+
+      // Safe batch size: 8 points per chunk avoids OSRM URL limit & rate-limit failures for large numbers of pins
+      const CHUNK_SIZE = 8;
       let allCoords = [];
       let totalMeters = 0;
       let totalDuration = 0;
 
       async function fetchChunk(chunkPoints) {
         const coordsString = chunkPoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
-        const isMotorcycle = (travelMode === 'motorcycle');
-
         const endpoints = [
-          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000 },
-          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 6000 }
+          { url: `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 5500 },
+          { url: `https://routing.openstreetmap.de/routed-car/route/v1/driving/${coordsString}?overview=full&geometries=geojson`, timeout: 5500 }
         ];
 
         for (const ep of endpoints) {
@@ -5897,8 +5911,6 @@
                 }
                 if (coords.length > 0) {
                   const dist = r.distance || 0;
-                  // For motorcycle: realistic average speed in Vietnam ~38 km/h (10.5 m/s)
-                  // For car: ~50-60 km/h (from OSRM duration or 15 m/s)
                   const dur = isMotorcycle ? Math.round(dist / 10.5) : (r.duration || Math.round(dist / 15.0));
                   return {
                     coords: coords,
@@ -5922,11 +5934,19 @@
             allCoords = res.coords;
             totalMeters = res.distance;
             totalDuration = res.duration;
+          } else {
+            // Sequential fallback calculation for this segment
+            const fallbackMeters = calculateSequentialDirectMeters(latLngs);
+            allCoords = latLngs;
+            totalMeters = fallbackMeters;
+            totalDuration = Math.round(fallbackMeters / speedMps);
           }
         } else {
+          // Process sequentially chunk by chunk with 1-point overlap to connect all legs seamlessly
           for (let i = 0; i < latLngs.length - 1; i += (CHUNK_SIZE - 1)) {
             const chunk = latLngs.slice(i, Math.min(i + CHUNK_SIZE, latLngs.length));
             if (chunk.length < 2) break;
+
             const res = await fetchChunk(chunk);
             if (res && res.coords && res.coords.length > 0) {
               if (allCoords.length > 0) {
@@ -5937,16 +5957,25 @@
               totalMeters += res.distance;
               totalDuration += res.duration;
             } else {
+              // Guaranteed sequential distance fallback for failed chunks (never drops distance!)
+              const fallbackChunkMeters = calculateSequentialDirectMeters(chunk);
               if (allCoords.length > 0) {
                 allCoords.push(...chunk.slice(1));
               } else {
                 allCoords.push(...chunk);
               }
+              totalMeters += fallbackChunkMeters;
+              totalDuration += Math.round(fallbackChunkMeters / speedMps);
             }
           }
         }
       } catch (err) {
         console.warn('Error fetching OSRM road geometry:', err);
+        if (allCoords.length === 0) {
+          allCoords = latLngs;
+          totalMeters = calculateSequentialDirectMeters(latLngs);
+          totalDuration = Math.round(totalMeters / speedMps);
+        }
       }
 
       if (allCoords.length > 0) {
@@ -9876,6 +9905,9 @@
         }
       }
 
+      const activePins = routePinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
+      let cumulativeKm = 0;
+
       const stopsCardsHtml = routePinIds.map((pinId, index) => {
         const pin = pins.find(p => p.id === pinId);
         if (!pin) return '';
@@ -9883,6 +9915,17 @@
         const cat = CATEGORIES[pin.category] || CATEGORIES.sightseeing;
         const isFirst = index === 0;
         const isLast = index === routePinIds.length - 1;
+
+        let legDistanceKm = 0;
+        let legMinutes = 0;
+        if (index > 0 && activePins[index - 1] && pin) {
+          const prev = activePins[index - 1];
+          const directM = getHaversineDistance(prev.lat, prev.lng, pin.lat, pin.lng);
+          legDistanceKm = parseFloat(((directM * 1.25) / 1000).toFixed(1));
+          cumulativeKm += legDistanceKm;
+          const speedKmH = (activeTravelMode === 'motorcycle') ? 38 : 55;
+          legMinutes = Math.max(2, Math.round((legDistanceKm / speedKmH) * 60));
+        }
 
         return `
           <div class="relative p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-3 group transition cursor-grab active:cursor-grabbing hover:border-indigo-300 dark:hover:border-indigo-600"
@@ -9904,6 +9947,14 @@
                 <span>•</span>
                 <span>${pin.date || ''}</span>
               </div>
+              ${isFirst 
+                ? `<div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mt-1"><i class="fa-solid fa-flag-checkered text-[9px]"></i> Điểm khởi hành (0 km)</div>` 
+                : `<div class="text-[10px] text-sky-600 dark:text-sky-400 font-semibold flex items-center gap-1 mt-1 truncate" title="Chặng từ điểm #${index} đến điểm #${index + 1}">
+                     <i class="fa-solid fa-arrow-right-long text-[8px] shrink-0"></i>
+                     <span class="font-bold text-emerald-600 dark:text-emerald-400">+${legDistanceKm.toLocaleString('vi-VN')} km</span>
+                     <span class="text-slate-400 font-normal truncate">• Tích lũy: ${cumulativeKm.toFixed(1)} km (~${legMinutes}p)</span>
+                   </div>`
+              }
             </div>
 
             <!-- Up / Down / Delete Buttons -->
@@ -10017,7 +10068,7 @@
       currentRouteCoordinates = waypoints.map(pt => L.latLng(pt[0], pt[1]));
       let baselineMeters = 0;
       for (let i = 0; i < waypoints.length - 1; i++) {
-        baselineMeters += L.latLng(waypoints[i][0], waypoints[i][1]).distanceTo(L.latLng(waypoints[i + 1][0], waypoints[i + 1][1]));
+        baselineMeters += L.latLng(waypoints[i][0], waypoints[i][1]).distanceTo(L.latLng(waypoints[i + 1][0], waypoints[i + 1][1])) * 1.25;
       }
       const baselineKm = parseFloat((baselineMeters / 1000).toFixed(1));
       const isMoto = (activeTravelMode === 'motorcycle');
