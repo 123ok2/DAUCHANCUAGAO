@@ -12396,77 +12396,619 @@
       ctx.restore();
     }
 
+    function drawTextWrapped(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      if (!text) return 0;
+      const words = String(text).split(" ");
+      let line = "";
+      let currentY = y;
+      let linesCount = 0;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          linesCount++;
+          if (linesCount >= maxLines) {
+            ctx.fillText(line.trim() + "...", x, currentY);
+            return linesCount * lineHeight;
+          }
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + " ";
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line.trim()) {
+        ctx.fillText(line.trim(), x, currentY);
+        linesCount++;
+      }
+      return linesCount * lineHeight;
+    }
+
     async function exportRoutePosterCard() {
       const active = getCinemaSelectedRoute();
       const activePins = getCinemaSelectedPins();
       if (!active || activePins.length < 2) {
-        showToast('Cần ít nhất 2 điểm dừng trong lộ trình để xuất ảnh poster!', 'warning');
+        showToast("Cần ít nhất 2 điểm dừng trong lộ trình để xuất ảnh!", "warning");
         return;
       }
 
-      showToast('🎨 Đang vẽ ảnh hành trình HD chất lượng cao...', 'info');
+      showToast("🎨 Đang kết xuất ảnh Infographic & Album hành trình HD...", "info");
 
-      const posterCanvas = document.createElement('canvas');
-      const pW = 1080;
-      const pH = 1920;
+      // 1. Calculate stats & metrics (including Khứ hồi / 2 lượt)
+      const m = calculateSingleRouteMetrics(active);
+      const isMoto = (active.travelMode === "motorcycle");
+      const provInfo = getProvincesForPins(activePins);
+      const provNamesStr = provInfo.names && provInfo.names.length > 0 ? provInfo.names.join(" • ") : "Việt Nam";
+      
+      const totalPhotos = activePins.reduce((acc, p) => {
+        if (Array.isArray(p.photos) && p.photos.length > 0) return acc + p.photos.length;
+        if (p.photoUrl || p.img || p.image) return acc + 1;
+        return acc;
+      }, 0);
+
+      // 2. Preload route road coordinates
+      let pathCoords = null;
+      try {
+        pathCoords = await ensureCinemaRouteCoordinates(active.id || null);
+      } catch (prepErr) {
+        console.warn("Coordinates prep err:", prepErr);
+      }
+      if (!pathCoords || pathCoords.length < 2) {
+        pathCoords = activePins.map(p => ({ lat: p.lat, lng: p.lng }));
+      }
+
+      // 3. Preload all photo thumbnails for the stops
+      const pinPhotoMap = new Map();
+      await Promise.all(activePins.map(async (pin) => {
+        const rawUrl = (Array.isArray(pin.photos) && pin.photos.length > 0)
+          ? pin.photos[0]
+          : (pin.photoUrl || pin.img || pin.image || null);
+        if (rawUrl) {
+          const loaded = await loadImageHelper(rawUrl);
+          if (loaded) {
+            pinPhotoMap.set(pin.id || pin.title, loaded);
+          }
+        }
+      }));
+
+      // 4. Layout & Dimensions Calculation
+      const pW = 1200;
+      const margin = 40;
+      const contentW = pW - margin * 2; // 1120px
+
+      // Gallery grid sizing
+      const stopCount = activePins.length;
+      let cols = 3;
+      if (stopCount <= 4) cols = 2;
+      else if (stopCount <= 9) cols = 3;
+      else cols = 4;
+
+      const gap = 20;
+      const cardW = Math.floor((contentW - gap * (cols - 1)) / cols);
+      const cardH = (cols === 2) ? 260 : 320;
+      const rows = Math.ceil(stopCount / cols);
+      const galleryH = 60 + (rows * cardH) + ((rows - 1) * gap);
+
+      const headerH = 170;
+      const statsH = 145;
+      const mapH = 540;
+      const footerH = 100;
+      const sectionGap = 28;
+
+      const pH = margin + headerH + sectionGap + statsH + sectionGap + mapH + sectionGap + galleryH + sectionGap + footerH + margin;
+
+      // 5. Create Canvas
+      const posterCanvas = document.createElement("canvas");
       posterCanvas.width = pW;
       posterCanvas.height = pH;
-      const pCtx = posterCanvas.getContext('2d');
+      const pCtx = posterCanvas.getContext("2d");
       pCtx.imageSmoothingEnabled = true;
-      pCtx.imageSmoothingQuality = 'high';
+      pCtx.imageSmoothingQuality = "high";
 
-      // 1. Background
+      // 6. Background
       const bgGrad = pCtx.createLinearGradient(0, 0, 0, pH);
-      bgGrad.addColorStop(0, '#060b18');
-      bgGrad.addColorStop(0.5, '#0a1329');
-      bgGrad.addColorStop(1, '#030712');
+      bgGrad.addColorStop(0, "#060a17");
+      bgGrad.addColorStop(0.25, "#0a1226");
+      bgGrad.addColorStop(0.65, "#080e1e");
+      bgGrad.addColorStop(1, "#040711");
       pCtx.fillStyle = bgGrad;
       pCtx.fillRect(0, 0, pW, pH);
 
-      // Draw map snapshot in middle
-      const cinemaCanvas = document.getElementById('cinema-canvas');
-      if (cinemaCanvas) {
-        pCtx.save();
-        pCtx.globalAlpha = 0.45;
-        pCtx.drawImage(cinemaCanvas, 0, 180, pW, pH - 360);
-        pCtx.restore();
+      // Subtle atmospheric grid dots
+      pCtx.fillStyle = "rgba(56, 189, 248, 0.04)";
+      for (let gx = 20; gx < pW; gx += 40) {
+        for (let gy = 20; gy < pH; gy += 40) {
+          pCtx.beginPath();
+          pCtx.arc(gx, gy, 1, 0, Math.PI * 2);
+          pCtx.fill();
+        }
       }
 
-      // 2. Header
-      pCtx.fillStyle = '#38bdf8';
-      pCtx.font = 'bold 24px sans-serif';
-      pCtx.textAlign = 'left';
-      pCtx.fillText('GẠO MAPS • BẢN ĐỒ HÀNH TRÌNH', 48, 70);
+      let curY = margin;
 
-      pCtx.fillStyle = '#ffffff';
-      pCtx.font = 'bold 38px sans-serif';
-      pCtx.fillText(active.name || 'Lộ Trình Du Lịch', 48, 124);
+      // ----------------------------------------------------
+      // SECTION 1: HEADER
+      // ----------------------------------------------------
+      pCtx.save();
+      pCtx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      pCtx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+      pCtx.lineWidth = 1.5;
+      roundRect(pCtx, margin, curY, contentW, headerH, 20, true, true);
 
-      // 3. Footer
-      pCtx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-      pCtx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      // Accent gradient bar on left
+      const barGrad = pCtx.createLinearGradient(margin, curY, margin, curY + headerH);
+      barGrad.addColorStop(0, "#0ea5e9");
+      barGrad.addColorStop(1, "#6366f1");
+      pCtx.fillStyle = barGrad;
+      roundRect(pCtx, margin, curY, 8, headerH, { tl: 20, bl: 20, tr: 0, br: 0 }, true, false);
+
+      // Brand badge
+      pCtx.fillStyle = "#38bdf8";
+      pCtx.font = "bold 15px sans-serif";
+      pCtx.textAlign = "left";
+      pCtx.fillText("🌟 GẠO MAPS • BẢN ĐỒ HÀNH TRÌNH & KỶ NIỆM DU LỊCH", margin + 32, curY + 36);
+
+      // Route Title
+      pCtx.fillStyle = "#ffffff";
+      pCtx.font = "900 32px sans-serif";
+      pCtx.fillText(active.name || "Hành Trình Du Lịch", margin + 32, curY + 78);
+
+      // Tags & Badges
+      const modeLabel = isMoto ? "🛵 Xe máy" : "🚗 Ô tô";
+      const dateStr = new Date().toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+      
+      const badgeY = curY + 110;
+      function drawPillBadge(label, x, y, bgCol, textCol, borderCol) {
+        pCtx.font = "bold 13px sans-serif";
+        const textW = pCtx.measureText(label).width;
+        const pillW = textW + 24;
+        const pillH = 30;
+        pCtx.fillStyle = bgCol;
+        pCtx.strokeStyle = borderCol;
+        pCtx.lineWidth = 1;
+        roundRect(pCtx, x, y, pillW, pillH, 15, true, true);
+        pCtx.fillStyle = textCol;
+        pCtx.textAlign = "center";
+        pCtx.fillText(label, x + pillW / 2, y + 20);
+        pCtx.textAlign = "left";
+        return pillW;
+      }
+
+      let badgeX = margin + 32;
+      badgeX += drawPillBadge(modeLabel, badgeX, badgeY, "rgba(14, 165, 233, 0.15)", "#38bdf8", "rgba(56, 189, 248, 0.4)") + 12;
+      badgeX += drawPillBadge(`📍 ${stopCount} Điểm dừng`, badgeX, badgeY, "rgba(99, 102, 241, 0.15)", "#a5b4fc", "rgba(99, 102, 241, 0.4)") + 12;
+      badgeX += drawPillBadge(`📸 ${totalPhotos} Kỷ niệm`, badgeX, badgeY, "rgba(236, 72, 153, 0.15)", "#f472b6", "rgba(236, 72, 153, 0.4)") + 12;
+      badgeX += drawPillBadge(`📅 Xuất: ${dateStr}`, badgeX, badgeY, "rgba(148, 163, 184, 0.12)", "#cbd5e1", "rgba(148, 163, 184, 0.3)") + 12;
+
+      pCtx.restore();
+      curY += headerH + sectionGap;
+
+      // ----------------------------------------------------
+      // SECTION 2: EXECUTIVE METRICS / TELEMETRY
+      // ----------------------------------------------------
+      pCtx.save();
+      const statsCols = 4;
+      const statCardW = Math.floor((contentW - (gap * (statsCols - 1))) / statsCols);
+
+      const metricsList = [
+        {
+          icon: "🛣️",
+          label: "TỔNG QUÃNG ĐƯỜNG",
+          mainVal: `${m.roundTripKm.toLocaleString("vi-VN")} km`,
+          subVal: `Khứ hồi (1 chiều: ${m.outboundKm.toLocaleString("vi-VN")} km)`,
+          accent: "#38bdf8"
+        },
+        {
+          icon: "⏱️",
+          label: "THỜI GIAN DỰ TÍNH",
+          mainVal: formatTravelTime(m.roundTripSec || (m.outboundSec * 2)),
+          subVal: `1 chiều: ${formatTravelTime(m.outboundSec)}`,
+          accent: "#818cf8"
+        },
+        {
+          icon: "🗺️",
+          label: "DẤU CHÂN TỈNH THÀNH",
+          mainVal: `${provInfo.count} Tỉnh / TP`,
+          subVal: provNamesStr.length > 28 ? (provNamesStr.substring(0, 26) + "...") : provNamesStr,
+          accent: "#34d399"
+        },
+        {
+          icon: "📸",
+          label: "ẢNH KỶ NIỆM & ĐIỂM",
+          mainVal: `${totalPhotos} Ảnh chụp`,
+          subVal: `${stopCount} Điểm dừng chân ghi dấu`,
+          accent: "#f472b6"
+        }
+      ];
+
+      metricsList.forEach((stat, i) => {
+        const sx = margin + i * (statCardW + gap);
+        pCtx.fillStyle = "rgba(15, 23, 42, 0.8)";
+        pCtx.strokeStyle = "rgba(51, 65, 85, 0.7)";
+        pCtx.lineWidth = 1.2;
+        roundRect(pCtx, sx, curY, statCardW, statsH, 16, true, true);
+
+        // Top accent subtle glow
+        pCtx.fillStyle = stat.accent;
+        pCtx.fillRect(sx + 20, curY + 2, 40, 2);
+
+        // Icon & Label
+        pCtx.font = "18px sans-serif";
+        pCtx.fillText(stat.icon, sx + 18, curY + 34);
+
+        pCtx.fillStyle = "#94a3b8";
+        pCtx.font = "bold 11px sans-serif";
+        pCtx.fillText(stat.label, sx + 48, curY + 32);
+
+        // Main Value
+        pCtx.fillStyle = "#ffffff";
+        pCtx.font = "900 24px sans-serif";
+        pCtx.fillText(stat.mainVal, sx + 18, curY + 78);
+
+        // Sub Value
+        pCtx.fillStyle = stat.accent;
+        pCtx.font = "bold 12px sans-serif";
+        pCtx.fillText(stat.subVal, sx + 18, curY + 112);
+      });
+
+      pCtx.restore();
+      curY += statsH + sectionGap;
+
+      // ----------------------------------------------------
+      // SECTION 3: CRISP HIGH-RES ROUTE MAP
+      // ----------------------------------------------------
+      pCtx.save();
+      pCtx.fillStyle = "rgba(15, 23, 42, 0.9)";
+      pCtx.strokeStyle = "rgba(56, 189, 248, 0.35)";
       pCtx.lineWidth = 2;
-      roundRect(pCtx, 48, pH - 150, pW - 96, 96, 20, true, true);
+      roundRect(pCtx, margin, curY, contentW, mapH, 20, true, true);
 
-      pCtx.fillStyle = '#38bdf8';
-      pCtx.font = 'bold 20px sans-serif';
-      pCtx.fillText('🌟 Gạo Maps - Dấu Chân Của Gạo', 80, pH - 96);
+      // Clip inside map box
+      pCtx.save();
+      pCtx.beginPath();
+      roundRect(pCtx, margin + 2, curY + 2, contentW - 4, mapH - 4, 18, false, false);
+      pCtx.clip();
 
-      pCtx.fillStyle = 'rgba(226, 232, 240, 0.8)';
-      pCtx.font = '16px sans-serif';
-      pCtx.textAlign = 'right';
-      pCtx.fillText(`60 FPS • ${new Date().toLocaleDateString('vi-VN')}`, pW - 80, pH - 96);
+      // Background fill for map
+      pCtx.fillStyle = "#090d16";
+      pCtx.fillRect(margin, curY, contentW, mapH);
 
-      // Download Poster
-      const url = posterCanvas.toDataURL('image/png');
-      const a = document.createElement('a');
+      // Calculate bounding box & zoom for map
+      let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+      pathCoords.forEach(pt => {
+        if (pt.lat < minLat) minLat = pt.lat;
+        if (pt.lat > maxLat) maxLat = pt.lat;
+        if (pt.lng < minLng) minLng = pt.lng;
+        if (pt.lng > maxLng) maxLng = pt.lng;
+      });
+      activePins.forEach(pt => {
+        if (pt.lat < minLat) minLat = pt.lat;
+        if (pt.lat > maxLat) maxLat = pt.lat;
+        if (pt.lng < minLng) minLng = pt.lng;
+        if (pt.lng > maxLng) maxLng = pt.lng;
+      });
+
+      const latSpan = Math.max(0.005, maxLat - minLat);
+      const lngSpan = Math.max(0.005, maxLng - minLng);
+      const paddedMinLat = minLat - latSpan * 0.22;
+      const paddedMaxLat = maxLat + latSpan * 0.22;
+      const paddedMinLng = minLng - lngSpan * 0.22;
+      const paddedMaxLng = maxLng + lngSpan * 0.22;
+
+      let mapZoom = 6;
+      for (let z = 16; z >= 3; z--) {
+        const pNW = latLngToMercatorWorld(paddedMaxLat, paddedMinLng, z);
+        const pSE = latLngToMercatorWorld(paddedMinLat, paddedMaxLng, z);
+        if (Math.abs(pSE.x - pNW.x) <= (contentW - 40) && Math.abs(pSE.y - pNW.y) <= (mapH - 40)) {
+          mapZoom = z;
+          break;
+        }
+      }
+
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+      const centerWorld = latLngToMercatorWorld(centerLat, centerLng, mapZoom);
+      const mapCenterScrX = margin + contentW / 2;
+      const mapCenterScrY = curY + mapH / 2;
+
+      function routeLatLngToScreen(lat, lng) {
+        const wPt = latLngToMercatorWorld(lat, lng, mapZoom);
+        return {
+          x: mapCenterScrX + (wPt.x - centerWorld.x),
+          y: mapCenterScrY + (wPt.y - centerWorld.y)
+        };
+      }
+
+      // Preload & Draw Map Tiles inside the box
+      const minTileX = Math.floor((centerWorld.x - contentW / 2) / 256) - 1;
+      const maxTileX = Math.floor((centerWorld.x + contentW / 2) / 256) + 1;
+      const minTileY = Math.floor((centerWorld.y - mapH / 2) / 256) - 1;
+      const maxTileY = Math.floor((centerWorld.y + mapH / 2) / 256) + 1;
+
+      for (let tx = minTileX; tx <= maxTileX; tx++) {
+        for (let ty = minTileY; ty <= maxTileY; ty++) {
+          const tImg = getOrCreateTileImage(cinemaMapStyle || "dark", mapZoom, tx, ty);
+          if (tImg && tImg.complete && tImg.naturalWidth > 0) {
+            const tileScrX = mapCenterScrX + (tx * 256 - centerWorld.x);
+            const tileScrY = mapCenterScrY + (ty * 256 - centerWorld.y);
+            pCtx.drawImage(tImg, tileScrX, tileScrY, 256, 256);
+          }
+        }
+      }
+
+      // Map Grid Lines & Atmospheric Overlay
+      pCtx.fillStyle = "rgba(6, 10, 24, 0.45)";
+      pCtx.fillRect(margin, curY, contentW, mapH);
+
+      // Draw Route Polyline
+      const screenPoints = pathCoords.map(pt => routeLatLngToScreen(pt.lat, pt.lng));
+
+      // 1. Wide ambient glow
+      pCtx.beginPath();
+      pCtx.strokeStyle = "rgba(99, 102, 241, 0.35)";
+      pCtx.lineWidth = 14;
+      pCtx.lineCap = "round";
+      pCtx.lineJoin = "round";
+      screenPoints.forEach((pt, i) => {
+        if (i === 0) pCtx.moveTo(pt.x, pt.y);
+        else pCtx.lineTo(pt.x, pt.y);
+      });
+      pCtx.stroke();
+
+      // 2. Cyan Neon Road
+      pCtx.beginPath();
+      pCtx.strokeStyle = "#0ea5e9";
+      pCtx.lineWidth = 5;
+      screenPoints.forEach((pt, i) => {
+        if (i === 0) pCtx.moveTo(pt.x, pt.y);
+        else pCtx.lineTo(pt.x, pt.y);
+      });
+      pCtx.stroke();
+
+      // 3. Inner White Core
+      pCtx.beginPath();
+      pCtx.strokeStyle = "#ffffff";
+      pCtx.lineWidth = 1.5;
+      screenPoints.forEach((pt, i) => {
+        if (i === 0) pCtx.moveTo(pt.x, pt.y);
+        else pCtx.lineTo(pt.x, pt.y);
+      });
+      pCtx.stroke();
+
+      // Draw Stop Markers on the Map
+      activePins.forEach((pin, index) => {
+        const sPt = routeLatLngToScreen(pin.lat, pin.lng);
+        const isStart = (index === 0);
+        const isEnd = (index === activePins.length - 1);
+
+        // Marker Outer Pulse
+        pCtx.beginPath();
+        pCtx.arc(sPt.x, sPt.y, 16, 0, Math.PI * 2);
+        pCtx.fillStyle = isStart ? "rgba(16, 185, 129, 0.4)" : (isEnd ? "rgba(239, 68, 68, 0.4)" : "rgba(14, 165, 233, 0.35)");
+        pCtx.fill();
+
+        // Marker Core Pin
+        pCtx.beginPath();
+        pCtx.arc(sPt.x, sPt.y, 11, 0, Math.PI * 2);
+        pCtx.fillStyle = isStart ? "#10b981" : (isEnd ? "#ef4444" : (pin.color || "#0ea5e9"));
+        pCtx.strokeStyle = "#ffffff";
+        pCtx.lineWidth = 2.5;
+        pCtx.fill();
+        pCtx.stroke();
+
+        // Stop Index Number inside Pin
+        pCtx.fillStyle = "#ffffff";
+        pCtx.font = "bold 11px sans-serif";
+        pCtx.textAlign = "center";
+        pCtx.fillText(String(index + 1), sPt.x, sPt.y + 4);
+
+        // Place Name Label Pill
+        const pinTitle = pin.title || pin.locationName || `Điểm #${index + 1}`;
+        pCtx.font = "bold 12px sans-serif";
+        const labelW = pCtx.measureText(pinTitle).width + 16;
+        const labelH = 22;
+        const labelX = sPt.x - labelW / 2;
+        const labelY = sPt.y - 32;
+
+        pCtx.fillStyle = "rgba(15, 23, 42, 0.9)";
+        pCtx.strokeStyle = isStart ? "#10b981" : (isEnd ? "#ef4444" : "rgba(56, 189, 248, 0.6)");
+        pCtx.lineWidth = 1;
+        roundRect(pCtx, labelX, labelY, labelW, labelH, 6, true, true);
+
+        pCtx.fillStyle = "#ffffff";
+        pCtx.fillText(pinTitle, sPt.x, labelY + 15);
+      });
+
+      // Map Overlays: Map Badge
+      pCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      pCtx.strokeStyle = "rgba(56, 189, 248, 0.3)";
+      pCtx.lineWidth = 1;
+      roundRect(pCtx, margin + 18, curY + 18, 220, 36, 10, true, true);
+
+      pCtx.fillStyle = "#38bdf8";
+      pCtx.font = "bold 12px sans-serif";
+      pCtx.textAlign = "left";
+      pCtx.fillText("🗺️ SƠ ĐỒ TOÀN TUYẾN HD", margin + 30, curY + 41);
+
+      pCtx.restore(); // Exit Map clip
+      pCtx.restore();
+      curY += mapH + sectionGap;
+
+      // ----------------------------------------------------
+      // SECTION 4: STOPS & MEMORY PHOTOS GALLERY
+      // ----------------------------------------------------
+      pCtx.save();
+      // Section Title
+      pCtx.fillStyle = "#ffffff";
+      pCtx.font = "900 22px sans-serif";
+      pCtx.textAlign = "left";
+      pCtx.fillText("📸 ALBUM HÌNH ẢNH & CHI TIẾT ĐIỂM DỪNG CHÂN TRÊN TUYẾN", margin, curY + 24);
+
+      pCtx.fillStyle = "#94a3b8";
+      pCtx.font = "13px sans-serif";
+      pCtx.fillText(`Hiển thị đầy đủ ${stopCount} điểm dừng kèm hình ảnh chụp thực tế và thông tin chi tiết`, margin, curY + 48);
+
+      curY += 68;
+
+      // Render cards in grid
+      activePins.forEach((pin, i) => {
+        const colIdx = i % cols;
+        const rowIdx = Math.floor(i / cols);
+        const cardX = margin + colIdx * (cardW + gap);
+        const cardY = curY + rowIdx * (cardH + gap);
+
+        // Card Container
+        pCtx.fillStyle = "rgba(15, 23, 42, 0.8)";
+        pCtx.strokeStyle = "rgba(51, 65, 85, 0.7)";
+        pCtx.lineWidth = 1.2;
+        roundRect(pCtx, cardX, cardY, cardW, cardH, 16, true, true);
+
+        const photoImg = pinPhotoMap.get(pin.id || pin.title);
+
+        if (cols === 2) {
+          // 2-Column Wide Layout (Side-by-side Photo & Info)
+          const photoW = 200;
+          const photoH = cardH - 24;
+          const photoX = cardX + 12;
+          const photoY = cardY + 12;
+
+          if (photoImg) {
+            drawRoundedCoverImage(pCtx, photoImg, photoX, photoY, photoW, photoH, 12);
+          } else {
+            // Placeholder
+            pCtx.fillStyle = "rgba(30, 41, 59, 0.8)";
+            roundRect(pCtx, photoX, photoY, photoW, photoH, 12, true, false);
+            pCtx.fillStyle = "#64748b";
+            pCtx.font = "36px sans-serif";
+            pCtx.textAlign = "center";
+            pCtx.fillText("📍", photoX + photoW / 2, photoY + photoH / 2 - 8);
+            pCtx.font = "bold 11px sans-serif";
+            pCtx.fillText("Chưa có ảnh chụp", photoX + photoW / 2, photoY + photoH / 2 + 20);
+          }
+
+          // Info Column (Right side)
+          const infoX = cardX + photoW + 28;
+          let infoY = cardY + 32;
+
+          // Stop sequence badge
+          pCtx.fillStyle = "#0ea5e9";
+          pCtx.font = "bold 12px sans-serif";
+          pCtx.textAlign = "left";
+          pCtx.fillText(`ĐIỂM DỪNG #${i + 1}`, infoX, infoY);
+          infoY += 26;
+
+          // Title
+          pCtx.fillStyle = "#ffffff";
+          pCtx.font = "900 18px sans-serif";
+          const title = pin.title || pin.locationName || `Điểm #${i + 1}`;
+          infoY += drawTextWrapped(pCtx, title, infoX, infoY, cardW - photoW - 48, 22, 2) + 6;
+
+          // Location / Province
+          const prov = detectProvinceForPin(pin);
+          const locStr = prov ? prov.name : (pin.locationName || "Việt Nam");
+          pCtx.fillStyle = "#38bdf8";
+          pCtx.font = "bold 13px sans-serif";
+          pCtx.fillText(`📍 ${locStr}`, infoX, infoY);
+          infoY += 22;
+
+          // Description or Note
+          const desc = pin.description || pin.notes || "Điểm đến trong hành trình khám phá.";
+          pCtx.fillStyle = "#94a3b8";
+          pCtx.font = "12px sans-serif";
+          drawTextWrapped(pCtx, desc, infoX, infoY, cardW - photoW - 48, 18, 3);
+
+        } else {
+          // 3 / 4-Column Card Layout (Top Photo + Bottom Info)
+          const photoH = (cols === 3) ? 175 : 150;
+          const photoW = cardW - 20;
+          const photoX = cardX + 10;
+          const photoY = cardY + 10;
+
+          if (photoImg) {
+            drawRoundedCoverImage(pCtx, photoImg, photoX, photoY, photoW, photoH, 12);
+          } else {
+            pCtx.fillStyle = "rgba(30, 41, 59, 0.8)";
+            roundRect(pCtx, photoX, photoY, photoW, photoH, 12, true, false);
+            pCtx.fillStyle = "#64748b";
+            pCtx.font = "28px sans-serif";
+            pCtx.textAlign = "center";
+            pCtx.fillText("📍", photoX + photoW / 2, photoY + photoH / 2 - 4);
+            pCtx.font = "bold 11px sans-serif";
+            pCtx.fillText("Chưa có ảnh", photoX + photoW / 2, photoY + photoH / 2 + 18);
+          }
+
+          // Badge on top of image
+          pCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
+          pCtx.strokeStyle = "#0ea5e9";
+          pCtx.lineWidth = 1;
+          roundRect(pCtx, photoX + 8, photoY + 8, 72, 22, 6, true, true);
+          pCtx.fillStyle = "#38bdf8";
+          pCtx.font = "bold 11px sans-serif";
+          pCtx.textAlign = "center";
+          pCtx.fillText(`#${i + 1} Điểm`, photoX + 44, photoY + 23);
+
+          // Info below photo
+          let infoY = photoY + photoH + 24;
+          pCtx.fillStyle = "#ffffff";
+          pCtx.font = "bold 15px sans-serif";
+          pCtx.textAlign = "left";
+          const title = pin.title || pin.locationName || `Điểm #${i + 1}`;
+          infoY += drawTextWrapped(pCtx, title, cardX + 14, infoY, cardW - 28, 19, 2) + 4;
+
+          const prov = detectProvinceForPin(pin);
+          const locStr = prov ? prov.name : (pin.locationName || "Việt Nam");
+          pCtx.fillStyle = "#38bdf8";
+          pCtx.font = "12px sans-serif";
+          pCtx.fillText(`📍 ${locStr}`, cardX + 14, infoY);
+        }
+      });
+
+      pCtx.restore();
+      curY += galleryH + sectionGap;
+
+      // ----------------------------------------------------
+      // SECTION 5: FOOTER & BRANDING
+      // ----------------------------------------------------
+      pCtx.save();
+      pCtx.fillStyle = "rgba(15, 23, 42, 0.9)";
+      pCtx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+      pCtx.lineWidth = 1.5;
+      roundRect(pCtx, margin, curY, contentW, footerH, 18, true, true);
+
+      pCtx.fillStyle = "#38bdf8";
+      pCtx.font = "bold 16px sans-serif";
+      pCtx.textAlign = "left";
+      pCtx.fillText("🌟 Gạo Maps - Dấu Chân Của Gạo • Bản Đồ Du Lịch & Kỷ Niệm", margin + 28, curY + 42);
+
+      pCtx.fillStyle = "#94a3b8";
+      pCtx.font = "13px sans-serif";
+      pCtx.fillText("Tự hào ghi dấu từng cung đường và khoảnh khắc đẹp trên khắp 34 Tỉnh thành Việt Nam", margin + 28, curY + 68);
+
+      pCtx.fillStyle = "rgba(226, 232, 240, 0.9)";
+      pCtx.font = "bold 13px sans-serif";
+      pCtx.textAlign = "right";
+      pCtx.fillText(`Ultra HD Quality • ${dateStr}`, margin + contentW - 28, curY + 42);
+
+      pCtx.fillStyle = "#64748b";
+      pCtx.font = "12px sans-serif";
+      pCtx.fillText("Bản đồ hỗ trợ định vị GPS & OSRM Routing Engine", margin + contentW - 28, curY + 68);
+
+      pCtx.restore();
+
+      // Download Generated HD Poster Card
+      const url = posterCanvas.toDataURL("image/png");
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `gaomaps-poster-${Date.now()}.png`;
+      const safeName = (active.name || "gaomaps-poster").replace(/[^a-zA-Z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ_\-]/g, "_");
+      a.download = `${safeName}-${Date.now()}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
 
-      showToast('🎉 Đã tải xuống ảnh hành trình HD thành công!', 'success');
+      showToast("🎉 Đã xuất thành công ảnh Thống kê & Album hành trình HD!", "success");
     }
 
     function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
