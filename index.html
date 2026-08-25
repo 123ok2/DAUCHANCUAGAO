@@ -1212,6 +1212,12 @@
               </button>
             </div>
 
+            <!-- Enter Shared Route Code Button -->
+            <button onclick="openEnterTripCodeModal()" class="h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 transition text-xs font-bold shrink-0 select-none active:scale-95 flex items-center gap-1.5 group" title="Nhập mã chuyến đi (VD: GM-8291) hoặc dán link để mở lộ trình">
+              <i class="fa-solid fa-qrcode text-indigo-500 group-hover:scale-110 transition-transform text-xs sm:text-sm"></i>
+              <span class="hidden xl:inline text-xs font-bold text-indigo-600 dark:text-indigo-400">Nhập mã</span>
+            </button>
+
             <!-- Map Style Selector -->
             <div class="relative">
               <button id="btn-map-layers" class="h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-700 dark:text-slate-200 shadow-md border border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 hover:bg-white dark:hover:bg-slate-900 transition text-xs sm:text-sm font-semibold active:scale-95" title="Chọn loại bản đồ">
@@ -2422,11 +2428,37 @@
             </div>
           </div>
 
-          <!-- Share Link Box -->
+          <!-- Dedicated Trip Code & Short Link Hero Card -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-sky-50/90 to-purple-50/90 dark:from-indigo-950/40 dark:via-sky-950/40 dark:to-purple-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <div>
+                <span class="text-[10.5px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider block">Mã Lộ Trình (Nhập là xem ngay)</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span id="share-modal-trip-code" class="text-xl sm:text-2xl font-black font-mono text-indigo-700 dark:text-indigo-300 tracking-wider">GM-0000</span>
+                  <button type="button" onclick="copyTripCodeOnly()" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-xs active:scale-95 transition flex items-center gap-1">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Sao chép mã</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 text-left sm:text-right">
+              <span>Bạn bè có thể nhập mã này hoặc quét mã QR dưới đây để mở tức thì.</span>
+            </div>
+          </div>
+
+          <!-- Share Link Box (Ultra Short URL) -->
           <div class="space-y-2">
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Liên kết Chia sẻ (Mở ngay trên máy tính & điện thoại)
-            </label>
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-link text-indigo-500"></i>
+                <span>Link Rút Gọn (Chỉ ~50 ký tự - Gửi Zalo/SMS siêu đẹp)</span>
+              </label>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold">⚡ Mở tức thì</span>
+            </div>
             <div class="flex items-center gap-2">
               <div class="relative flex-1">
                 <input type="text" id="share-link-input" readonly class="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 font-mono select-all outline-none focus:border-indigo-500" />
@@ -2440,7 +2472,7 @@
               </button>
               <button onclick="copyShareLink()" id="btn-copy-share-link" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shrink-0 shadow-md shadow-indigo-500/25 active:scale-95 transition flex items-center gap-1.5">
                 <i class="fa-solid fa-link"></i>
-                <span>Sao chép</span>
+                <span>Sao chép link</span>
               </button>
             </div>
           </div>
@@ -2454,7 +2486,7 @@
                   <i class="fa-solid fa-qrcode text-indigo-500"></i> Mã QR Quét Nhanh
                 </span>
                 <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-300 text-[10px] font-black">
-                  ⚡ Siêu nét & Siêu nhạy
+                  ⚡ Quét 0.05s cực nhạy
                 </span>
               </div>
               
@@ -2492,7 +2524,7 @@
                   <i class="fa-solid fa-paper-plane text-sky-500"></i> Gửi bạn bè & mạng xã hội
                 </span>
                 <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Gửi link qua Zalo, Messenger, AirDrop hoặc sao chép để mọi người mở trên mọi thiết bị.
+                  Gửi mã hoặc link qua Zalo, Messenger, AirDrop để mở trên mọi thiết bị.
                 </p>
               </div>
 
@@ -2525,6 +2557,60 @@
           <button onclick="closeShareRouteModal()" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold hover:bg-slate-300 transition">
             Đóng
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ENTER TRIP CODE / PASTE LINK MODAL ==================== -->
+    <div id="enter-trip-code-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) closeEnterTripCodeModal();">
+      <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+        <!-- Header -->
+        <div class="p-5 bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-inner">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base">Xem Lộ Trình Được Chia Sẻ</h3>
+              <p class="text-xs text-sky-100">Nhập mã chuyến đi hoặc dán link</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeEnterTripCodeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Body Form -->
+        <div class="p-6 space-y-4">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              Mã Chuyến Đi hoặc Link Chia Sẻ:
+            </label>
+            <div class="relative">
+              <input type="text" id="input-enter-trip-code" placeholder="Ví dụ: GM-8291 hoặc dán link..." class="w-full pl-4 pr-14 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20" onkeydown="if(event.key==='Enter') handleOpenTripCodeSubmit();" />
+              <button onclick="handlePasteClipboardToTripCodeInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-300 transition" title="Dán từ bộ nhớ tạm">
+                <i class="fa-regular fa-clipboard"></i> Dán
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              💡 Mẹo: Bạn có thể nhập mã 6 ký tự (VD: <strong class="text-indigo-600 dark:text-indigo-400">GM-8924</strong>) do bạn bè gửi, hoặc dán toàn bộ đường link.
+            </p>
+          </div>
+
+          <div id="enter-trip-code-error" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+            <span id="enter-trip-code-error-text">Không tìm thấy lộ trình.</span>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" onclick="closeEnterTripCodeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+              Hủy
+            </button>
+            <button type="button" id="btn-submit-open-trip-code" onclick="handleOpenTripCodeSubmit()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95">
+              <i class="fa-solid fa-arrow-right"></i>
+              <span>Mở Lộ Trình Ngay</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -7021,19 +7107,42 @@
         };
       }
 
-      // Generate Short Cloud Share Identifier
-      const sharePrefix = (currentShareScope === 'all') ? 'all_' : 'rt_';
-      const shareId = sharePrefix + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+      // Generate Short & Clean 6-Character Trip Code (e.g. GM-8924)
+      const numCode = Math.floor(1000 + Math.random() * 9000);
+      const tripCode = 'GM' + numCode;
+      const formattedTripCode = 'GM-' + numCode;
+      currentGeneratedTripCode = formattedTripCode;
 
-      // Save payload locally as immediate cache
+      const tripCodeEl = document.getElementById('share-modal-trip-code');
+      if (tripCodeEl) tripCodeEl.textContent = formattedTripCode;
+
+      const shareId = tripCode;
+
+      // Save payload locally as immediate cache under both keys
       try {
-        localStorage.setItem('memomap_share_' + shareId, JSON.stringify(sharePayload));
+        localStorage.setItem('memomap_share_' + tripCode, JSON.stringify(sharePayload));
+        localStorage.setItem('memomap_share_' + formattedTripCode, JSON.stringify(sharePayload));
       } catch (e) {}
 
-      // Asynchronously publish rich route data to Firebase Firestore (Layer 1: Cloud Sync)
+      // Asynchronously publish to Server backend API (Ultra Fast & Guaranteed persistent)
+      try {
+        fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: tripCode,
+            code: formattedTripCode,
+            payload: sharePayload
+          })
+        }).catch(err => console.warn('Backend share error:', err));
+      } catch (e) {
+        console.warn('Fetch share error:', e);
+      }
+
+      // Asynchronously publish rich route data to Firebase Firestore (Layer 2: Cloud Sync)
       if (firebaseDb && isFirebaseReady) {
         try {
-          firebaseDb.collection('memomap_shared_routes').doc(shareId).set(sharePayload).catch(err => {
+          firebaseDb.collection('memomap_shared_routes').doc(tripCode).set(sharePayload).catch(err => {
             console.warn('Firestore share route write error:', err);
           });
         } catch (e) {
@@ -7041,28 +7150,12 @@
         }
       }
 
-      // Generate ultra-compressed standalone payload string (Fail-proof Offline & Cross-Device)
-      let compactEncoded = '';
-      try {
-        if (typeof LZString !== 'undefined' && LZString.compressToEncodedURIComponent) {
-          compactEncoded = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload || sharePayload));
-        } else {
-          compactEncoded = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(compactQrPayload || sharePayload)))));
-        }
-      } catch (e) {
-        console.warn('Compression error:', e);
-      }
-
-      // Build Fail-proof Canonical Share URL:
-      // Includes ?sr= (standalone encoded data) AND ?s= (cloud/local sync ID)
-      const canonicalShareUrl = `${window.location.origin}${window.location.pathname}?sr=${compactEncoded}&s=${shareId}`;
+      // Build Clean, Ultra-Short Canonical Share URL (~45-50 chars: https://domain/?s=GM8924)
+      const canonicalShareUrl = `${window.location.origin}${window.location.pathname}?s=${tripCode}`;
       input.value = canonicalShareUrl;
 
-      // QR Code: Encode the full standalone URL so ANY scanner (Camera/Zalo) immediately opens the route even offline!
+      // QR Code: Encodes the short canonical URL for 0.05s instant camera scan!
       let qrUrl = canonicalShareUrl;
-      if (qrUrl.length > 2000) {
-        qrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
-      }
 
       // Render High-Definition Vector/Canvas QR Code
       const qrCanvas = document.getElementById('share-qrcode-canvas');
@@ -7097,19 +7190,10 @@
                   light: '#ffffff'
                 }
               }, function (err2) {
-                if (err2) {
-                  const fallbackShortUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
-                  QRCode.toCanvas(canvasEl, fallbackShortUrl, {
-                    width: targetWidth,
-                    margin: 2,
-                    errorCorrectionLevel: 'L'
-                  }, function (err3) {
-                    if (err3 && imgEl) {
-                      canvasEl.classList.add('hidden');
-                      imgEl.classList.remove('hidden');
-                      imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(fallbackShortUrl)}`;
-                    }
-                  });
+                if (err2 && imgEl) {
+                  canvasEl.classList.add('hidden');
+                  imgEl.classList.remove('hidden');
+                  imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(targetUrl)}`;
                 }
               });
             }
@@ -7131,6 +7215,176 @@
         const targetName = targetR ? targetR.name : 'Lộ trình';
         const truncatedName = targetName.length > 24 ? targetName.substring(0, 24) + '...' : targetName;
         shareVideoLabel.textContent = `🎬 Xuất Video: ${truncatedName} (Full HD)`;
+      }
+    }
+
+    let currentGeneratedTripCode = 'GM-0000';
+
+    function copyTripCodeOnly() {
+      if (!currentGeneratedTripCode) return;
+      navigator.clipboard.writeText(currentGeneratedTripCode).then(() => {
+        showToast(`Đã sao chép mã chuyến đi: ${currentGeneratedTripCode}`, 'success');
+      }).catch(() => {
+        showToast(`Mã chuyến đi: ${currentGeneratedTripCode}`, 'info');
+      });
+    }
+
+    function openEnterTripCodeModal() {
+      const modal = document.getElementById('enter-trip-code-modal');
+      const errEl = document.getElementById('enter-trip-code-error');
+      const input = document.getElementById('input-enter-trip-code');
+      if (errEl) errEl.classList.add('hidden');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 150);
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeEnterTripCodeModal() {
+      const modal = document.getElementById('enter-trip-code-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handlePasteClipboardToTripCodeInput() {
+      const input = document.getElementById('input-enter-trip-code');
+      if (!input) return;
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          input.value = text.trim();
+          input.focus();
+        }
+      } catch (e) {
+        showToast('Vui lòng nhấn phím Ctrl+V để dán.', 'info');
+      }
+    }
+
+    async function handleOpenTripCodeSubmit() {
+      const input = document.getElementById('input-enter-trip-code');
+      if (!input || !input.value.trim()) {
+        showToast('Vui lòng nhập mã chuyến đi hoặc dán đường link.', 'warning');
+        return;
+      }
+      await openSharedRouteByCodeOrUrl(input.value.trim());
+    }
+
+    async function openSharedRouteByCodeOrUrl(rawInput) {
+      if (!rawInput) return false;
+      let val = rawInput.trim();
+
+      const btn = document.getElementById('btn-submit-open-trip-code');
+      const errEl = document.getElementById('enter-trip-code-error');
+      const errText = document.getElementById('enter-trip-code-error-text');
+      if (errEl) errEl.classList.add('hidden');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Đang tải...';
+      }
+
+      try {
+        // Case 1: Raw input is a link (or has ?s=, ?sr=, etc.)
+        if (val.includes('?') || val.includes('#') || val.startsWith('http')) {
+          try {
+            const url = new URL(val.startsWith('http') ? val : ('https://dummy.local/' + val));
+            const sParam = url.searchParams.get('s') || url.searchParams.get('share_id') || url.searchParams.get('id') || url.searchParams.get('code');
+            const srParam = url.searchParams.get('sr') || url.searchParams.get('d') || url.searchParams.get('data');
+
+            if (srParam) {
+              const payload = decodeSharedRoutePayload(srParam);
+              if (payload && Array.isArray(payload.stops) && payload.stops.length > 0) {
+                hydrateSharedRouteExperience(payload);
+                closeEnterTripCodeModal();
+                showToast(`Đang hiển thị lộ trình: "${payload.name || 'Lộ trình'}"`, 'success');
+                return true;
+              }
+            }
+
+            if (sParam) {
+              val = sParam; // proceed to lookup by code / ID
+            }
+          } catch (e) {
+            console.warn('URL parse error:', e);
+          }
+        }
+
+        // Clean code: Remove any spaces, hyphens for lookup key
+        const cleanKey = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        const formattedKey = cleanKey.startsWith('GM') && cleanKey.length >= 4 
+          ? 'GM-' + cleanKey.substring(2) 
+          : (cleanKey.length === 4 && /^\d+$/.test(cleanKey) ? 'GM-' + cleanKey : cleanKey);
+
+        // 1. Try local cache
+        const localCached = localStorage.getItem('memomap_share_' + cleanKey) || 
+                            localStorage.getItem('memomap_share_' + formattedKey) ||
+                            localStorage.getItem('memomap_share_GM' + cleanKey);
+        if (localCached) {
+          try {
+            const parsed = JSON.parse(localCached);
+            if (parsed && (Array.isArray(parsed.stops) || Array.isArray(parsed.routes))) {
+              hydrateSharedRouteExperience(parsed);
+              closeEnterTripCodeModal();
+              showToast(`Đang hiển thị lộ trình: "${parsed.name || 'Lộ trình'}"`, 'success');
+              return true;
+            }
+          } catch (e) {}
+        }
+
+        // 2. Fetch from Backend Server API (/api/share/:id or /api/share/code/:code)
+        try {
+          const apiRes = await fetch(`/api/share/${encodeURIComponent(cleanKey)}`);
+          if (apiRes.ok) {
+            const json = await apiRes.json();
+            if (json && json.success && json.payload) {
+              try {
+                localStorage.setItem('memomap_share_' + cleanKey, JSON.stringify(json.payload));
+              } catch (e) {}
+              hydrateSharedRouteExperience(json.payload);
+              closeEnterTripCodeModal();
+              showToast(`Đã tải thành công lộ trình: "${json.payload.name || 'Lộ trình'}"`, 'success');
+              return true;
+            }
+          }
+        } catch (apiErr) {
+          console.warn('API error:', apiErr);
+        }
+
+        // 3. Fetch from Firebase Firestore
+        if (firebaseDb && isFirebaseReady) {
+          try {
+            let doc = await firebaseDb.collection('memomap_shared_routes').doc(cleanKey).get();
+            if (!doc.exists && formattedKey !== cleanKey) {
+              doc = await firebaseDb.collection('memomap_shared_routes').doc(formattedKey).get();
+            }
+            if (doc.exists) {
+              const cloudData = doc.data();
+              if (cloudData && (Array.isArray(cloudData.stops) || Array.isArray(cloudData.routes))) {
+                try {
+                  localStorage.setItem('memomap_share_' + cleanKey, JSON.stringify(cloudData));
+                } catch (e) {}
+                hydrateSharedRouteExperience(cloudData);
+                closeEnterTripCodeModal();
+                showToast(`Đã đồng bộ lộ trình từ Cloud: "${cloudData.name}"`, 'success');
+                return true;
+              }
+            }
+          } catch (fireErr) {
+            console.warn('Firestore err:', fireErr);
+          }
+        }
+
+        // If not found
+        if (errEl && errText) {
+          errText.textContent = `Không tìm thấy lộ trình với mã "${rawInput}". Vui lòng kiểm tra lại.`;
+          errEl.classList.remove('hidden');
+        }
+        return false;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> <span>Mở Lộ Trình Ngay</span>';
+        }
       }
     }
 
@@ -8107,7 +8361,32 @@
           showToast(`Đang hiển thị lộ trình: "${localData.name}"`, 'success');
         }
 
-        // 3b. Fetch from Firebase Firestore
+        // 3b. Fetch from Backend Server API (/api/share/:id)
+        const loadFromServerApi = async () => {
+          try {
+            const res = await fetch(`/api/share/${encodeURIComponent(shareId)}`);
+            if (res.ok) {
+              const json = await res.json();
+              if (json && json.success && json.payload) {
+                try {
+                  localStorage.setItem('memomap_share_' + shareId, JSON.stringify(json.payload));
+                } catch (e) {}
+                lastHydratedShareId = shareId;
+                hydrateSharedRouteExperience(json.payload);
+                showToast(`Đang hiển thị lộ trình: "${json.payload.name || 'Lộ trình được chia sẻ'}"`, 'success');
+                return true;
+              }
+            }
+          } catch (e) {
+            console.warn('Error fetching from server share api:', e);
+          }
+          return false;
+        };
+
+        const apiSuccess = await loadFromServerApi();
+        if (apiSuccess) return;
+
+        // 3c. Fetch from Firebase Firestore
         const loadFromCloud = async () => {
           if (firebaseDb && isFirebaseReady) {
             try {
@@ -8136,6 +8415,11 @@
           let retries = 0;
           const retryTimer = setInterval(async () => {
             retries++;
+            const okApi = await loadFromServerApi();
+            if (okApi) {
+              clearInterval(retryTimer);
+              return;
+            }
             if (firebaseDb && isFirebaseReady) {
               const ok = await loadFromCloud();
               if (ok || retries >= 8) {
