@@ -1000,7 +1000,7 @@
                 <span id="stat-total-all-routes-km" class="text-xl sm:text-2xl font-black text-white tracking-tight">0.0 km</span>
               </div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">Toàn tuyến</span>
+                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">Khứ hồi (Đi + Về)</span>
                 <span class="text-[10px] text-slate-400 truncate" id="stat-total-routes-count"><i class="fa-solid fa-signs-post mr-1"></i>0 hành trình</span>
               </div>
             </div>
@@ -9007,7 +9007,9 @@
         : Math.round((outboundKm * 1000) / speedMps);
 
       const returnKm = (typeof route.returnKm === 'number' && route.returnKm > 0) ? route.returnKm : outboundKm;
-      const roundTripKm = (typeof route.roundTripKm === 'number' && route.roundTripKm > 0) ? route.roundTripKm : outboundKm;
+      const roundTripKm = (typeof route.roundTripKm === 'number' && route.roundTripKm > 0) 
+        ? route.roundTripKm 
+        : parseFloat((outboundKm + returnKm).toFixed(1));
 
       return {
         outboundKm,
@@ -9015,7 +9017,7 @@
         roundTripKm,
         outboundSec,
         returnSec: outboundSec,
-        roundTripSec: outboundSec,
+        roundTripSec: outboundSec * 2,
         stopsCount
       };
     }
@@ -9024,14 +9026,22 @@
     function calculateAllRoutesAggregateMetrics() {
       const validRoutes = (routes || []).filter(r => (Array.isArray(r.pinIds) && r.pinIds.length >= 2) || (Array.isArray(r.stops) && r.stops.length >= 2));
       let totalOutboundKm = 0;
+      let totalReturnKm = 0;
+      let totalRoundTripKm = 0;
       let totalOutboundSec = 0;
+      let totalReturnSec = 0;
+      let totalRoundTripSec = 0;
       let totalStopsCount = 0;
       const uniquePinIdsSet = new Set();
 
       const routeBreakdowns = validRoutes.map(r => {
         const m = calculateSingleRouteMetrics(r);
         totalOutboundKm += m.outboundKm;
+        totalReturnKm += m.returnKm;
+        totalRoundTripKm += m.roundTripKm;
         totalOutboundSec += m.outboundSec;
+        totalReturnSec += m.returnSec;
+        totalRoundTripSec += m.roundTripSec;
         totalStopsCount += m.stopsCount;
         if (Array.isArray(r.pinIds)) {
           r.pinIds.forEach(id => uniquePinIdsSet.add(id));
@@ -9043,17 +9053,18 @@
       });
 
       const totalOutboundKmFixed = parseFloat(totalOutboundKm.toFixed(1));
-      const totalRoundTripKmFixed = totalOutboundKmFixed;
+      const totalReturnKmFixed = parseFloat(totalReturnKm.toFixed(1));
+      const totalRoundTripKmFixed = parseFloat(totalRoundTripKm.toFixed(1));
 
       return {
         routesCount: validRoutes.length,
         totalRoutesCount: (routes || []).length,
         totalOutboundKm: totalOutboundKmFixed,
-        totalReturnKm: totalOutboundKmFixed,
+        totalReturnKm: totalReturnKmFixed,
         totalRoundTripKm: totalRoundTripKmFixed,
         totalOutboundSec,
-        totalReturnSec: totalOutboundSec,
-        totalRoundTripSec: totalOutboundSec,
+        totalReturnSec,
+        totalRoundTripSec,
         totalStopsCount,
         uniquePinsCount: uniquePinIdsSet.size,
         routeBreakdowns
@@ -13268,12 +13279,21 @@
       if (isSharedViewMode && sharedRoutePayload) {
         const isMulti = sharedRoutePayload.isMultiRoute && Array.isArray(sharedRoutePayload.routes);
         const totalStops = (sharedRoutePayload.stops || []).length;
-        let totalKm = sharedRoutePayload.distKm || sharedRoutePayload.outboundKm || sharedRoutePayload.distanceKm || calculateRouteDistanceKm(sharedRoutePayload);
-        if (!totalKm || totalKm <= 0) {
+        let totalRoundTripKm = sharedRoutePayload.roundTripKm;
+        let totalOneWayKm = sharedRoutePayload.distKm || sharedRoutePayload.outboundKm || sharedRoutePayload.distanceKm || calculateRouteDistanceKm(sharedRoutePayload);
+        
+        if (!totalRoundTripKm || totalRoundTripKm <= 0) {
           if (isMulti && Array.isArray(sharedRoutePayload.routes)) {
-            totalKm = sharedRoutePayload.routes.reduce((acc, r) => acc + (calculateSingleRouteMetrics(r).outboundKm || 0), 0);
+            totalRoundTripKm = sharedRoutePayload.routes.reduce((acc, r) => acc + (calculateSingleRouteMetrics(r).roundTripKm || 0), 0);
+            totalOneWayKm = sharedRoutePayload.routes.reduce((acc, r) => acc + (calculateSingleRouteMetrics(r).outboundKm || 0), 0);
+          } else {
+            const m = calculateSingleRouteMetrics(sharedRoutePayload);
+            totalRoundTripKm = m.roundTripKm;
+            totalOneWayKm = m.outboundKm;
           }
         }
+        totalRoundTripKm = parseFloat(totalRoundTripKm.toFixed(1));
+        totalOneWayKm = parseFloat(totalOneWayKm.toFixed(1));
 
         // 1. Total Pins
         const statTotalPins = document.getElementById('stat-total-pins');
@@ -13281,7 +13301,7 @@
 
         // 2. Active Route Stats & Badges
         const statKmEl = document.getElementById('stat-total-km');
-        if (statKmEl) statKmEl.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+        if (statKmEl) statKmEl.textContent = `${totalRoundTripKm.toLocaleString('vi-VN')} km`;
         
         const activeRouteNameEl = document.getElementById('stat-active-route-name');
         if (activeRouteNameEl) activeRouteNameEl.textContent = sharedRoutePayload.name || 'Lộ trình chia sẻ';
@@ -13295,16 +13315,16 @@
           activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500'}"></i> ${isMoto ? 'Xe máy' : 'Ô tô'}`;
         }
 
-        // 3. Cumulative Distance of ALL Routes
+        // 3. Cumulative Distance of ALL Routes in Statistics Tab (Khứ hồi: Lượt đi + Lượt về)
         const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
         if (statTotalAllKm) {
-          statTotalAllKm.textContent = `${totalKm.toLocaleString('vi-VN')} km`;
+          statTotalAllKm.textContent = `${totalRoundTripKm.toLocaleString('vi-VN')} km`;
         }
 
         const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
         if (totalRoutesCountEl) {
           const rCount = isMulti ? sharedRoutePayload.routes.length : 1;
-          totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${rCount}</b> hành trình <span class="opacity-50 mx-1">•</span> Tổng: <b>${totalKm.toLocaleString('vi-VN')} km</b>`;
+          totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${rCount}</b> hành trình <span class="opacity-50 mx-1">•</span> Tổng khứ hồi: <b>${totalRoundTripKm.toLocaleString('vi-VN')} km</b>`;
         }
 
         const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -13337,11 +13357,13 @@
                       <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
                       <span>•</span>
                       <span>${rStopsCount} điểm</span>
+                      <span>•</span>
+                      <span class="text-slate-400">1 chiều: ${m.outboundKm.toLocaleString('vi-VN')} km</span>
                     </div>
                   </div>
                   <div class="text-right shrink-0">
-                    <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
-                    <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Toàn tuyến</span>
+                    <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toLocaleString('vi-VN')} km</span>
+                    <span class="block text-[10px] text-sky-600 dark:text-sky-400 font-semibold">Khứ hồi (Đi + Về)</span>
                   </div>
                 </div>
               `;
@@ -13364,11 +13386,13 @@
                     <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
                     <span>•</span>
                     <span>${totalStops} điểm</span>
+                    <span>•</span>
+                    <span class="text-slate-400">1 chiều: ${m.outboundKm.toLocaleString('vi-VN')} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
-                  <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Toàn tuyến</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toLocaleString('vi-VN')} km</span>
+                  <span class="block text-[10px] text-sky-600 dark:text-sky-400 font-semibold">Khứ hồi (Đi + Về)</span>
                 </div>
               </div>
             `;
@@ -13384,9 +13408,9 @@
 
       // 2. Active Route Stats & Badges
       const active = getActiveRoute();
-      const activeKm = calculateRouteDistanceKm(active);
+      const activeMetrics = calculateSingleRouteMetrics(active);
       const statKmEl = document.getElementById('stat-total-km');
-      if (statKmEl) statKmEl.textContent = `${activeKm.toLocaleString('vi-VN')} km`;
+      if (statKmEl) statKmEl.textContent = `${activeMetrics.roundTripKm.toLocaleString('vi-VN')} km`;
       
       const activeRouteNameEl = document.getElementById('stat-active-route-name');
       if (activeRouteNameEl) activeRouteNameEl.textContent = active ? active.name : 'Chưa có';
@@ -13403,17 +13427,17 @@
         activeModeBadgeEl.innerHTML = `<i class="fa-solid ${isMoto ? 'fa-motorcycle text-amber-500' : 'fa-car text-indigo-500'}"></i> ${isMoto ? 'Xe máy' : 'Ô tô'}`;
       }
 
-      // 3. Cumulative Distance of ALL Routes
+      // 3. Cumulative Distance of ALL Routes in Tab Statistics (Tính cả Lượt Đi + Lượt Về)
       const agg = calculateAllRoutesAggregateMetrics();
 
       const statTotalAllKm = document.getElementById('stat-total-all-routes-km');
       if (statTotalAllKm) {
-        statTotalAllKm.textContent = `${agg.totalOutboundKm.toLocaleString('vi-VN')} km`;
+        statTotalAllKm.textContent = `${agg.totalRoundTripKm.toLocaleString('vi-VN')} km`;
       }
 
       const totalRoutesCountEl = document.getElementById('stat-total-routes-count');
       if (totalRoutesCountEl) {
-        totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${routes.length}</b> hành trình <span class="opacity-50 mx-1">•</span> Tổng: <b>${agg.totalOutboundKm.toLocaleString('vi-VN')} km</b>`;
+        totalRoutesCountEl.innerHTML = `<i class="fa-solid fa-signs-post mr-1"></i><b>${routes.length}</b> hành trình <span class="opacity-50 mx-1">•</span> Tổng khứ hồi: <b>${agg.totalRoundTripKm.toLocaleString('vi-VN')} km</b>`;
       }
 
       const routesBadgeCountEl = document.getElementById('stat-routes-badge-count');
@@ -13424,7 +13448,7 @@
       // 4. Calculate 34 Provinces & Coastline
       calculateVietnamFootprint();
 
-      // 5. Render Breakdown List of EACH Route with individual km
+      // 5. Render Breakdown List of EACH Route with individual km (Lượt đi + Lượt về)
       const breakdownListContainer = document.getElementById('stat-routes-breakdown-list');
       if (breakdownListContainer) {
         if (!routes || routes.length === 0) {
@@ -13450,11 +13474,13 @@
                     <span><i class="fa-solid ${modeIcon}"></i> ${modeName}</span>
                     <span>•</span>
                     <span>${stopsCount} điểm</span>
+                    <span>•</span>
+                    <span class="text-slate-400">1 chiều: ${m.outboundKm.toLocaleString('vi-VN')} km</span>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.outboundKm.toLocaleString('vi-VN')} km</span>
-                  <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Toàn tuyến</span>
+                  <span class="font-black text-sm sm:text-base text-indigo-600 dark:text-indigo-400">${m.roundTripKm.toLocaleString('vi-VN')} km</span>
+                  <span class="block text-[10px] text-sky-600 dark:text-sky-400 font-semibold">Khứ hồi (Đi + Về)</span>
                   ${!isCurrentActive ? `
                     <button onclick="handleSelectRoute('${r.id}'); switchTab('route');" class="block text-[11px] text-sky-600 dark:text-sky-400 font-bold hover:underline mt-0.5">
                       Xem lộ trình
