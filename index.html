@@ -2676,20 +2676,11 @@
           <!-- Video Aspect Ratio (Vertical 9:16 vs Landscape 16:9 vs Square 1:1) -->
           <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-rose-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Khung hình video: Dọc 9:16 (TikTok/Reels/Shorts) hoặc Ngang 16:9 (YouTube)">
             <i class="fa-solid fa-mobile-screen-button text-[11px] sm:text-xs text-rose-400 shrink-0"></i>
-            <span class="text-[10px] sm:text-[11px] font-bold text-rose-300 hidden xs:inline">Khung:</span>
+            <span class="text-[10px] sm:text-[11px] font-bold text-rose-300 hidden xs:inline">Khung hình:</span>
             <select id="cinema-aspect-select" onchange="changeCinemaAspectRatio(this.value)" class="bg-transparent text-[11px] sm:text-xs font-black text-rose-200 outline-none cursor-pointer">
-              <option value="9:16" class="bg-slate-900 text-rose-300" selected>📱 Dọc 9:16</option>
-              <option value="16:9" class="bg-slate-900 text-white">💻 Ngang 16:9</option>
-              <option value="1:1" class="bg-slate-900 text-white">⏹️ Vuông 1:1</option>
-            </select>
-          </div>
-
-          <!-- Video Quality / Turbo Export Selector -->
-          <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-amber-500/50 rounded-xl px-2 sm:px-2.5 py-1.5 shadow-inner shrink-0" title="Chất lượng và tốc độ xuất video">
-            <i class="fa-solid fa-gauge-high text-[11px] sm:text-xs text-amber-400 shrink-0"></i>
-            <select id="cinema-quality-select" onchange="changeCinemaExportQuality(this.value)" class="bg-transparent text-[11px] sm:text-xs font-black text-amber-300 outline-none cursor-pointer">
-              <option value="1080p" class="bg-slate-900 text-white" selected>⚡ 1080p (Nét cao)</option>
-              <option value="720p" class="bg-slate-900 text-amber-400">🚀 720p Turbo (Siêu nhanh)</option>
+              <option value="9:16" class="bg-slate-900 text-rose-300" selected>📱 Dọc 9:16 (Shorts/Reels/TikTok)</option>
+              <option value="16:9" class="bg-slate-900 text-white">💻 Ngang 16:9 (YouTube/HD)</option>
+              <option value="1:1" class="bg-slate-900 text-white">⏹️ Vuông 1:1 (Instagram)</option>
             </select>
           </div>
 
@@ -10335,106 +10326,8 @@
     let cinemaCameraMode = 'follow'; // 'follow', 'cinematic', 'overview'
     let cinemaZoomSetting = 'auto'; // 'auto', '15', '13', '11'
     let cinemaTiltAngle = 35; // 35 (mild 3D tilt, steady north-up), 45 (deep tilt), 0 (2D flat)
-    let cinemaExportQuality = '1080p'; // '1080p' (Full HD Crisp) or '720p' (Turbo Fast Export)
     const cinemaTileCache = new Map();
     const cinemaPinImageCache = new Map();
-
-    // High-Performance Route Geometry & Metric Memoization Cache (Eliminates all per-frame trigonometry & allocations)
-    let cinemaGeometryCache = {
-      key: null,
-      pathCoords: null,
-      cumulativeMeters: null, // Float64Array
-      totalMeters: 0,
-      totalKm: 0,
-      mercatorByZoom: new Map(), // zoom => Array<{x, y}>
-      provincesInfo: { list: [], count: 0, str: '' },
-      metrics: {
-        outboundKm: 0,
-        returnKm: 0,
-        roundTripKm: 0,
-        outboundSec: 0,
-        returnSec: 0,
-        roundTripSec: 0
-      }
-    };
-
-    function ensureCinemaGeometryCache(pathCoords, targetRouteId) {
-      if (!pathCoords || pathCoords.length < 2) return null;
-      const key = `${targetRouteId}_${pathCoords.length}_${pathCoords[0].lat.toFixed(5)}_${pathCoords[pathCoords.length - 1].lat.toFixed(5)}`;
-      if (cinemaGeometryCache.key === key && cinemaGeometryCache.pathCoords === pathCoords) {
-        return cinemaGeometryCache;
-      }
-
-      const len = pathCoords.length;
-      const cumulativeMeters = new Float64Array(len);
-      let runningMeters = 0;
-      cumulativeMeters[0] = 0;
-
-      for (let i = 0; i < len - 1; i++) {
-        const p1 = pathCoords[i];
-        const p2 = pathCoords[i + 1];
-        const d = getHaversineDistance(p1.lat, p1.lng, p2.lat, p2.lng);
-        runningMeters += d;
-        cumulativeMeters[i + 1] = runningMeters;
-      }
-
-      const totalKm = parseFloat((runningMeters / 1000).toFixed(1));
-
-      // Memoize provinces & route metrics
-      const activePins = getCinemaSelectedPins();
-      const provInfo = getProvincesForPins(activePins);
-
-      const active = getCinemaSelectedRoute();
-      const isMultiCinema = targetRouteId === 'all';
-      const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
-      const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
-
-      let outboundKm = 0;
-      if (aggCinema && aggCinema.totalOutboundKm > 0) outboundKm = aggCinema.totalOutboundKm;
-      else if (mCinema && mCinema.outboundKm > 0) outboundKm = mCinema.outboundKm;
-      else if (active && active.distanceKm > 0) outboundKm = active.distanceKm;
-      else if (active && active.distKm > 0) outboundKm = active.distKm;
-      else outboundKm = totalKm > 0 ? totalKm : 1.0;
-
-      let returnKm = (aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : 0)) || outboundKm;
-      let roundTripKm = (aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : 0)) || parseFloat((outboundKm * 2).toFixed(1));
-
-      let outboundSec = aggCinema ? aggCinema.totalOutboundSec : (mCinema ? mCinema.outboundSec : Math.round(outboundKm * 75));
-      let returnSec = aggCinema ? aggCinema.totalReturnSec : (mCinema ? mCinema.returnSec : Math.round(returnKm * 75));
-      let roundTripSec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(roundTripKm * 75));
-
-      cinemaGeometryCache = {
-        key,
-        pathCoords,
-        cumulativeMeters,
-        totalMeters: runningMeters,
-        totalKm,
-        mercatorByZoom: new Map(),
-        provincesInfo: provInfo,
-        metrics: {
-          outboundKm,
-          returnKm,
-          roundTripKm,
-          outboundSec,
-          returnSec,
-          roundTripSec
-        }
-      };
-
-      return cinemaGeometryCache;
-    }
-
-    function getCachedMercatorPoints(pathCoords, zoom) {
-      if (!cinemaGeometryCache.mercatorByZoom) {
-        cinemaGeometryCache.mercatorByZoom = new Map();
-      }
-      if (cinemaGeometryCache.mercatorByZoom.has(zoom)) {
-        return cinemaGeometryCache.mercatorByZoom.get(zoom);
-      }
-      const pts = pathCoords.map(pt => latLngToMercatorWorld(pt.lat, pt.lng, zoom));
-      cinemaGeometryCache.mercatorByZoom.set(zoom, pts);
-      return pts;
-    }
 
     async function preloadCinemaPinImages(pinsList) {
       if (!Array.isArray(pinsList)) return;
@@ -10747,7 +10640,7 @@
         if (pending === 0) {
           finish();
         } else {
-          setTimeout(finish, 1200); // 1.2s fast fallback
+          setTimeout(finish, 1800); // 1.8s fast fallback
         }
       });
     }
@@ -10788,41 +10681,24 @@
       }
     }
 
-    let cinemaAspectRatio = '9:16'; // '9:16' (Shorts/TikTok/Reels), '16:9' (YouTube/HD), '1:1' (Instagram)
+    let cinemaAspectRatio = '16:9'; // '16:9' (1920x1080 Full HD by default), '9:16' (1080x1920), '1:1' (1080x1080)
 
-    function updateCinemaCanvasDimensions() {
+    function changeCinemaAspectRatio(ratio) {
+      cinemaAspectRatio = ratio || '16:9';
       const canvas = document.getElementById('cinema-canvas');
       if (!canvas) return;
 
-      const is1080 = cinemaExportQuality === '1080p';
       if (cinemaAspectRatio === '9:16') {
-        canvas.width = is1080 ? 1080 : 720;
-        canvas.height = is1080 ? 1920 : 1280;
+        canvas.width = 1080;
+        canvas.height = 1920;
       } else if (cinemaAspectRatio === '1:1') {
-        canvas.width = is1080 ? 1080 : 720;
-        canvas.height = is1080 ? 1080 : 720;
+        canvas.width = 1080;
+        canvas.height = 1080;
       } else {
         // 16:9
-        canvas.width = is1080 ? 1920 : 1280;
-        canvas.height = is1080 ? 1080 : 720;
+        canvas.width = 1920;
+        canvas.height = 1080;
       }
-    }
-
-    function changeCinemaExportQuality(quality) {
-      cinemaExportQuality = quality || '1080p';
-      updateCinemaCanvasDimensions();
-      const qSelect = document.getElementById('cinema-quality-select');
-      if (qSelect) qSelect.value = cinemaExportQuality;
-      const pathCoords = getInterpolatedRouteCoords();
-      if (pathCoords && pathCoords.length >= 2) {
-        drawCinemaFrame(cinemaProgress, pathCoords);
-      }
-      showToast(`⚡ Chế độ xuất video: ${cinemaExportQuality === '1080p' ? 'Full HD 1080p (Sắc nét)' : 'HD 720p Turbo (Siêu nhanh / Nhẹ máy)'}`, 'info');
-    }
-
-    function changeCinemaAspectRatio(ratio) {
-      cinemaAspectRatio = ratio || '9:16';
-      updateCinemaCanvasDimensions();
 
       const exportBtnText = document.getElementById('export-video-btn-text');
       if (exportBtnText && !isRecordingVideo) {
@@ -10840,18 +10716,15 @@
 
       const pathCoords = getInterpolatedRouteCoords();
       if (pathCoords && pathCoords.length >= 2) {
-        const canvas = document.getElementById('cinema-canvas');
-        if (canvas) {
-          preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
-            drawCinemaFrame(cinemaProgress, pathCoords);
-          });
-        }
+        preloadCinemaTiles(cinemaMapStyle, pathCoords, canvas.width, canvas.height).then(() => {
+          drawCinemaFrame(cinemaProgress, pathCoords);
+        });
       }
       
       const ratioNames = {
-        '16:9': '💻 Ngang 16:9 (YouTube / HD)',
-        '9:16': '📱 Dọc 9:16 (Shorts / Reels / TikTok)',
-        '1:1': '⏹️ Vuông 1:1 (Instagram)'
+        '16:9': '💻 Ngang 16:9 (1920x1080 - YouTube / HD)',
+        '9:16': '📱 Dọc 9:16 (1080x1920 - Shorts / Reels / TikTok)',
+        '1:1': '⏹️ Vuông 1:1 (1080x1080 - Instagram)'
       };
       showToast(`Đã chuyển khung hình video: ${ratioNames[cinemaAspectRatio] || ratio}`, 'info');
     }
@@ -11001,20 +10874,19 @@
       const selectEl = document.getElementById('cinema-map-style-select');
       if (selectEl) selectEl.value = 'satellite';
 
-      // Ensure aspect ratio and quality settings are applied
-      cinemaAspectRatio = cinemaAspectRatio || '9:16';
+      // Default aspect ratio: 16:9 (Landscape HD)
+      cinemaAspectRatio = '16:9';
       const aspectSelect = document.getElementById('cinema-aspect-select');
-      if (aspectSelect) aspectSelect.value = cinemaAspectRatio;
+      if (aspectSelect) aspectSelect.value = '16:9';
 
-      const qSelect = document.getElementById('cinema-quality-select');
-      if (qSelect) qSelect.value = cinemaExportQuality;
-
-      updateCinemaCanvasDimensions();
+      const canvas = document.getElementById('cinema-canvas');
+      if (canvas) {
+        canvas.width = 1920;
+        canvas.height = 1080;
+      }
 
       const exportBtnText = document.getElementById('export-video-btn-text');
-      if (exportBtnText) {
-        exportBtnText.textContent = cinemaAspectRatio === '9:16' ? 'Ghi Video Dọc (9:16)' : (cinemaAspectRatio === '1:1' ? 'Ghi Video Vuông (1:1)' : 'Ghi & Tải Video (16:9)');
-      }
+      if (exportBtnText) exportBtnText.textContent = 'Ghi & Tải Video (16:9)';
 
       const modeSelect = document.getElementById('cinema-cam-mode-select');
       if (modeSelect) modeSelect.value = cinemaCameraMode;
@@ -11162,18 +11034,12 @@
       if (!cinemaLastTimestamp) {
         cinemaLastTimestamp = now;
       }
-
-      if (isRecordingVideo) {
-        // Deterministic constant frame step for 30 FPS video export (eliminates lag, jitter & frame drops!)
-        const targetDurationSec = Math.max(8, 16 / Math.max(cinemaSpeed, 0.25));
-        const totalVideoFrames = Math.max(120, Math.round(targetDurationSec * 30));
-        cinemaProgress += 1 / totalVideoFrames;
-      } else {
-        const dt = Math.min((now - cinemaLastTimestamp) / 1000, 0.05); // clamped delta time in seconds
-        const baseSpeed = 1 / 16;
-        cinemaProgress += baseSpeed * dt * cinemaSpeed;
-      }
+      const dt = Math.min((now - cinemaLastTimestamp) / 1000, 0.05); // clamped delta time in seconds
       cinemaLastTimestamp = now;
+
+      // Base: Complete route simulation in ~16s at 1x speed
+      const baseSpeed = 1 / 16;
+      cinemaProgress += baseSpeed * dt * cinemaSpeed;
 
       if (cinemaProgress >= 1.0) {
         cinemaProgress = 1.0;
@@ -11184,7 +11050,7 @@
         if (playIcon) playIcon.className = 'fa-solid fa-rotate-left';
         if (playText) playText.textContent = 'Phát lại';
 
-        if (!isRecordingVideo && typeof confetti === 'function') {
+        if (typeof confetti === 'function') {
           confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
         }
       }
@@ -11226,18 +11092,14 @@
       const w = canvas.width;
       const h = canvas.height;
 
-      // Fast Anti-Aliasing
+      // Enable High-Quality Anti-Aliasing & Image Filtering
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'medium';
+      ctx.imageSmoothingQuality = 'high';
 
       const vp = getDynamicCinemaViewport(pathCoords, progress, w, h);
       if (!vp) return;
 
-      const uiScale = w / 1080; // Scale UI graphics proportionally
-
-      // Ensure geometry memoization cache (0 per-frame trigonometry allocations)
-      const geoCache = ensureCinemaGeometryCache(pathCoords, cinemaTargetRouteId);
-      const worldRoutePoints = getCachedMercatorPoints(pathCoords, vp.zoom);
+      const uiScale = w / 1080; // Scale UI graphics proportionally for Full HD 1080p
 
       // Determine 3D Perspective Tilt Parameters (Steady Camera - North-Up, No Map Rotation)
       const isTilt = cinemaTiltAngle > 0 && cinemaCameraMode !== 'overview';
@@ -11285,10 +11147,10 @@
         const endX = (vp.maxTx + 1) * 256;
         const startY = vp.minTy * 256;
         const endY = (vp.maxTy + 1) * 256;
-        for (let x = startX; x <= endX; x += 60) {
+        for (let x = startX; x <= endX; x += 50) {
           ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, endY); ctx.stroke();
         }
-        for (let y = startY; y <= endY; y += 60) {
+        for (let y = startY; y <= endY; y += 50) {
           ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(endX, y); ctx.stroke();
         }
       } else {
@@ -11303,80 +11165,79 @@
       }
 
       // 3. Draw Road Polyline in Map Space
-      const numWorldPts = worldRoutePoints.length;
-      if (numWorldPts >= 2) {
-        // Inactive track (dark outline)
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.lineWidth = 9 * uiScale;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        worldRoutePoints.forEach((pt, i) => {
-          if (i === 0) ctx.moveTo(pt.x, pt.y);
-          else ctx.lineTo(pt.x, pt.y);
-        });
-        ctx.stroke();
+      const worldRoutePoints = pathCoords.map(pt => latLngToMercatorWorld(pt.lat, pt.lng, vp.zoom));
 
-        ctx.beginPath();
-        ctx.strokeStyle = cinemaMapStyle === 'dark' ? '#334155' : '#64748b';
-        ctx.lineWidth = 4.5 * uiScale;
-        worldRoutePoints.forEach((pt, i) => {
-          if (i === 0) ctx.moveTo(pt.x, pt.y);
-          else ctx.lineTo(pt.x, pt.y);
-        });
-        ctx.stroke();
+      // Inactive track (dark outline)
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.lineWidth = 9 * uiScale;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      worldRoutePoints.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
 
-        // Active traversed glowing route
-        const currentIdxFloat = progress * (numWorldPts - 1);
-        const currentIdx = Math.floor(currentIdxFloat);
-        const nextIdx = Math.min(currentIdx + 1, numWorldPts - 1);
-        const segmentT = currentIdxFloat - currentIdx;
+      ctx.beginPath();
+      ctx.strokeStyle = cinemaMapStyle === 'dark' ? '#334155' : '#64748b';
+      ctx.lineWidth = 4.5 * uiScale;
+      worldRoutePoints.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
 
-        const pCur = worldRoutePoints[currentIdx];
-        const pNxt = worldRoutePoints[nextIdx];
-        const curCarWorldX = pCur.x + (pNxt.x - pCur.x) * segmentT;
-        const curCarWorldY = pCur.y + (pNxt.y - pCur.y) * segmentT;
+      // Active traversed glowing route
+      const currentIdxFloat = progress * (worldRoutePoints.length - 1);
+      const currentIdx = Math.floor(currentIdxFloat);
+      const nextIdx = Math.min(currentIdx + 1, worldRoutePoints.length - 1);
+      const segmentT = currentIdxFloat - currentIdx;
 
-        // Glow line
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(99, 102, 241, 0.65)';
-        ctx.lineWidth = 10 * uiScale;
-        for (let i = 0; i <= currentIdx; i++) {
-          if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
-          else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
-        }
-        ctx.lineTo(curCarWorldX, curCarWorldY);
-        ctx.stroke();
+      const pCur = worldRoutePoints[currentIdx];
+      const pNxt = worldRoutePoints[nextIdx];
+      const curCarWorldX = pCur.x + (pNxt.x - pCur.x) * segmentT;
+      const curCarWorldY = pCur.y + (pNxt.y - pCur.y) * segmentT;
 
-        // Sharp bright neon trail
-        ctx.beginPath();
-        ctx.strokeStyle = '#0ea5e9';
-        ctx.lineWidth = 4.5 * uiScale;
-        for (let i = 0; i <= currentIdx; i++) {
-          if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
-          else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
-        }
-        ctx.lineTo(curCarWorldX, curCarWorldY);
-        ctx.stroke();
+      // Glow line
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.65)';
+      ctx.lineWidth = 10 * uiScale;
+      for (let i = 0; i <= currentIdx; i++) {
+        if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+        else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
       }
+      ctx.lineTo(curCarWorldX, curCarWorldY);
+      ctx.stroke();
+
+      // Sharp bright neon trail
+      ctx.beginPath();
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 4.5 * uiScale;
+      for (let i = 0; i <= currentIdx; i++) {
+        if (i === 0) ctx.moveTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+        else ctx.lineTo(worldRoutePoints[i].x, worldRoutePoints[i].y);
+      }
+      ctx.lineTo(curCarWorldX, curCarWorldY);
+      ctx.stroke();
 
       ctx.restore(); // Exit 3D map tile coordinate space
 
       // 4. Atmospheric Horizon Sky Effect (For 3D Tilt View)
       if (isTilt) {
-        const horizonH = 140 * uiScale;
+        const horizonH = 160 * uiScale;
         const horizonGrad = ctx.createLinearGradient(0, 0, 0, horizonH);
         if (cinemaMapStyle === 'satellite') {
           horizonGrad.addColorStop(0, 'rgba(5, 12, 28, 0.96)');
-          horizonGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.25)');
+          horizonGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.3)');
           horizonGrad.addColorStop(1, 'rgba(5, 12, 28, 0)');
         } else if (cinemaMapStyle === 'dark') {
           horizonGrad.addColorStop(0, 'rgba(9, 13, 22, 0.98)');
-          horizonGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.2)');
+          horizonGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.25)');
           horizonGrad.addColorStop(1, 'rgba(9, 13, 22, 0)');
         } else {
           horizonGrad.addColorStop(0, 'rgba(203, 213, 225, 0.95)');
-          horizonGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.35)');
+          horizonGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.4)');
           horizonGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         }
         ctx.fillStyle = horizonGrad;
@@ -11384,8 +11245,8 @@
 
         // Subtle horizon line accent
         ctx.beginPath();
-        ctx.moveTo(0, 6 * uiScale);
-        ctx.lineTo(w, 6 * uiScale);
+        ctx.moveTo(0, 8 * uiScale);
+        ctx.lineTo(w, 8 * uiScale);
         ctx.strokeStyle = cinemaMapStyle === 'dark' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 1 * uiScale;
         ctx.stroke();
@@ -11398,26 +11259,17 @@
       let closestDist = 99999;
       let closestStopIndex = -1;
 
-      const currentIdxFloat = progress * (worldRoutePoints.length - 1);
-      const currentIdx = Math.floor(currentIdxFloat);
-      const nextIdx = Math.min(currentIdx + 1, worldRoutePoints.length - 1);
-      const segmentT = currentIdxFloat - currentIdx;
-      const pCur = worldRoutePoints[currentIdx] || worldRoutePoints[0];
-      const pNxt = worldRoutePoints[nextIdx] || pCur;
-      const curCarWorldX = pCur.x + (pNxt.x - pCur.x) * segmentT;
-      const curCarWorldY = pCur.y + (pNxt.y - pCur.y) * segmentT;
-      const carScr = worldToScreen(curCarWorldX, curCarWorldY);
-
       activePins.forEach((pin, index) => {
         const wPt = latLngToMercatorWorld(pin.lat, pin.lng, vp.zoom);
         const pt = worldToScreen(wPt.x, wPt.y);
 
+        const carScr = worldToScreen(curCarWorldX, curCarWorldY);
         const distToCar = Math.hypot(pt.x - carScr.x, pt.y - carScr.y);
 
         // Progress milestone for this pin (0.0 to 1.0)
         const milestoneP = numPins > 1 ? (index / (numPins - 1)) : 0.5;
         const progressDiff = Math.abs(progress - milestoneP);
-        const isApproachingOrCurrent = (distToCar < (180 * uiScale)) || (numPins > 1 && progressDiff <= (0.7 / numPins));
+        const isApproachingOrCurrent = (distToCar < (170 * uiScale)) || (numPins > 1 && progressDiff <= (0.65 / numPins));
 
         if (isApproachingOrCurrent && distToCar < closestDist) {
           closestDist = distToCar;
@@ -11428,7 +11280,7 @@
         const isPassed = numPins > 1 ? (milestoneP <= (progress + 0.03)) : false;
 
         // Only draw on canvas if within viewport margins
-        if (pt.x >= -160 && pt.x <= w + 160 && pt.y >= 10 && pt.y <= h + 160) {
+        if (pt.x >= -140 && pt.x <= w + 140 && pt.y >= 10 && pt.y <= h + 140) {
           // Glow ground pin
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, (isPassed ? 14 : 11) * uiScale, 0, Math.PI * 2);
@@ -11445,6 +11297,7 @@
 
           let photoImg = cinemaPinImageCache.get(pin.id) || cinemaPinImageCache.get(String(pin.id)) || (pin.photo ? cinemaPinImageCache.get(pin.photo) : null);
           if (!photoImg && pin.photo) {
+            // Lazy load and cache for immediate next frames
             const lazyImg = new Image();
             if (!pin.photo.startsWith('data:') && !pin.photo.startsWith('blob:')) {
               lazyImg.crossOrigin = 'anonymous';
@@ -11462,114 +11315,90 @@
 
           if (photoImg) {
             // High-Definition Photo Billboard Marker on Map (Crisp & Enlarged)
-            const photoW = 68 * uiScale;
-            const photoH = 68 * uiScale;
+            const photoW = 60 * uiScale;
+            const photoH = 60 * uiScale;
             const photoX = pt.x - (photoW / 2);
-            const photoY = pt.y - photoH - (26 * uiScale);
+            const photoY = pt.y - photoH - (24 * uiScale);
 
             // Stem line down to pin ground point
             ctx.beginPath();
             ctx.moveTo(pt.x, pt.y);
             ctx.lineTo(pt.x, photoY + photoH);
             ctx.strokeStyle = isPassed ? '#10b981' : '#ffffff';
-            ctx.lineWidth = 2.4 * uiScale;
+            ctx.lineWidth = 2 * uiScale;
             ctx.stroke();
 
             // Photo frame background and double border
-            ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
-            ctx.strokeStyle = isPassed ? '#10b981' : (pin.color || '#38bdf8');
-            ctx.lineWidth = 2.8 * uiScale;
-            roundRect(ctx, photoX, photoY, photoW, photoH, 12 * uiScale, true, true);
-
-            // Draw cropped square image with aspect-fill & high quality smoothing
             ctx.save();
-            ctx.imageSmoothingEnabled = true;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+            ctx.shadowBlur = 10 * uiScale;
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = isPassed ? '#10b981' : (pin.color || '#38bdf8');
+            ctx.lineWidth = 2.5 * uiScale;
+            roundRect(ctx, photoX, photoY, photoW, photoH, 10 * uiScale, true, true);
+            ctx.restore();
+
+            // Draw cropped square image
+            ctx.save();
             ctx.imageSmoothingQuality = 'high';
             ctx.beginPath();
-            const innerPX = photoX + (2.5 * uiScale);
-            const innerPY = photoY + (2.5 * uiScale);
-            const innerPW = photoW - (5 * uiScale);
-            const innerPH = photoH - (5 * uiScale);
-            roundRect(ctx, innerPX, innerPY, innerPW, innerPH, 10 * uiScale, false, false);
+            roundRect(ctx, photoX + (2 * uiScale), photoY + (2 * uiScale), photoW - (4 * uiScale), photoH - (4 * uiScale), 8 * uiScale, false, false);
             ctx.clip();
-
-            if (photoImg.naturalWidth > 0 && photoImg.naturalHeight > 0) {
-              const imgAspect = photoImg.naturalWidth / photoImg.naturalHeight;
-              const targetAspect = innerPW / innerPH;
-              let sx = 0, sy = 0, sw = photoImg.naturalWidth, sh = photoImg.naturalHeight;
-              if (imgAspect > targetAspect) {
-                sw = photoImg.naturalHeight * targetAspect;
-                sx = (photoImg.naturalWidth - sw) / 2;
-              } else {
-                sh = photoImg.naturalWidth / targetAspect;
-                sy = (photoImg.naturalHeight - sh) / 2;
-              }
-              ctx.drawImage(photoImg, sx, sy, sw, sh, innerPX, innerPY, innerPW, innerPH);
-            } else {
-              ctx.drawImage(photoImg, innerPX, innerPY, innerPW, innerPH);
-            }
+            ctx.drawImage(photoImg, photoX + (2 * uiScale), photoY + (2 * uiScale), photoW - (4 * uiScale), photoH - (4 * uiScale));
             ctx.restore();
 
             // Badge number on top-left of photo
-            const badgeW = 20 * uiScale;
+            const badgeW = 18 * uiScale;
             const badgeX = photoX - (4 * uiScale);
             const badgeY = photoY - (4 * uiScale);
             ctx.beginPath();
             ctx.arc(badgeX + (badgeW / 2), badgeY + (badgeW / 2), badgeW / 2, 0, Math.PI * 2);
             ctx.fillStyle = isPassed ? '#10b981' : (pin.color || '#6366f1');
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2 * uiScale;
+            ctx.lineWidth = 1.8 * uiScale;
             ctx.fill();
             ctx.stroke();
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${index + 1}`, badgeX + (badgeW / 2), badgeY + (badgeW / 2));
 
             // Title Pill below photo
             const labelText = pin.title;
-            ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = Math.min(textMetrics.width + (18 * uiScale), 170 * uiScale);
-            const pillH = 22 * uiScale;
+            const pillW = Math.min(textMetrics.width + (16 * uiScale), 160 * uiScale);
+            const pillH = 20 * uiScale;
             const pillX = pt.x - (pillW / 2);
-            const pillY = photoY + photoH + (4 * uiScale);
+            const pillY = photoY + photoH + (3 * uiScale);
 
-            ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.95)' : 'rgba(56, 189, 248, 0.95)';
-            ctx.lineWidth = 1.4 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 7 * uiScale, true, true);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : 'rgba(56, 189, 248, 0.9)';
+            ctx.lineWidth = 1.2 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 6 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             let dispText = labelText;
-            if (dispText.length > 20) dispText = dispText.substring(0, 18) + '..';
+            if (dispText.length > 18) dispText = dispText.substring(0, 16) + '..';
             ctx.fillText(dispText, pt.x, pillY + (pillH / 2));
           } else {
             // Standard Upright Billboard Label Pill (no photo)
             const labelText = `${index + 1}. ${pin.title}`;
-            ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = textMetrics.width + (22 * uiScale);
-            const pillH = 28 * uiScale;
+            const pillW = textMetrics.width + (20 * uiScale);
+            const pillH = 26 * uiScale;
             const pillX = pt.x - (pillW / 2);
-            const pillY = pt.y - (40 * uiScale);
+            const pillY = pt.y - (38 * uiScale);
 
-            // Stem line down to pin ground point
-            ctx.beginPath();
-            ctx.moveTo(pt.x, pt.y);
-            ctx.lineTo(pt.x, pillY + pillH);
-            ctx.strokeStyle = isPassed ? '#10b981' : '#ffffff';
-            ctx.lineWidth = 2 * uiScale;
-            ctx.stroke();
-
-            ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.95)' : (pin.color || 'rgba(99, 102, 241, 0.95)');
-            ctx.lineWidth = 1.6 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 8 * uiScale, true, true);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : (pin.color || 'rgba(99, 102, 241, 0.9)');
+            ctx.lineWidth = 1.4 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 7 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
@@ -11579,103 +11408,28 @@
         }
       });
 
-      // 6. Draw Traveling Vehicle (Glowing Marker with Smooth Headlight Beams)
-      ctx.save();
-      ctx.translate(carScr.x, carScr.y);
-      ctx.rotate(vp.headingAngle);
-
-      // Forward Headlight Beam
-      const beamGrad = ctx.createLinearGradient(0, 0, 90 * uiScale, 0);
-      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.6)');
-      beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-      ctx.fillStyle = beamGrad;
-      ctx.beginPath();
-      ctx.moveTo(10 * uiScale, 0);
-      ctx.lineTo(90 * uiScale, -26 * uiScale);
-      ctx.lineTo(90 * uiScale, 26 * uiScale);
-      ctx.closePath();
-      ctx.fill();
-
-      // Halo pulse
-      ctx.beginPath();
-      ctx.arc(0, 0, 26 * uiScale, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.45)';
-      ctx.fill();
-
-      // Vehicle base circle
-      ctx.beginPath();
-      ctx.arc(0, 0, 14 * uiScale, 0, Math.PI * 2);
-      ctx.fillStyle = '#0284c7';
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2.8 * uiScale;
-      ctx.fill();
-      ctx.stroke();
-
-      // Arrow indicator pointing forward
-      ctx.beginPath();
-      ctx.moveTo(9 * uiScale, 0);
-      ctx.lineTo(-5 * uiScale, -7 * uiScale);
-      ctx.lineTo(-2 * uiScale, 0);
-      ctx.lineTo(-5 * uiScale, 7 * uiScale);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.restore();
-
-      // 7. Instant Metric Lookup from Geometry Cache (O(1) calculation)
-      const m = geoCache ? geoCache.metrics : { outboundKm: 1.0, returnKm: 1.0, roundTripKm: 2.0, outboundSec: 75, returnSec: 75, roundTripSec: 150 };
-      const provInfo = geoCache ? geoCache.provincesInfo : { list: [], count: 0, str: '' };
-
-      let curJourneyKm = m.outboundKm;
-      let curJourneySec = m.outboundSec;
-      if (cinemaJourneyMode === 'return') {
-        curJourneyKm = m.returnKm;
-        curJourneySec = m.returnSec;
-      } else if (cinemaJourneyMode === 'roundtrip') {
-        curJourneyKm = m.roundTripKm;
-        curJourneySec = m.roundTripSec;
-      }
-
-      const cTimeStr = formatTravelTime(curJourneySec);
-      const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
-
-      const isPortrait = cinemaAspectRatio === '9:16' || (h > w);
-      const isSquare = cinemaAspectRatio === '1:1' || (Math.abs(w - h) < 60);
-
-      const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
-      const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
-      const active = getCinemaSelectedRoute();
-      const routeDisplayName = cinemaTargetRouteId === 'all' ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
-
-      // 8. Render Stop Arrival Card directly on Canvas (High-Definition, recorded in video)
+      // Render Stop Arrival Card directly on Canvas (High-Definition, recorded in video)
       if (closestStop) {
         const stopIdx = closestStopIndex >= 0 ? closestStopIndex : activePins.findIndex(p => p.id === closestStop.id);
         let stopPhotoImg = cinemaPinImageCache.get(closestStop.id) || cinemaPinImageCache.get(String(closestStop.id)) || (closestStop.photo ? cinemaPinImageCache.get(closestStop.photo) : null);
         const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
 
-        let cardX, cardY, cardW, cardH;
-        if (isPortrait) {
-          cardX = 20 * uiScale;
-          cardY = 176 * uiScale; // Positioned neatly under 9:16 Top Telemetry bar
-          cardW = w - (40 * uiScale);
-          cardH = 104 * uiScale;
-        } else if (isSquare) {
-          cardX = 20 * uiScale;
-          cardY = 120 * uiScale;
-          cardW = w - (40 * uiScale);
-          cardH = 100 * uiScale;
-        } else {
-          cardX = 24 * uiScale;
-          cardY = 114 * uiScale;
-          cardW = Math.min(540 * uiScale, w * 0.44);
-          cardH = 104 * uiScale;
-        }
+        // Sleek floating Stop Showcase Card below Top HUD
+        const isPortrait = h > w;
+        const cardW = isPortrait ? (w - (36 * uiScale)) : Math.min(420 * uiScale, w * 0.44);
+        const cardH = 92 * uiScale;
+        const cardX = 18 * uiScale;
+        const cardY = 100 * uiScale;
 
         // Card background
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = 14 * uiScale;
         ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
-        ctx.lineWidth = 1.8 * uiScale;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+        ctx.lineWidth = 1.6 * uiScale;
         roundRect(ctx, cardX, cardY, cardW, cardH, 16 * uiScale, true, true);
+        ctx.restore();
 
         let textStartX = cardX + (16 * uiScale);
 
@@ -11693,69 +11447,32 @@
             const imgY = cardY + (8 * uiScale);
 
             ctx.save();
-            ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            roundRect(ctx, imgX, imgY, imgSize, imgSize, 12 * uiScale, false, false);
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, false);
             ctx.clip();
-            if (stopPhotoImg.naturalWidth > 0 && stopPhotoImg.naturalHeight > 0) {
-              const imgAspect = stopPhotoImg.naturalWidth / stopPhotoImg.naturalHeight;
-              let sx = 0, sy = 0, sw = stopPhotoImg.naturalWidth, sh = stopPhotoImg.naturalHeight;
-              if (imgAspect > 1) {
-                sw = stopPhotoImg.naturalHeight;
-                sx = (stopPhotoImg.naturalWidth - sw) / 2;
-              } else {
-                sh = stopPhotoImg.naturalWidth;
-                sy = (stopPhotoImg.naturalHeight - sh) / 2;
-              }
-              ctx.drawImage(stopPhotoImg, sx, sy, sw, sh, imgX, imgY, imgSize, imgSize);
-            } else {
-              ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
-            }
+            ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
             ctx.restore();
 
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2 * uiScale;
-            roundRect(ctx, imgX, imgY, imgSize, imgSize, 12 * uiScale, false, true);
-
-            // Badge number on top-left of stop thumbnail
-            const sBadgeW = 20 * uiScale;
-            ctx.beginPath();
-            ctx.arc(imgX + (10 * uiScale), imgY + (10 * uiScale), sBadgeW / 2, 0, Math.PI * 2);
-            ctx.fillStyle = '#0ea5e9';
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.6 * uiScale;
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(`${stopIdx + 1}`, imgX + (10 * uiScale), imgY + (10 * uiScale));
+            ctx.lineWidth = 1.8 * uiScale;
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, true);
 
             textStartX = imgX + imgSize + (14 * uiScale);
           }
         }
 
-        const availTextW = cardX + cardW - textStartX - (16 * uiScale);
+        const availTextW = cardX + cardW - textStartX - (14 * uiScale);
 
         // Line 1: Stop Number & Category & Rating
         ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx + 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (14 * uiScale));
-
-        if (closestStop.rating) {
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#fde047';
-          ctx.fillText(`⭐ ${closestStop.rating}/5`, cardX + cardW - (16 * uiScale), cardY + (14 * uiScale));
-          ctx.textAlign = 'left';
-        }
+        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx + 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (12 * uiScale));
 
         // Line 2: Stop Title (High contrast crisp white)
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(15.5 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(14.5 * uiScale)}px sans-serif`;
         let dispTitle = closestStop.title || `Điểm #${stopIdx + 1}`;
         if (ctx.measureText(dispTitle).width > availTextW) {
           while (dispTitle.length > 3 && ctx.measureText(dispTitle + '..').width > availTextW) {
@@ -11763,19 +11480,22 @@
           }
           dispTitle += '..';
         }
-        ctx.fillText(dispTitle, textStartX, cardY + (38 * uiScale));
+        ctx.fillText(dispTitle, textStartX, cardY + (33 * uiScale));
 
-        // Line 3: Location / Notes / Description
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-        let dispSub = closestStop.notes || closestStop.locationName || 'Điểm check-in trong lộ trình Gạo Maps';
+        // Line 3: Location / Notes / Rating
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
+        let dispSub = closestStop.notes || closestStop.locationName || 'Điểm check-in trên lộ trình';
+        if (closestStop.rating) {
+          dispSub = `⭐ ${closestStop.rating}/5 • ` + dispSub;
+        }
         if (ctx.measureText(dispSub).width > availTextW) {
           while (dispSub.length > 3 && ctx.measureText(dispSub + '..').width > availTextW) {
             dispSub = dispSub.substring(0, dispSub.length - 1);
           }
           dispSub += '..';
         }
-        ctx.fillText(dispSub, textStartX, cardY + (66 * uiScale));
+        ctx.fillText(dispSub, textStartX, cardY + (58 * uiScale));
 
         // Also update the UI DOM popup for live preview
         const popupEl = document.getElementById('cinema-stop-popup');
@@ -11807,20 +11527,148 @@
         }
       }
 
-      // 9. Draw Mini-Map Radar Inset
+      // 6. Draw Traveling Vehicle (Glowing Marker with Smooth Headlight Beams)
+      const carScreenPos = worldToScreen(curCarWorldX, curCarWorldY);
+
+      ctx.save();
+      ctx.translate(carScreenPos.x, carScreenPos.y);
+      ctx.rotate(vp.headingAngle);
+
+      // Forward Headlight Beam
+      const beamGrad = ctx.createLinearGradient(0, 0, 85 * uiScale, 0);
+      beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
+      beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = beamGrad;
+      ctx.beginPath();
+      ctx.moveTo(9 * uiScale, 0);
+      ctx.lineTo(85 * uiScale, -25 * uiScale);
+      ctx.lineTo(85 * uiScale, 25 * uiScale);
+      ctx.closePath();
+      ctx.fill();
+
+      // Halo pulse
+      ctx.beginPath();
+      ctx.arc(0, 0, 26 * uiScale, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.45)';
+      ctx.fill();
+
+      // Vehicle base circle
+      ctx.beginPath();
+      ctx.arc(0, 0, 15 * uiScale, 0, Math.PI * 2);
+      ctx.fillStyle = '#0284c7';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.8 * uiScale;
+      ctx.fill();
+      ctx.stroke();
+
+      // Arrow indicator pointing forward
+      ctx.beginPath();
+      ctx.moveTo(10 * uiScale, 0);
+      ctx.lineTo(-6 * uiScale, -8 * uiScale);
+      ctx.lineTo(-3 * uiScale, 0);
+      ctx.lineTo(-6 * uiScale, 8 * uiScale);
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.restore();
+
+      // 7. Calculate Absolute Guaranteed Non-Zero Route Metrics from Geometry & Data
+      let roadPathMeters = 0;
+      for (let i = 0; i < pathCoords.length - 1; i++) {
+        roadPathMeters += getHaversineDistance(
+          pathCoords[i].lat, pathCoords[i].lng,
+          pathCoords[i + 1].lat, pathCoords[i + 1].lng
+        );
+      }
+      const roadPathKm = parseFloat((roadPathMeters / 1000).toFixed(1));
+
+      const active = getCinemaSelectedRoute();
+      const isMultiCinema = cinemaTargetRouteId === 'all';
+      const aggCinema = isMultiCinema ? calculateAllRoutesAggregateMetrics() : null;
+      const mCinema = (!isMultiCinema && active) ? calculateSingleRouteMetrics(active) : null;
+
+      let cOutboundKm = 0;
+      if (aggCinema && aggCinema.totalOutboundKm > 0) {
+        cOutboundKm = aggCinema.totalOutboundKm;
+      } else if (mCinema && mCinema.outboundKm > 0) {
+        cOutboundKm = mCinema.outboundKm;
+      } else if (active) {
+        if (typeof active.outboundKm === 'number' && active.outboundKm > 0) cOutboundKm = active.outboundKm;
+        else if (typeof active.distKm === 'number' && active.distKm > 0) cOutboundKm = active.distKm;
+        else if (typeof active.distanceKm === 'number' && active.distanceKm > 0) cOutboundKm = active.distanceKm;
+      }
+
+      if (!cOutboundKm || cOutboundKm <= 0) {
+        if (cinemaJourneyMode === 'roundtrip' && roadPathKm > 0) {
+          cOutboundKm = parseFloat((roadPathKm / 2).toFixed(1));
+        } else if (roadPathKm > 0) {
+          cOutboundKm = roadPathKm;
+        } else {
+          cOutboundKm = 1.0;
+        }
+      }
+
+      let cReturnKm = (aggCinema ? aggCinema.totalReturnKm : (mCinema ? mCinema.returnKm : 0)) || cOutboundKm;
+      let cRoundTripKm = (aggCinema ? aggCinema.totalRoundTripKm : (mCinema ? mCinema.roundTripKm : 0)) || parseFloat((cOutboundKm * 2).toFixed(1));
+
+      // Calculate live real-time traveled distance along route
+      let curTraveledMeters = 0;
+      const curCarIndexFloat = Math.max(0, Math.min(progress, 1.0)) * (pathCoords.length - 1);
+      const curCarIdx = Math.floor(curCarIndexFloat);
+      const curSegT = curCarIndexFloat - curCarIdx;
+      for (let i = 0; i < curCarIdx; i++) {
+        curTraveledMeters += getHaversineDistance(
+          pathCoords[i].lat, pathCoords[i].lng,
+          pathCoords[i + 1].lat, pathCoords[i + 1].lng
+        );
+      }
+      if (curCarIdx < pathCoords.length - 1) {
+        const pA = pathCoords[curCarIdx];
+        const pB = pathCoords[curCarIdx + 1];
+        const pCurLat = pA.lat + (pB.lat - pA.lat) * curSegT;
+        const pCurLng = pA.lng + (pB.lng - pA.lng) * curSegT;
+        curTraveledMeters += getHaversineDistance(pA.lat, pA.lng, pCurLat, pCurLng);
+      }
+      let cTraveledKm = parseFloat((curTraveledMeters / 1000).toFixed(1));
+      if (roadPathKm > 0 && cOutboundKm > 0) {
+        const effectiveTotalJourneyKm = cinemaJourneyMode === 'roundtrip' ? cRoundTripKm : cOutboundKm;
+        cTraveledKm = parseFloat((Math.min(progress, 1.0) * effectiveTotalJourneyKm).toFixed(1));
+      }
+
+      let curJourneyKm = cOutboundKm;
+      let curJourneySec = aggCinema ? aggCinema.totalOutboundSec : (mCinema ? mCinema.outboundSec : Math.round(cOutboundKm * 75));
+      if (cinemaJourneyMode === 'return') {
+        curJourneyKm = cReturnKm;
+        curJourneySec = aggCinema ? aggCinema.totalReturnSec : (mCinema ? mCinema.returnSec : Math.round(cReturnKm * 75));
+      } else if (cinemaJourneyMode === 'roundtrip') {
+        curJourneyKm = cRoundTripKm;
+        curJourneySec = aggCinema ? aggCinema.totalRoundTripSec : (mCinema ? mCinema.roundTripSec : Math.round(cRoundTripKm * 75));
+      }
+
+      const cTimeStr = formatTravelTime(curJourneySec);
+      const cProvInfo = getProvincesForPins(activePins);
+      const cPassedStops = Math.min(activePins.length, Math.floor(progress * activePins.length) + 1);
+      const isPortrait = h > w;
+
+      const modeBadge = cinemaCameraMode === 'follow' ? '🎥 Cận cảnh' : (cinemaCameraMode === 'cinematic' ? '🎬 Điện ảnh' : '🗺️ Toàn cảnh');
+      const tiltBadge = isTilt ? `3D ${cinemaTiltAngle}°` : '2D';
+      const jBadge = cinemaJourneyMode === 'return' ? '🔄 Chiều về' : (cinemaJourneyMode === 'outbound' ? '🏁 Chiều đi' : '🌟 Khứ hồi');
+      const routeDisplayName = isMultiCinema ? `Trọn bộ ${routes.length} tuyến` : (active ? (active.name || 'Lộ trình') : 'Lộ trình');
+
+      // 8. Draw Mini-Map Radar Inset
       if (cinemaCameraMode !== 'overview') {
-        const radarW = isPortrait ? (320 * uiScale) : (230 * uiScale);
-        const radarH = isPortrait ? (190 * uiScale) : (150 * uiScale);
+        const radarW = isPortrait ? (320 * uiScale) : (210 * uiScale);
+        const radarH = isPortrait ? (190 * uiScale) : (145 * uiScale);
         const radarX = w - radarW - (24 * uiScale);
         const radarY = isPortrait ? (h - radarH - (64 * uiScale)) : (h - radarH - (28 * uiScale));
 
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.94)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-        ctx.lineWidth = 1.6 * uiScale;
-        roundRect(ctx, radarX, radarY, radarW, radarH, 14 * uiScale, true, true);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.lineWidth = 1.5 * uiScale;
+        roundRect(ctx, radarX, radarY, radarW, radarH, 12 * uiScale, true, true);
 
         ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillText('📡 RADAR TOÀN TUYẾN', radarX + (12 * uiScale), radarY + (10 * uiScale));
@@ -11877,248 +11725,59 @@
         ctx.stroke();
 
         ctx.fillStyle = 'rgba(226, 232, 240, 0.9)';
-        ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
         ctx.textAlign = 'right';
         ctx.fillText(`${(progress * 100).toFixed(0)}% • ${isTilt ? '3D ' + cinemaTiltAngle + '°' : '2D'}`, radarX + radarW - (12 * uiScale), radarY + (10 * uiScale));
       }
 
-      // 10. Master Branding & Real-Time Telemetry HUD (Custom Tailored for 9:16, 16:9, 1:1)
-      if (isPortrait) {
-        // ================= 9:16 VERTICAL REELS / TIKTOK LAYOUT =================
-        const bannerMargin = 20 * uiScale;
-        const bannerW = w - (bannerMargin * 2);
+      // 9. Master Branding & Real-Time Telemetry HUD (Clean Dual-Box Layout like previous version)
+      // Left Branding Box
+      const brandW = Math.min(440 * uiScale, w * 0.45);
+      const brandH = 74 * uiScale;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, 20 * uiScale, 20 * uiScale, brandW, brandH, 14 * uiScale, true, true);
 
-        // Top Header: Branding & Route Title
-        const headerH = 74 * uiScale;
-        const headerY = 20 * uiScale;
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-        ctx.lineWidth = 1.5 * uiScale;
-        roundRect(ctx, bannerMargin, headerY, bannerW, headerH, 16 * uiScale, true, true);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 34 * uiScale, 44 * uiScale);
 
-        // Brand row
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('📍 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', bannerMargin + (16 * uiScale), headerY + (12 * uiScale));
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
+      ctx.font = `${Math.round(11.5 * uiScale)}px sans-serif`;
+      const dispRt = routeDisplayName.length > 32 ? (routeDisplayName.substring(0, 30) + '...') : routeDisplayName;
+      ctx.fillText(`${dispRt} (${(progress * 100).toFixed(0)}%) • ${jBadge} • ${modeBadge}`, 34 * uiScale, 66 * uiScale);
 
-        // Mode badge right
-        ctx.textAlign = 'right';
-        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#fde047';
-        ctx.fillText(`${jBadge} • ${modeBadge}`, bannerMargin + bannerW - (16 * uiScale), headerY + (12 * uiScale));
+      // Right Telemetry HUD Box
+      const hudW = Math.min(480 * uiScale, w * 0.48);
+      const hudH = 74 * uiScale;
+      const hudX = w - hudW - (20 * uiScale);
+      const hudY = 20 * uiScale;
 
-        // Route Title & Progress
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(16 * uiScale)}px sans-serif`;
-        let titleTxt = routeDisplayName;
-        const maxTitleW = bannerW - (100 * uiScale);
-        if (ctx.measureText(titleTxt).width > maxTitleW) {
-          while (titleTxt.length > 3 && ctx.measureText(titleTxt + '..').width > maxTitleW) {
-            titleTxt = titleTxt.substring(0, titleTxt.length - 1);
-          }
-          titleTxt += '..';
-        }
-        ctx.fillText(titleTxt, bannerMargin + (16 * uiScale), headerY + (36 * uiScale));
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 1.2 * uiScale;
+      roundRect(ctx, hudX, hudY, hudW, hudH, 14 * uiScale, true, true);
 
-        // Progress Pill right
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#10b981';
-        ctx.font = `bold ${Math.round(16 * uiScale)}px sans-serif`;
-        ctx.fillText(`${(progress * 100).toFixed(0)}%`, bannerMargin + bannerW - (16 * uiScale), headerY + (36 * uiScale));
+      ctx.textAlign = 'left';
+      ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`📍 Toàn tuyến: ${cOutboundKm.toLocaleString('vi-VN')} km`, hudX + (16 * uiScale), hudY + (28 * uiScale));
 
-        // Telemetry Bar (4 distinct Stats Pills)
-        const teleY = headerY + headerH + (8 * uiScale);
-        const teleH = 64 * uiScale;
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-        ctx.lineWidth = 1.2 * uiScale;
-        roundRect(ctx, bannerMargin, teleY, bannerW, teleH, 14 * uiScale, true, true);
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(`⏱️ ~${cTimeStr}`, hudX + (hudW * 0.5), hudY + (28 * uiScale));
 
-        const colW = bannerW / 4;
-        const metricsList = [
-          { label: '📏 CỰ LY', val: `${curJourneyKm.toLocaleString('vi-VN')} km`, color: '#38bdf8' },
-          { label: '⏱️ DỰ TÍNH', val: `~${cTimeStr}`, color: '#fde047' },
-          { label: '🚩 ĐIỂM DỪNG', val: `${cPassedStops}/${activePins.length}`, color: '#10b981' },
-          { label: '🏛️ ĐỊA PHẬN', val: `${provInfo.count} tỉnh`, color: '#c084fc' }
-        ];
+      ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(`📍 ${cPassedStops}/${activePins.length} điểm`, hudX + (16 * uiScale), hudY + (54 * uiScale));
 
-        metricsList.forEach((item, idx) => {
-          const colX = bannerMargin + (idx * colW);
-          if (idx > 0) {
-            ctx.beginPath();
-            ctx.moveTo(colX, teleY + (10 * uiScale));
-            ctx.lineTo(colX, teleY + teleH - (10 * uiScale));
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-            ctx.lineWidth = 1 * uiScale;
-            ctx.stroke();
-          }
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
-          ctx.fillText(item.label, colX + (colW / 2), teleY + (10 * uiScale));
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`•`, hudX + (hudW * 0.42), hudY + (54 * uiScale));
 
-          ctx.fillStyle = item.color;
-          ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
-          ctx.fillText(item.val, colX + (colW / 2), teleY + (32 * uiScale));
-        });
-
-      } else if (isSquare) {
-        // ================= 1:1 SQUARE INSTAGRAM / FEED LAYOUT =================
-        const bannerMargin = 20 * uiScale;
-        const bannerW = w - (bannerMargin * 2);
-        const hudH = 86 * uiScale;
-        const hudY = 20 * uiScale;
-
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-        ctx.lineWidth = 1.4 * uiScale;
-        roundRect(ctx, bannerMargin, hudY, bannerW, hudH, 16 * uiScale, true, true);
-
-        // Left Half: Brand & Route Title
-        const halfW = bannerW * 0.46;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-        ctx.fillText(`📍 GẠO MAPS • ${jBadge}`, bannerMargin + (16 * uiScale), hudY + (12 * uiScale));
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
-        let titleTxt = routeDisplayName;
-        if (ctx.measureText(titleTxt).width > halfW - (24 * uiScale)) {
-          while (titleTxt.length > 3 && ctx.measureText(titleTxt + '..').width > halfW - (24 * uiScale)) {
-            titleTxt = titleTxt.substring(0, titleTxt.length - 1);
-          }
-          titleTxt += '..';
-        }
-        ctx.fillText(titleTxt, bannerMargin + (16 * uiScale), hudY + (34 * uiScale));
-
-        ctx.fillStyle = '#10b981';
-        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-        ctx.fillText(`Tiến độ: ${(progress * 100).toFixed(0)}% • ${modeBadge}`, bannerMargin + (16 * uiScale), hudY + (58 * uiScale));
-
-        // Vertical divider
-        ctx.beginPath();
-        ctx.moveTo(bannerMargin + halfW, hudY + (12 * uiScale));
-        ctx.lineTo(bannerMargin + halfW, hudY + hudH - (12 * uiScale));
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 1 * uiScale;
-        ctx.stroke();
-
-        // Right Half: 4 Telemetry Stats (2x2 grid)
-        const rightX = bannerMargin + halfW + (16 * uiScale);
-        const rightW = bannerW - halfW - (24 * uiScale);
-        const subColW = rightW / 2;
-
-        // Stat 1: Km
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('📏 Cự ly:', rightX, hudY + (14 * uiScale));
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-        ctx.fillText(`${curJourneyKm.toLocaleString('vi-VN')} km`, rightX + (54 * uiScale), hudY + (14 * uiScale));
-
-        // Stat 2: Time
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('⏱️ Dự tính:', rightX + subColW, hudY + (14 * uiScale));
-        ctx.fillStyle = '#fde047';
-        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-        ctx.fillText(`~${cTimeStr}`, rightX + subColW + (62 * uiScale), hudY + (14 * uiScale));
-
-        // Stat 3: Stops
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('🚩 Điểm:', rightX, hudY + (48 * uiScale));
-        ctx.fillStyle = '#10b981';
-        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-        ctx.fillText(`${cPassedStops}/${activePins.length} trạm`, rightX + (54 * uiScale), hudY + (48 * uiScale));
-
-        // Stat 4: Provinces
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillText('🏛️ Tỉnh:', rightX + subColW, hudY + (48 * uiScale));
-        ctx.fillStyle = '#c084fc';
-        ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-        ctx.fillText(`${provInfo.count} tỉnh/thành`, rightX + subColW + (62 * uiScale), hudY + (48 * uiScale));
-
-      } else {
-        // ================= 16:9 LANDSCAPE YOUTUBE / HD LAYOUT =================
-        const brandW = Math.min(540 * uiScale, w * 0.44);
-        const brandH = 82 * uiScale;
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1.4 * uiScale;
-        roundRect(ctx, 24 * uiScale, 20 * uiScale, brandW, brandH, 16 * uiScale, true, true);
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('📍 GẠO MAPS • HÀNH TRÌNH DẤU CHÂN', 40 * uiScale, 30 * uiScale);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(15.5 * uiScale)}px sans-serif`;
-        let dispRt = routeDisplayName;
-        if (ctx.measureText(dispRt).width > brandW - (120 * uiScale)) {
-          while (dispRt.length > 3 && ctx.measureText(dispRt + '..').width > brandW - (120 * uiScale)) {
-            dispRt = dispRt.substring(0, dispRt.length - 1);
-          }
-          dispRt += '..';
-        }
-        ctx.fillText(`${dispRt} • ${(progress * 100).toFixed(0)}%`, 40 * uiScale, 54 * uiScale);
-
-        ctx.fillStyle = '#fde047';
-        ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${jBadge} • ${modeBadge}`, 24 * uiScale + brandW - (16 * uiScale), 30 * uiScale);
-
-        // Right Telemetry HUD Box
-        const hudW = Math.min(580 * uiScale, w * 0.48);
-        const hudH = 82 * uiScale;
-        const hudX = w - hudW - (24 * uiScale);
-        const hudY = 20 * uiScale;
-
-        ctx.fillStyle = 'rgba(10, 15, 30, 0.95)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-        ctx.lineWidth = 1.4 * uiScale;
-        roundRect(ctx, hudX, hudY, hudW, hudH, 16 * uiScale, true, true);
-
-        // Row 1: Cự ly & Thời gian
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`📏 Toàn tuyến: ${curJourneyKm.toLocaleString('vi-VN')} km`, hudX + (20 * uiScale), hudY + (20 * uiScale));
-
-        ctx.fillStyle = '#fde047';
-        ctx.fillText(`⏱️ Dự tính: ~${cTimeStr}`, hudX + (hudW * 0.52), hudY + (20 * uiScale));
-
-        // Row 2: Điểm dừng & Địa phận tỉnh thành
-        ctx.font = `${Math.round(12 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#10b981';
-        ctx.fillText(`🚩 Hoàn thành: ${cPassedStops}/${activePins.length} điểm`, hudX + (20 * uiScale), hudY + (48 * uiScale));
-
-        ctx.fillStyle = '#c084fc';
-        ctx.fillText(`🏛️ Đi qua: ${provInfo.count} tỉnh/thành`, hudX + (hudW * 0.52), hudY + (48 * uiScale));
-      }
-
-      // 11. Bottom Glow Journey Progress Line
-      const progH = 6 * uiScale;
-      const progY = h - progH;
-      ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
-      ctx.fillRect(0, progY, w, progH);
-
-      const progGrad = ctx.createLinearGradient(0, 0, w * progress, 0);
-      progGrad.addColorStop(0, '#0ea5e9');
-      progGrad.addColorStop(0.5, '#38bdf8');
-      progGrad.addColorStop(1, '#10b981');
-      ctx.fillStyle = progGrad;
-      ctx.fillRect(0, progY, w * progress, progH);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`🏛️ ${cProvInfo.count} tỉnh/thành`, hudX + (hudW * 0.48), hudY + (54 * uiScale));
     }
 
     // ==========================================
@@ -12578,25 +12237,34 @@
         return;
       }
 
-      // Set canvas dimension based on chosen aspect ratio & export quality
-      updateCinemaCanvasDimensions();
+      // Set canvas dimension based on chosen aspect ratio
+      if (cinemaAspectRatio === '9:16') {
+        canvas.width = 1080;
+        canvas.height = 1920;
+      } else if (cinemaAspectRatio === '1:1') {
+        canvas.width = 1080;
+        canvas.height = 1080;
+      } else {
+        canvas.width = 1920;
+        canvas.height = 1080;
+      }
 
       const formatHints = {
-        '9:16': `Khung hình Dọc 9:16 (Shorts / Reels / TikTok) • ${canvas.width}x${canvas.height}`,
-        '16:9': `Khung hình Ngang 16:9 (YouTube / HD) • ${canvas.width}x${canvas.height}`,
-        '1:1': `Khung hình Vuông 1:1 (Instagram) • ${canvas.width}x${canvas.height}`
+        '9:16': 'Khung hình Dọc 9:16 (Shorts / Reels / TikTok) • 1080x1920 Full HD',
+        '16:9': 'Khung hình Ngang 16:9 (YouTube / HD) • 1920x1080 Full HD',
+        '1:1': 'Khung hình Vuông 1:1 (Instagram) • 1080x1080 HD'
       };
 
       const overlayHint = document.getElementById('cinema-export-format-hint');
       if (overlayHint) {
-        overlayHint.textContent = formatHints[cinemaAspectRatio] || `Khung hình ${cinemaAspectRatio} • ${canvas.width}x${canvas.height}`;
+        overlayHint.textContent = formatHints[cinemaAspectRatio] || 'Khung hình Dọc 9:16 • 1080x1920 Full HD';
       }
 
+      // DO NOT show the blocking cinema-export-overlay popup so the user can watch the map clearly!
       const overlay = document.getElementById('cinema-export-overlay');
       if (overlay) overlay.classList.add('hidden');
 
-      const qualityBadge = cinemaExportQuality === '1080p' ? '1080p HD' : '720p Turbo';
-      showToast(`🎬 Đang chuẩn bị video ${cinemaAspectRatio} (${qualityBadge}) cho tuyến "${active.name || 'Lộ trình'}"...`, 'info');
+      showToast(`🎬 Đang ghi hình video ${cinemaAspectRatio} cho tuyến "${active.name || 'Lộ trình'}"...`, 'info');
       const btnText = document.getElementById('export-video-btn-text');
       if (btnText) btnText.textContent = 'Đang nạp dữ liệu...';
 
@@ -12624,14 +12292,12 @@
       ];
       let selectedMime = mimeCandidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
 
-      // Set optimal video bitrate (3.5 Mbps for 1080p, 2.0 Mbps for 720p Turbo)
-      const targetBitrate = cinemaExportQuality === '1080p' ? 3500000 : 2000000;
+      // High-compatibility, smooth & freeze-free 30 FPS stream with optimal 4.5 Mbps bitrate
       const stream = canvas.captureStream(30);
-
       try {
         recordedChunks = [];
         const recorderOptions = {
-          videoBitsPerSecond: targetBitrate
+          videoBitsPerSecond: 4500000 // 4.5 Mbps: Crystal clear 1080p without freezing device
         };
         if (selectedMime) {
           recorderOptions.mimeType = selectedMime;
@@ -12680,15 +12346,14 @@
         a.href = url;
         const safeName = (active.name || 'lo_trinh').replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
         const ratioSlug = (cinemaAspectRatio || '9:16').replace(':', 'x');
-        const qSlug = cinemaExportQuality || '1080p';
         const ext = isMp4 ? 'mp4' : 'webm';
-        a.download = `gaomaps-video-${ratioSlug}-${qSlug}-${safeName}-${Date.now()}.${ext}`;
+        a.download = `gaomaps-video-${ratioSlug}-${safeName}-${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-        showToast(`🎉 Đã xuất video ${cinemaAspectRatio} (${cinemaExportQuality}): "${active.name || 'Lộ trình'}" thành công!`, 'success');
+        showToast(`🎉 Đã xuất thành công video lộ trình ${cinemaAspectRatio}: "${active.name || 'Lộ trình'}" (1080p, siêu mượt)`, 'success');
       };
 
       // Start recording
