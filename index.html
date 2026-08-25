@@ -2434,6 +2434,10 @@
                   <i class="fa-regular fa-copy"></i>
                 </button>
               </div>
+              <button onclick="testOpenShareLink()" id="btn-test-share-link" class="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold shrink-0 transition flex items-center gap-1.5" title="Mở thử link chia sẻ trên tab mới">
+                <i class="fa-solid fa-arrow-up-right-from-square text-sky-500"></i>
+                <span class="hidden sm:inline">Mở thử</span>
+              </button>
               <button onclick="copyShareLink()" id="btn-copy-share-link" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shrink-0 shadow-md shadow-indigo-500/25 active:scale-95 transition flex items-center gap-1.5">
                 <i class="fa-solid fa-link"></i>
                 <span>Sao chép</span>
@@ -3268,10 +3272,25 @@
       }
     };
 
+    // Quick detection if URL contains shared route parameters
+    function hasIncomingSharedRouteInUrl() {
+      try {
+        if (window.location.hash && window.location.hash.length > 2) {
+          const h = window.location.hash.toLowerCase();
+          if (h.includes('sr=') || h.includes('d=') || h.includes('data=')) return true;
+        }
+        if (window.location.search && window.location.search.length > 1) {
+          const s = window.location.search.toLowerCase();
+          if (s.includes('sr=') || s.includes('d=') || s.includes('data=') || s.includes('s=') || s.includes('share_route=') || s.includes('id=')) return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
     // ==========================================
     // INITIALIZATION (Instant Local First + Background Cloud Sync)
     // ==========================================
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       initTheme();
       loadStorageData();
       initMap();
@@ -3281,17 +3300,21 @@
       initSearchAutocomplete();
       initStarRating();
 
-      // Check URL parameters for shared route link
-      checkSharedRouteFromUrl();
+      // Check URL parameters for shared route link (prioritize receiver view mode)
+      const isIncomingShare = hasIncomingSharedRouteInUrl();
+      if (isIncomingShare) {
+        // Hydrate shared route immediately and prevent local route from clashing on map
+        await checkSharedRouteFromUrl();
+      } else {
+        // Normal local mode: if initial route has stops, calculate route
+        if (routePinIds.length >= 2) {
+          updateRouteCalculation();
+        }
+        renderRouteStops();
 
-      // If initial route has stops, calculate route
-      if (routePinIds.length >= 2) {
-        updateRouteCalculation();
+        // Trigger Gạo Maps Centered Welcome Splash only on standard home visits
+        triggerGaoMapsWelcomeSplash();
       }
-      renderRouteStops();
-
-      // Trigger Gạo Maps Centered Welcome Splash
-      triggerGaoMapsWelcomeSplash();
 
       // Connect Firebase asynchronously in the background (0ms UI latency)
       setTimeout(() => {
@@ -6862,8 +6885,8 @@
               c: pr.color || '#6366f1',
               m: pr.travelMode || 'driving',
               d: pr.distKm,
-              s: (pr.stops || []).map(p => ({
-                t: p.title,
+              s: (pr.stops || []).map((p, sIdx) => ({
+                t: p.title || `Điểm #${sIdx + 1}`,
                 lat: Math.round(p.lat * 1000000) / 1000000,
                 lng: Math.round(p.lng * 1000000) / 1000000,
                 l: (p.locationName || '').substring(0, 40),
@@ -6979,13 +7002,14 @@
         };
 
         compactQrPayload = {
-          n: targetRoute.name,
+          n: targetRoute.name || 'Lộ trình du lịch',
           d: totalKm,
           t: estTimeStr,
           c: targetRoute.color || '#6366f1',
           m: targetRoute.travelMode || 'driving',
-          s: activePins.map((p) => ({
-            t: p.title,
+          w: (targetRoute.customWaypoints && targetRoute.customWaypoints.length >= 2) ? targetRoute.customWaypoints : null,
+          s: activePins.map((p, idx) => ({
+            t: p.title || `Điểm #${idx + 1}`,
             lat: Math.round(p.lat * 1000000) / 1000000,
             lng: Math.round(p.lng * 1000000) / 1000000,
             l: (p.locationName || p.address || '').substring(0, 40),
@@ -7017,31 +7041,28 @@
         }
       }
 
-      // Generate ultra-compressed payload string for fail-proof URL hash (Layer 2: 100% Standalone Offline & Cross-Device)
-      let compressedHash = '';
+      // Generate ultra-compressed standalone payload string (Fail-proof Offline & Cross-Device)
+      let compactEncoded = '';
       try {
         if (typeof LZString !== 'undefined' && LZString.compressToEncodedURIComponent) {
-          // Compress full sharePayload first to retain 100% of images, metadata & custom paths
-          const fullJson = JSON.stringify(sharePayload);
-          compressedHash = LZString.compressToEncodedURIComponent(fullJson);
-          if (!compressedHash || compressedHash.length > 500000) {
-            // If exceptionally massive, fallback to compact payload with compressed images
-            compressedHash = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload || sharePayload));
-          }
+          compactEncoded = LZString.compressToEncodedURIComponent(JSON.stringify(compactQrPayload || sharePayload));
         } else {
-          compressedHash = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload)))));
+          compactEncoded = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(compactQrPayload || sharePayload)))));
         }
       } catch (e) {
         console.warn('Compression error:', e);
       }
 
-      // Generate Clean, Standalone, Self-Contained URL (incorporates both ?s= ID and #d= compressed data)
-      const shareUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}${compressedHash ? '#d=' + compressedHash : ''}`;
-      input.value = shareUrl;
+      // Build Fail-proof Canonical Share URL:
+      // Includes ?sr= (standalone encoded data) AND ?s= (cloud/local sync ID)
+      const canonicalShareUrl = `${window.location.origin}${window.location.pathname}?sr=${compactEncoded}&s=${shareId}`;
+      input.value = canonicalShareUrl;
 
-      // QR Code uses short cloud URL for lightning-fast camera scanning and crisp large pixels
-      const shortQrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
-      let qrUrl = shortQrUrl;
+      // QR Code: Encode the full standalone URL so ANY scanner (Camera/Zalo) immediately opens the route even offline!
+      let qrUrl = canonicalShareUrl;
+      if (qrUrl.length > 2000) {
+        qrUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
+      }
 
       // Render High-Definition Vector/Canvas QR Code
       const qrCanvas = document.getElementById('share-qrcode-canvas');
@@ -7066,16 +7087,29 @@
             }
           }, function (err) {
             if (err) {
-              console.warn('QRCode canvas error, rendering with fallback:', err);
-              QRCode.toCanvas(canvasEl, shortQrUrl, {
+              console.warn('QRCode canvas error with level M, retrying with level L:', err);
+              QRCode.toCanvas(canvasEl, targetUrl, {
                 width: targetWidth,
                 margin: 2,
-                errorCorrectionLevel: 'L'
+                errorCorrectionLevel: 'L',
+                color: {
+                  dark: '#0f172a',
+                  light: '#ffffff'
+                }
               }, function (err2) {
-                if (err2 && imgEl) {
-                  canvasEl.classList.add('hidden');
-                  imgEl.classList.remove('hidden');
-                  imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(shortQrUrl)}`;
+                if (err2) {
+                  const fallbackShortUrl = `${window.location.origin}${window.location.pathname}?s=${shareId}`;
+                  QRCode.toCanvas(canvasEl, fallbackShortUrl, {
+                    width: targetWidth,
+                    margin: 2,
+                    errorCorrectionLevel: 'L'
+                  }, function (err3) {
+                    if (err3 && imgEl) {
+                      canvasEl.classList.add('hidden');
+                      imgEl.classList.remove('hidden');
+                      imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(fallbackShortUrl)}`;
+                    }
+                  });
                 }
               });
             }
@@ -7083,7 +7117,7 @@
         } else if (imgEl) {
           canvasEl.classList.add('hidden');
           imgEl.classList.remove('hidden');
-          imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(shortQrUrl)}`;
+          imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${targetWidth}x${targetWidth}&margin=4&data=${encodeURIComponent(targetUrl)}`;
         }
       };
 
@@ -7097,6 +7131,13 @@
         const targetName = targetR ? targetR.name : 'Lộ trình';
         const truncatedName = targetName.length > 24 ? targetName.substring(0, 24) + '...' : targetName;
         shareVideoLabel.textContent = `🎬 Xuất Video: ${truncatedName} (Full HD)`;
+      }
+    }
+
+    function testOpenShareLink() {
+      const input = document.getElementById('share-link-input');
+      if (input && input.value) {
+        window.open(input.value, '_blank');
       }
     }
 
@@ -7941,90 +7982,101 @@
       }
     }
 
+    // Comprehensive Decoder for Shared Route URL Payloads (LZString, Base64, JSON)
+    function decodeSharedRoutePayload(str) {
+      if (!str) return null;
+      let decodedObj = null;
+
+      // 1. Try LZString decompressFromEncodedURIComponent
+      if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
+        try {
+          const s = LZString.decompressFromEncodedURIComponent(str);
+          if (s) decodedObj = JSON.parse(s);
+        } catch (e) {}
+      }
+
+      // 2. Try URI component decode + LZString
+      if (!decodedObj && typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
+        try {
+          const s = LZString.decompressFromEncodedURIComponent(decodeURIComponent(str));
+          if (s) decodedObj = JSON.parse(s);
+        } catch (e) {}
+      }
+
+      // 3. Try base64 decoding with utf-8 handling
+      if (!decodedObj) {
+        try {
+          const s = decodeURIComponent(escape(atob(decodeURIComponent(str))));
+          if (s) decodedObj = JSON.parse(s);
+        } catch (e) {}
+      }
+      if (!decodedObj) {
+        try {
+          const s = atob(str);
+          if (s) decodedObj = JSON.parse(s);
+        } catch (e) {}
+      }
+
+      // 4. Try raw JSON string
+      if (!decodedObj) {
+        try {
+          const s = decodeURIComponent(str);
+          if (s && (s.startsWith('{') || s.startsWith('['))) decodedObj = JSON.parse(s);
+        } catch (e) {}
+      }
+
+      if (decodedObj) {
+        if (decodedObj.all === 1 || Array.isArray(decodedObj.r) || Array.isArray(decodedObj.s)) {
+          return unpackCompactPayload(decodedObj);
+        }
+        return decodedObj;
+      }
+      return null;
+    }
+
     // Parse and Hydrate Shared Route from incoming URL (Robust 3-Tier Fallback)
     let lastHydratedShareId = null;
 
     async function checkSharedRouteFromUrl() {
       let payload = null;
 
-      // 1. TIER 1: Check URL Hash (#d=... or #data=... or #sr=...) - 100% Client-Side & Standalone
+      // 1. TIER 1: Check URL Hash (#sr=..., #d=..., #data=...) - 100% Client-Side & Standalone
       if (window.location.hash && window.location.hash.length > 2) {
         const hashStr = window.location.hash.substring(1);
         let hashData = null;
-        if (hashStr.startsWith('d=')) {
+        if (hashStr.startsWith('sr=')) {
+          hashData = hashStr.substring(3);
+        } else if (hashStr.startsWith('d=')) {
           hashData = hashStr.substring(2);
         } else if (hashStr.startsWith('data=')) {
           hashData = hashStr.substring(5);
-        } else if (hashStr.startsWith('sr=')) {
-          hashData = hashStr.substring(3);
         } else {
           const hashParams = new URLSearchParams(hashStr);
-          hashData = hashParams.get('d') || hashParams.get('data') || hashParams.get('sr');
+          hashData = hashParams.get('sr') || hashParams.get('d') || hashParams.get('data');
         }
 
         if (hashData) {
-          try {
-            if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
-              const decompressed = LZString.decompressFromEncodedURIComponent(hashData);
-              if (decompressed) {
-                const parsed = JSON.parse(decompressed);
-                payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
-              }
-            }
-            if (!payload) {
-              const decoded = decodeURIComponent(escape(atob(decodeURIComponent(hashData))));
-              const parsed = JSON.parse(decoded);
-              payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
-            }
-          } catch (e) {
-            console.warn('Error parsing shared hash payload:', e);
-          }
+          payload = decodeSharedRoutePayload(hashData);
         }
       }
 
-      // 2. TIER 2: Check URL Query Parameters (?d=..., ?data=..., ?sr=..., ?share_route=...)
+      // 2. TIER 2: Check URL Query Parameters (?sr=..., ?d=..., ?data=..., ?share_route=...)
       const urlParams = new URLSearchParams(window.location.search);
+      const compactParam = urlParams.get('sr');
       const queryData = urlParams.get('d') || urlParams.get('data');
       const shareParam = urlParams.get('share_route');
-      const compactParam = urlParams.get('sr');
       const shareId = urlParams.get('s') || urlParams.get('share_id') || urlParams.get('id');
 
+      if (!payload && compactParam) {
+        payload = decodeSharedRoutePayload(compactParam);
+      }
+
       if (!payload && queryData) {
-        try {
-          if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
-            const decompressed = LZString.decompressFromEncodedURIComponent(queryData);
-            if (decompressed) {
-              const parsed = JSON.parse(decompressed);
-              payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
-            }
-          }
-          if (!payload) {
-            const decoded = decodeURIComponent(escape(atob(decodeURIComponent(queryData))));
-            const parsed = JSON.parse(decoded);
-            payload = (parsed && (parsed.s || parsed.r)) ? unpackCompactPayload(parsed) : parsed;
-          }
-        } catch (e) {
-          console.warn('Error parsing queryData payload:', e);
-        }
+        payload = decodeSharedRoutePayload(queryData);
       }
 
       if (!payload && shareParam) {
-        try {
-          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(shareParam))));
-          payload = JSON.parse(decodedJson);
-        } catch (e) {
-          console.warn('Error parsing shareParam:', e);
-        }
-      }
-
-      if (!payload && compactParam) {
-        try {
-          const decodedJson = decodeURIComponent(escape(atob(decodeURIComponent(compactParam))));
-          const raw = JSON.parse(decodedJson);
-          payload = unpackCompactPayload(raw);
-        } catch (e) {
-          console.warn('Error parsing compactParam:', e);
-        }
+        payload = decodeSharedRoutePayload(shareParam);
       }
 
       // If standalone payload was successfully extracted from URL hash/query, hydrate immediately!
@@ -8034,7 +8086,7 @@
           if (shareId) localStorage.setItem('memomap_share_' + shareId, JSON.stringify(payload));
         } catch (e) {}
         hydrateSharedRouteExperience(payload);
-        showToast(`Đang hiển thị lộ trình được chia sẻ: "${payload.name || 'Lộ trình'}"`, 'success');
+        showToast(`Đang hiển thị lộ trình: "${payload.name || 'Lộ trình được chia sẻ'}"`, 'success');
         return;
       }
 
