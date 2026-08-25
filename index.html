@@ -874,6 +874,10 @@
                 <i class="fa-solid fa-arrows-up-down text-indigo-500 text-[10px]"></i>
                 <span>Đảo chiều</span>
               </button>
+              <button id="btn-toggle-loop" onclick="toggleRouteClosedLoop()" class="h-7 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 text-[11px] font-bold hover:bg-slate-200 flex items-center gap-1 transition shrink-0" title="Khép kín vòng lặp khứ hồi (A → B → C → A), tổng quãng đường = AB + BC + CA">
+                <i class="fa-solid fa-rotate text-emerald-500 text-[10px]"></i>
+                <span id="btn-toggle-loop-text">Vòng lặp</span>
+              </button>
               <button onclick="optimizeRouteOrder()" class="h-7 px-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 text-[11px] font-bold hover:bg-indigo-100 flex items-center gap-1 transition shrink-0" title="Tự động sắp xếp thứ tự điểm dừng ngắn nhất cả đi & về (TSP)">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
                 <span>Tối ưu</span>
@@ -7618,11 +7622,20 @@
       }
 
       // Calculate direct distance sum
+      let effectiveStops = [...stops];
+      if (routeMeta && routeMeta.isClosedLoop && effectiveStops.length >= 2) {
+        const first = effectiveStops[0];
+        const last = effectiveStops[effectiveStops.length - 1];
+        if (first.id !== last.id || first.lat !== last.lat || first.lng !== last.lng) {
+          effectiveStops.push(first);
+        }
+      }
+
       const rawDirectDistances = [];
       let totalDirectKm = 0;
-      for (let i = 0; i < stops.length - 1; i++) {
-        const s1 = stops[i];
-        const s2 = stops[i + 1];
+      for (let i = 0; i < effectiveStops.length - 1; i++) {
+        const s1 = effectiveStops[i];
+        const s2 = effectiveStops[i + 1];
         const d = haversineDistanceKm(s1.lat, s1.lng, s2.lat, s2.lng) * 1.25;
         rawDirectDistances.push(d);
         totalDirectKm += d;
@@ -7634,9 +7647,9 @@
       const segments = [];
       let totalEstimatedKm = 0;
 
-      for (let i = 0; i < stops.length - 1; i++) {
-        const s1 = stops[i];
-        const s2 = stops[i + 1];
+      for (let i = 0; i < effectiveStops.length - 1; i++) {
+        const s1 = effectiveStops[i];
+        const s2 = effectiveStops[i + 1];
         let distRoad = 0;
 
         if (targetKnownKm > 0 && totalDirectKm > 0) {
@@ -7654,6 +7667,8 @@
         const prov1 = detectProvinceForPin(s1);
         const prov2 = detectProvinceForPin(s2);
 
+        const isReturnClosingLeg = (i === effectiveStops.length - 2 && effectiveStops.length > stops.length);
+
         segments.push({
           legIndex: i + 1,
           fromStop: s1,
@@ -7661,7 +7676,8 @@
           distanceKm: distRoad,
           durationStr,
           fromProv: prov1 ? prov1.name : '',
-          toProv: prov2 ? prov2.name : ''
+          toProv: prov2 ? prov2.name : '',
+          isReturnClosingLeg
         });
       }
 
@@ -9250,6 +9266,46 @@
       }
     }
 
+    // Toggle Closed-Loop (Round-trip circuit A -> B -> C -> A where total distance = AB + BC + CA)
+    function toggleRouteClosedLoop(targetRouteId) {
+      if (isSharedViewMode) {
+        showToast('Chế độ chỉ xem: Không thể thay đổi cấu hình lộ trình chia sẻ.', 'info');
+        return;
+      }
+      const routeId = targetRouteId || activeRouteId;
+      const targetRoute = (routes || []).find(r => r.id === routeId);
+      if (!targetRoute) {
+        showToast('Vui lòng chọn hoặc tạo lộ trình trước!', 'error');
+        return;
+      }
+
+      const pinCount = (targetRoute.pinIds && targetRoute.pinIds.length) || 0;
+      if (pinCount < 2) {
+        showToast('Cần ít nhất 2 điểm dừng để khép kín vòng lặp (A → ... → A)!', 'info');
+        return;
+      }
+
+      targetRoute.isClosedLoop = !targetRoute.isClosedLoop;
+      targetRoute.customWaypoints = null;
+      targetRoute.updatedAt = new Date().toISOString();
+      saveRoutesToStorage();
+
+      const firstPin = pins.find(p => p.id === targetRoute.pinIds[0]);
+      const lastPin = pins.find(p => p.id === targetRoute.pinIds[pinCount - 1]);
+
+      if (targetRoute.isClosedLoop) {
+        showToast(`Đã bật Vòng lặp khép kín: Tổng quãng đường tính trọn vẹn cả chặng về ${firstPin ? firstPin.title : 'điểm khởi hành'} (AB + BC + CA)!`, 'success');
+      } else {
+        showToast('Đã chuyển về Lộ trình 1 chiều (từ điểm đầu đến điểm cuối).', 'info');
+      }
+
+      renderAllPins();
+      renderSidebarList();
+      renderRouteStops();
+      updateRouteCalculation();
+    }
+    window.toggleRouteClosedLoop = toggleRouteClosedLoop;
+
     // TSP Nearest-Neighbor + 2-Opt Optimization for shortest vehicle travel order (Cả đi & về)
     function optimizeRouteOrder() {
       if (isSharedViewMode) {
@@ -9349,7 +9405,8 @@
           outboundSec: 0,
           returnSec: 0,
           roundTripSec: 0,
-          stopsCount: 0
+          stopsCount: 0,
+          isClosedLoop: false
         };
       }
 
@@ -9371,19 +9428,23 @@
         ? route.durationSeconds
         : Math.round((outboundKm * 1000) / speedMps);
 
-      const returnKm = (typeof route.returnKm === 'number' && route.returnKm > 0) ? route.returnKm : outboundKm;
-      const roundTripKm = (typeof route.roundTripKm === 'number' && route.roundTripKm > 0) 
-        ? route.roundTripKm 
-        : parseFloat((outboundKm + returnKm).toFixed(1));
+      const isLoop = !!route.isClosedLoop;
+      const returnKm = isLoop ? 0 : ((typeof route.returnKm === 'number' && route.returnKm > 0) ? route.returnKm : outboundKm);
+      const roundTripKm = isLoop 
+        ? outboundKm 
+        : ((typeof route.roundTripKm === 'number' && route.roundTripKm > 0) 
+            ? route.roundTripKm 
+            : parseFloat((outboundKm + returnKm).toFixed(1)));
 
       return {
         outboundKm,
         returnKm,
         roundTripKm,
         outboundSec,
-        returnSec: outboundSec,
-        roundTripSec: outboundSec * 2,
-        stopsCount
+        returnSec: isLoop ? 0 : outboundSec,
+        roundTripSec: isLoop ? outboundSec : outboundSec * 2,
+        stopsCount,
+        isClosedLoop: isLoop
       };
     }
 
@@ -9587,13 +9648,14 @@
       }
 
       if (pillsBreakdown) pillsBreakdown.classList.add('hidden');
-      if (modeLabelEl) modeLabelEl.textContent = active.name;
+      const isLoop = !!active.isClosedLoop;
+      if (modeLabelEl) modeLabelEl.textContent = isLoop ? `${active.name} 🔁 (Vòng lặp A→A)` : active.name;
 
       const m = calculateSingleRouteMetrics(active);
       const displayedKm = m.outboundKm;
       const displayedSec = m.outboundSec;
-      const distSubText = `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km`;
-      const timeSubText = `Toàn tuyến`;
+      const distSubText = isLoop ? `Vòng lặp khép kín: ${m.outboundKm.toLocaleString('vi-VN')} km (AB+BC+CA)` : `Toàn tuyến: ${m.outboundKm.toLocaleString('vi-VN')} km`;
+      const timeSubText = isLoop ? `Khứ hồi khép kín (A → A)` : `Toàn tuyến`;
 
       const timeStr = formatTravelTime(displayedSec);
 
@@ -9974,24 +10036,78 @@
       }).join('');
 
       let returnLegCardHtml = '';
+      const activeCurrentRoute = getActiveRoute();
+      const isClosedLoopActive = activeCurrentRoute && !!activeCurrentRoute.isClosedLoop;
+
+      // Update toolbar closed loop toggle button styling
+      const loopBtn = document.getElementById('btn-toggle-loop');
+      const loopBtnText = document.getElementById('btn-toggle-loop-text');
+      if (loopBtn) {
+        if (isClosedLoopActive) {
+          loopBtn.className = 'h-7 px-2 rounded-lg bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1 transition shrink-0 shadow-xs ring-2 ring-emerald-400 ring-offset-1';
+          if (loopBtnText) loopBtnText.textContent = 'Vòng lặp ✓';
+        } else {
+          loopBtn.className = 'h-7 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 text-[11px] font-bold hover:bg-slate-200 flex items-center gap-1 transition shrink-0';
+          if (loopBtnText) loopBtnText.textContent = 'Vòng lặp';
+        }
+      }
+
       if (routePinIds.length >= 2) {
         const firstPin = pins.find(p => p.id === routePinIds[0]);
         const lastPin = pins.find(p => p.id === routePinIds[routePinIds.length - 1]);
         if (firstPin && lastPin && firstPin.id !== lastPin.id) {
-          returnLegCardHtml = `
-            <div class="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/40 dark:to-teal-950/40 border border-dashed border-emerald-300 dark:border-emerald-700/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200 shadow-2xs">
-              <div class="flex items-center gap-2 min-w-0">
-                <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs shrink-0">
-                  <i class="fa-solid fa-flag-checkered"></i>
+          const directReturnM = getHaversineDistance(lastPin.lat, lastPin.lng, firstPin.lat, firstPin.lng);
+          const legReturnKm = parseFloat(((directReturnM * 1.25) / 1000).toFixed(1));
+          const speedKmH = (activeTravelMode === 'motorcycle') ? 38 : 55;
+          const legReturnMin = Math.max(2, Math.round((legReturnKm / speedKmH) * 60));
+          const totalClosedKm = (cumulativeKm + legReturnKm).toFixed(1);
+
+          if (isClosedLoopActive) {
+            returnLegCardHtml = `
+              <div class="p-3 rounded-2xl bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-emerald-950/60 dark:via-teal-950/60 dark:to-emerald-950/60 border-2 border-emerald-400 dark:border-emerald-600 shadow-xs space-y-2 animate-in fade-in">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow-sm shrink-0">
+                      <i class="fa-solid fa-flag-checkered"></i>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-600 text-white">Chặng khép kín</span>
+                        <span class="font-bold text-xs text-emerald-900 dark:text-emerald-100 truncate">${escapeHtml(lastPin.title)} → ${escapeHtml(firstPin.title)}</span>
+                      </div>
+                      <p class="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold mt-0.5">
+                        <i class="fa-solid fa-arrow-right-long text-[9px] mr-1"></i>+${legReturnKm.toLocaleString('vi-VN')} km (~${legReturnMin}p) • Trở về điểm xuất phát
+                      </p>
+                    </div>
+                  </div>
+                  <button onclick="toggleRouteClosedLoop()" class="px-2 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-[10.5px] font-bold transition shrink-0 active:scale-95 shadow-2xs" title="Tắt vòng lặp khép kín">
+                    Tắt vòng lặp
+                  </button>
                 </div>
-                <div class="min-w-0 truncate">
-                  <span class="font-bold text-[11px]">Về đích: ${escapeHtml(firstPin.title)} (Điểm #1)</span>
-                  <span class="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-semibold">Trọn vẹn chuyến đi cả đi & về</span>
+                <div class="pt-1.5 border-t border-emerald-200/80 dark:border-emerald-800/80 flex items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-200">
+                  <span class="font-bold"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Tổng cả đi & về (AB + BC + CA):</span>
+                  <span class="font-black text-xs text-emerald-700 dark:text-emerald-300">${totalClosedKm} km</span>
                 </div>
               </div>
-              <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full shrink-0 ml-2">Cả đi lẫn về</span>
-            </div>
-          `;
+            `;
+          } else {
+            returnLegCardHtml = `
+              <div class="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2 text-xs transition hover:border-emerald-300 dark:hover:border-emerald-700">
+                <div class="min-w-0">
+                  <p class="font-bold text-slate-800 dark:text-slate-200 text-xs truncate">
+                    <i class="fa-solid fa-rotate text-emerald-500 mr-1"></i>Khép kín vòng lặp (Về lại ${escapeHtml(firstPin.title)})
+                  </p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    +${legReturnKm.toLocaleString('vi-VN')} km (Chặng ${escapeHtml(lastPin.title)} → ${escapeHtml(firstPin.title)}) • Tổng AB + BC + CA = ${totalClosedKm} km
+                  </p>
+                </div>
+                <button onclick="toggleRouteClosedLoop()" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shrink-0 active:scale-95 shadow-xs flex items-center gap-1" title="Khép kín vòng lặp để tính tổng AB + BC + CA">
+                  <i class="fa-solid fa-plus text-[9px]"></i>
+                  <span>Bật vòng lặp</span>
+                </button>
+              </div>
+            `;
+          }
         }
       }
 
@@ -10025,11 +10141,25 @@
         return;
       }
 
+      const activeRoute = getActiveRoute();
+      const isLoop = activeRoute && !!activeRoute.isClosedLoop;
+
       let rawPoints = [];
       if (Array.isArray(customRouteWaypoints) && customRouteWaypoints.length >= 2) {
         rawPoints = customRouteWaypoints.map(wp => [wp.lat, wp.lng]);
+        if (isLoop && rawPoints.length >= 2) {
+          const first = rawPoints[0];
+          const last = rawPoints[rawPoints.length - 1];
+          if (first[0] !== last[0] || first[1] !== last[1]) {
+            rawPoints.push([first[0], first[1]]);
+          }
+        }
       } else {
-        rawPoints = routePinIds.map(id => {
+        let effectivePinIds = [...routePinIds];
+        if (isLoop && effectivePinIds.length >= 2 && effectivePinIds[0] !== effectivePinIds[effectivePinIds.length - 1]) {
+          effectivePinIds.push(effectivePinIds[0]);
+        }
+        rawPoints = effectivePinIds.map(id => {
           const p = pins.find(pin => pin.id === id);
           return p ? [p.lat, p.lng] : null;
         }).filter(Boolean);
@@ -10042,7 +10172,7 @@
         return;
       }
 
-      // Chiều đi: Luôn tính từ điểm 1 đến điểm cuối N (Duy nhất 1 lượt)
+      // Toàn tuyến: Tính từ điểm 1 qua các điểm dừng, khép kín về điểm 1 nếu là vòng lặp
       const waypoints = [...rawPoints];
 
       const primaryColor = routeColor || '#6366f1';
@@ -10195,11 +10325,19 @@
 
       // If custom waypoints exist
       if (Array.isArray(route.customWaypoints) && route.customWaypoints.length >= 2) {
+        let waypoints = [...route.customWaypoints];
+        if (route.isClosedLoop && waypoints.length >= 2) {
+          const first = waypoints[0];
+          const last = waypoints[waypoints.length - 1];
+          if (first.lat !== last.lat || first.lng !== last.lng) {
+            waypoints.push(first);
+          }
+        }
         let meters = 0;
-        for (let i = 0; i < route.customWaypoints.length - 1; i++) {
+        for (let i = 0; i < waypoints.length - 1; i++) {
           meters += getHaversineDistance(
-            route.customWaypoints[i].lat, route.customWaypoints[i].lng,
-            route.customWaypoints[i + 1].lat, route.customWaypoints[i + 1].lng
+            waypoints[i].lat, waypoints[i].lng,
+            waypoints[i + 1].lat, waypoints[i + 1].lng
           );
         }
         return parseFloat((meters / 1000).toFixed(1));
@@ -10207,11 +10345,19 @@
 
       // If stops array exist (e.g. shared route)
       if (Array.isArray(route.stops) && route.stops.length >= 2) {
+        let stops = [...route.stops];
+        if (route.isClosedLoop && stops.length >= 2) {
+          const first = stops[0];
+          const last = stops[stops.length - 1];
+          if (first.id !== last.id || first.lat !== last.lat || first.lng !== last.lng) {
+            stops.push(first);
+          }
+        }
         let meters = 0;
-        for (let i = 0; i < route.stops.length - 1; i++) {
+        for (let i = 0; i < stops.length - 1; i++) {
           meters += getHaversineDistance(
-            route.stops[i].lat, route.stops[i].lng,
-            route.stops[i + 1].lat, route.stops[i + 1].lng
+            stops[i].lat, stops[i].lng,
+            stops[i + 1].lat, stops[i + 1].lng
           );
         }
         return parseFloat(((meters * 1.25) / 1000).toFixed(1));
@@ -10221,11 +10367,19 @@
       if (Array.isArray(route.pinIds) && route.pinIds.length >= 2) {
         const routePins = route.pinIds.map(id => pins.find(p => p.id === id)).filter(Boolean);
         if (routePins.length >= 2) {
+          let effectivePins = [...routePins];
+          if (route.isClosedLoop && effectivePins.length >= 2) {
+            const first = effectivePins[0];
+            const last = effectivePins[effectivePins.length - 1];
+            if (first.id !== last.id) {
+              effectivePins.push(first);
+            }
+          }
           let meters = 0;
-          for (let i = 0; i < routePins.length - 1; i++) {
+          for (let i = 0; i < effectivePins.length - 1; i++) {
             meters += getHaversineDistance(
-              routePins[i].lat, routePins[i].lng,
-              routePins[i + 1].lat, routePins[i + 1].lng
+              effectivePins[i].lat, effectivePins[i].lng,
+              effectivePins[i + 1].lat, effectivePins[i + 1].lng
             );
           }
           // Road factor approx 1.25x for realistic road curves before full OSRM fetch
