@@ -337,21 +337,21 @@
     }
 
     /* Map Zoom Responsive Scaling for Pin & Place Name Labels */
-    /* Photo thumbnail bubble attached to pin */
+    /* Photo thumbnail bubble attached to pin - High Definition & Sharp */
     .custom-marker-photo-box {
       display: none;
       position: absolute;
-      bottom: 40px;
+      bottom: 42px;
       left: 50%;
-      transform: translateX(-50%) scale(0.95);
+      transform: translateX(-50%) scale(0.96);
       transform-origin: bottom center;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       overflow: hidden;
       background-color: #0f172a;
-      border: 2px solid #ffffff;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.15);
       transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 20;
       cursor: pointer;
@@ -360,11 +360,11 @@
     .custom-marker-photo-box::after {
       content: '';
       position: absolute;
-      bottom: -4px;
+      bottom: -5px;
       left: 50%;
       transform: translateX(-50%) rotate(45deg);
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       background-color: #ffffff;
       box-shadow: 1px 1px 3px rgba(0,0,0,0.25);
       z-index: 1;
@@ -374,20 +374,24 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: auto;
+      transform: translateZ(0);
+      backface-visibility: hidden;
       transition: transform 0.3s ease;
     }
     .custom-marker-photo-badge {
       position: absolute;
       bottom: 2px;
       right: 2px;
-      width: 15px;
-      height: 15px;
+      width: 17px;
+      height: 17px;
       border-radius: 9999px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(255,255,255,0.95);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      border: 1.5px solid rgba(255,255,255,0.98);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.45);
       z-index: 2;
     }
     @keyframes popInPhoto {
@@ -401,8 +405,8 @@
       }
     }
     .custom-marker-wrapper:hover .custom-marker-photo-box {
-      transform: translateX(-50%) scale(1.25) translateY(-6px);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7);
+      transform: translateX(-50%) scale(1.3) translateY(-8px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.75), 0 0 0 2px #38bdf8;
       border-color: #38bdf8;
       z-index: 10001 !important;
     }
@@ -439,55 +443,58 @@
       max-width: 96px;
     }
 
-    /* Zoom 11 - 12 (Province View): Compact photo thumbnail */
+    /* Zoom 11 - 12 (Province View): High-detail photo thumbnail */
     .map-zoom-z11 .custom-marker-photo-box,
     .map-zoom-z12 .custom-marker-photo-box {
       display: block !important;
-      width: 44px;
-      height: 44px;
-      bottom: 38px;
-      border-radius: 10px;
+      width: 52px;
+      height: 52px;
+      bottom: 40px;
+      border-radius: 12px;
+      border-width: 2px;
       opacity: 0.98;
       animation: popInPhoto 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     /* When isolated at zoom 11 - 12 */
     .map-zoom-z11 .custom-marker-wrapper.is-isolated .custom-marker-photo-box,
     .map-zoom-z12 .custom-marker-wrapper.is-isolated .custom-marker-photo-box {
-      width: 58px;
-      height: 58px;
-      bottom: 42px;
-      border-radius: 12px;
+      width: 66px;
+      height: 66px;
+      bottom: 44px;
+      border-radius: 14px;
+      border-width: 2.5px;
     }
 
     /* Zoom 13 - 14 (District / Area View): Medium photo thumbnail */
     .map-zoom-z13 .custom-marker-photo-box,
     .map-zoom-z14 .custom-marker-photo-box {
       display: block !important;
-      width: 58px;
-      height: 58px;
-      bottom: 42px;
-      border-radius: 12px;
+      width: 68px;
+      height: 68px;
+      bottom: 44px;
+      border-radius: 14px;
+      border-width: 2.5px;
       opacity: 1;
       animation: popInPhoto 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     /* When isolated at zoom 13 - 14 */
     .map-zoom-z13 .custom-marker-wrapper.is-isolated .custom-marker-photo-box,
     .map-zoom-z14 .custom-marker-wrapper.is-isolated .custom-marker-photo-box {
-      width: 78px;
-      height: 78px;
-      bottom: 48px;
-      border-radius: 14px;
-      border-width: 2.5px;
+      width: 88px;
+      height: 88px;
+      bottom: 50px;
+      border-radius: 16px;
+      border-width: 3px;
     }
 
     /* Zoom 15 - 16 (City / Street Level): High-detail photo card */
     .map-zoom-z15 .custom-marker-photo-box,
     .map-zoom-z16 .custom-marker-photo-box {
       display: block !important;
-      width: 76px;
-      height: 76px;
-      bottom: 48px;
-      border-radius: 14px;
+      width: 88px;
+      height: 88px;
+      bottom: 50px;
+      border-radius: 16px;
       border-width: 2.5px;
       opacity: 1;
       animation: popInPhoto 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -495,10 +502,10 @@
     /* When isolated at zoom 15 - 16 */
     .map-zoom-z15 .custom-marker-wrapper.is-isolated .custom-marker-photo-box,
     .map-zoom-z16 .custom-marker-wrapper.is-isolated .custom-marker-photo-box {
-      width: 98px;
-      height: 98px;
-      bottom: 54px;
-      border-radius: 16px;
+      width: 110px;
+      height: 110px;
+      bottom: 56px;
+      border-radius: 18px;
       border-width: 3px;
     }
 
@@ -508,10 +515,10 @@
     .map-zoom-z19 .custom-marker-photo-box,
     .map-zoom-z20 .custom-marker-photo-box {
       display: block !important;
-      width: 96px;
-      height: 96px;
-      bottom: 52px;
-      border-radius: 16px;
+      width: 110px;
+      height: 110px;
+      bottom: 56px;
+      border-radius: 18px;
       border-width: 3px;
       opacity: 1;
       animation: popInPhoto 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -521,11 +528,11 @@
     .map-zoom-z18 .custom-marker-wrapper.is-isolated .custom-marker-photo-box,
     .map-zoom-z19 .custom-marker-wrapper.is-isolated .custom-marker-photo-box,
     .map-zoom-z20 .custom-marker-wrapper.is-isolated .custom-marker-photo-box {
-      width: 120px;
-      height: 120px;
-      bottom: 60px;
-      border-radius: 18px;
-      border-width: 3px;
+      width: 136px;
+      height: 136px;
+      bottom: 64px;
+      border-radius: 20px;
+      border-width: 3.5px;
     }
 
     /* Mid Zoom (Province / Regional View zoom 11 to 13) Pin sizes */
@@ -2804,12 +2811,15 @@
             </button>
             
             <!-- Speed Selector -->
-            <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2 sm:px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer">
-              <option value="1">1x</option>
-              <option value="1.5">1.5x</option>
-              <option value="2" selected>2x</option>
-              <option value="4">4x</option>
-              <option value="8">8x</option>
+            <select id="cinema-speed-select" onchange="setCinemaSpeed(this.value)" class="h-10 px-2 sm:px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 outline-none cursor-pointer" title="Chọn tốc độ chạy mô phỏng và ghi video">
+              <option value="0.5">0.5x (Chậm & Rõ)</option>
+              <option value="1">1x (Chuẩn mượt)</option>
+              <option value="1.5">1.5x (Vừa phải)</option>
+              <option value="2" selected>2x (Nhanh)</option>
+              <option value="3">3x (3x)</option>
+              <option value="4">4x (4x)</option>
+              <option value="6">6x (6x)</option>
+              <option value="8">8x (8x)</option>
             </select>
           </div>
 
@@ -3347,8 +3357,8 @@
       });
     }
 
-    // High-Efficiency Image Compression Helper
-    function compressImageDataUrl(dataUrl, maxDimension = 800, quality = 0.78) {
+    // High-Efficiency Image Compression Helper (Super Sharp HD)
+    function compressImageDataUrl(dataUrl, maxDimension = 1920, quality = 0.92) {
       return new Promise((resolve) => {
         if (!dataUrl || !dataUrl.startsWith('data:image/')) return resolve(dataUrl);
         const img = new Image();
@@ -3368,6 +3378,8 @@
           canvas.width = w;
           canvas.height = h;
           const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', quality));
         };
@@ -4745,8 +4757,8 @@
       const reader = new FileReader();
       reader.onload = async (event) => {
         const rawData = event.target.result;
-        // Pre-compress oversized camera photos (e.g. 10MB phone captures) to snappy workspace size
-        rawSelectedPhotoDataUrl = await compressImageDataUrl(rawData, 1200, 0.85);
+        // Pre-compress oversized camera photos while preserving crystal-sharp HD quality
+        rawSelectedPhotoDataUrl = await compressImageDataUrl(rawData, 2048, 0.92);
         openPhotoCropModal(rawSelectedPhotoDataUrl);
       };
       reader.readAsDataURL(file);
@@ -4905,10 +4917,10 @@
         return;
       }
 
-      // Render high-definition cropped canvas (800x800 for optimal sharpness & compact storage)
+      // Render high-definition cropped canvas (1600x1600 for optimal sharpness & crystal-clear viewing)
       const canvas = currentCropperInstance.getCroppedCanvas({
-        maxWidth: 800,
-        maxHeight: 800,
+        maxWidth: 1600,
+        maxHeight: 1600,
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high'
       });
@@ -4918,8 +4930,8 @@
         return;
       }
 
-      // High-efficiency JPEG compression (crystal-clear & lightweight, eliminates storage quotas)
-      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
+      // High-definition JPEG compression with 0.92 quality (super sharp, vibrant colors, zero blur)
+      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
       currentBase64Photo = croppedDataUrl;
 
       const previewImg = document.getElementById('photo-preview-img');
@@ -10319,20 +10331,28 @@
 
     async function preloadCinemaPinImages(pinsList) {
       if (!Array.isArray(pinsList)) return;
-      await Promise.all(pinsList.map(async (pin) => {
+      const allToLoad = [...pinsList];
+      if (Array.isArray(pins)) {
+        pins.forEach(p => {
+          if (p && !allToLoad.some(existing => existing.id === p.id)) {
+            allToLoad.push(p);
+          }
+        });
+      }
+      await Promise.all(allToLoad.map(async (pin) => {
         if (!pin) return;
         const photoUrl = pin.photo || (typeof getPhotoForPin === 'function' ? getPhotoForPin(pin) : null);
         if (photoUrl) {
-          if (!cinemaPinImageCache.has(pin.id) || !cinemaPinImageCache.has(photoUrl)) {
-            try {
-              const img = await loadImageHelper(photoUrl);
-              if (img) {
-                cinemaPinImageCache.set(pin.id, img);
-                cinemaPinImageCache.set(photoUrl, img);
-              }
-            } catch (err) {
-              console.warn('Error preloading cinema photo for pin:', pin.title, err);
+          try {
+            const img = await loadImageHelper(photoUrl);
+            if (img) {
+              cinemaPinImageCache.set(pin.id, img);
+              cinemaPinImageCache.set(String(pin.id), img);
+              cinemaPinImageCache.set(photoUrl, img);
+              if (pin.photo) cinemaPinImageCache.set(pin.photo, img);
             }
+          } catch (err) {
+            console.warn('Error preloading cinema photo for pin:', pin.title, err);
           }
         }
       }));
@@ -10880,6 +10900,14 @@
       const journeySelect = document.getElementById('cinema-journey-select');
       if (journeySelect) journeySelect.value = cinemaJourneyMode;
 
+      // Restore user's chosen speed preference
+      const savedSpeed = localStorage.getItem('gao_maps_cinema_speed');
+      if (savedSpeed) {
+        cinemaSpeed = parseFloat(savedSpeed) || 2;
+      }
+      const speedSelect = document.getElementById('cinema-speed-select');
+      if (speedSelect) speedSelect.value = cinemaSpeed.toString();
+
       cinemaProgress = 0.0;
       cinemaLastTimestamp = null;
       cinemaSmoothedHeading = null;
@@ -10900,7 +10928,7 @@
       }
 
       requestAnimationFrame(runCinemaLoop);
-      showToast(`Đang phát mô phỏng video dạng dọc (9:16): ${active.name || 'Lộ trình'}`, 'success');
+      showToast(`Đang phát mô phỏng lộ trình ${cinemaAspectRatio}: ${active.name || 'Lộ trình'} (Tốc độ ${cinemaSpeed}x)`, 'success');
     }
 
     let cinemaExportInterval = null;
@@ -10952,6 +10980,14 @@
 
     function setCinemaSpeed(val) {
       cinemaSpeed = parseFloat(val) || 2;
+      try {
+        localStorage.setItem('gao_maps_cinema_speed', cinemaSpeed.toString());
+      } catch (e) {}
+      const speedSelect = document.getElementById('cinema-speed-select');
+      if (speedSelect && speedSelect.value !== cinemaSpeed.toString()) {
+        speedSelect.value = cinemaSpeed.toString();
+      }
+      showToast(`⚡ Đã đặt tốc độ video: ${cinemaSpeed}x`, 'info');
     }
 
     function toggleCinemaPlay() {
@@ -11216,10 +11252,12 @@
         ctx.stroke();
       }
 
-      // 5. Draw Billboarded Stop Badges (Upright, High-Contrast)
+      // 5. Draw Billboarded Stop Badges (Upright, High-Contrast with Photos)
       const activePins = getCinemaSelectedPins();
+      const numPins = activePins.length;
       let closestStop = null;
-      let closestDist = 9999;
+      let closestDist = 99999;
+      let closestStopIndex = -1;
 
       activePins.forEach((pin, index) => {
         const wPt = latLngToMercatorWorld(pin.lat, pin.lng, vp.zoom);
@@ -11228,116 +11266,139 @@
         const carScr = worldToScreen(curCarWorldX, curCarWorldY);
         const distToCar = Math.hypot(pt.x - carScr.x, pt.y - carScr.y);
 
-        if (distToCar < closestDist) {
+        // Progress milestone for this pin (0.0 to 1.0)
+        const milestoneP = numPins > 1 ? (index / (numPins - 1)) : 0.5;
+        const progressDiff = Math.abs(progress - milestoneP);
+        const isApproachingOrCurrent = (distToCar < (170 * uiScale)) || (numPins > 1 && progressDiff <= (0.65 / numPins));
+
+        if (isApproachingOrCurrent && distToCar < closestDist) {
           closestDist = distToCar;
           closestStop = pin;
+          closestStopIndex = index;
         }
 
-        const isPassed = activePins.length > 1 ? ((index / (activePins.length - 1)) <= (progress + 0.05)) : false;
+        const isPassed = numPins > 1 ? (milestoneP <= (progress + 0.03)) : false;
 
-        // Only draw if inside or near canvas
-        if (pt.x >= -120 && pt.x <= w + 120 && pt.y >= 20 && pt.y <= h + 120) {
+        // Only draw on canvas if within viewport margins
+        if (pt.x >= -140 && pt.x <= w + 140 && pt.y >= 10 && pt.y <= h + 140) {
           // Glow ground pin
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, (isPassed ? 14 : 10) * uiScale, 0, Math.PI * 2);
-          ctx.fillStyle = isPassed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(99, 102, 241, 0.35)';
+          ctx.arc(pt.x, pt.y, (isPassed ? 14 : 11) * uiScale, 0, Math.PI * 2);
+          ctx.fillStyle = isPassed ? 'rgba(16, 185, 129, 0.45)' : 'rgba(99, 102, 241, 0.4)';
           ctx.fill();
 
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, (isPassed ? 9 : 7) * uiScale, 0, Math.PI * 2);
-          ctx.fillStyle = isPassed ? '#10b981' : '#6366f1';
+          ctx.arc(pt.x, pt.y, (isPassed ? 9 : 7.5) * uiScale, 0, Math.PI * 2);
+          ctx.fillStyle = isPassed ? '#10b981' : (pin.color || '#6366f1');
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2 * uiScale;
+          ctx.lineWidth = 2.2 * uiScale;
           ctx.fill();
           ctx.stroke();
 
-          const photoImg = cinemaPinImageCache.get(pin.id) || (pin.photo ? cinemaPinImageCache.get(pin.photo) : null);
+          let photoImg = cinemaPinImageCache.get(pin.id) || cinemaPinImageCache.get(String(pin.id)) || (pin.photo ? cinemaPinImageCache.get(pin.photo) : null);
+          if (!photoImg && pin.photo) {
+            // Lazy load and cache for immediate next frames
+            const lazyImg = new Image();
+            if (!pin.photo.startsWith('data:') && !pin.photo.startsWith('blob:')) {
+              lazyImg.crossOrigin = 'anonymous';
+            }
+            lazyImg.src = pin.photo;
+            lazyImg.onload = () => {
+              cinemaPinImageCache.set(pin.id, lazyImg);
+              cinemaPinImageCache.set(String(pin.id), lazyImg);
+              cinemaPinImageCache.set(pin.photo, lazyImg);
+            };
+            if (lazyImg.naturalWidth > 0) {
+              photoImg = lazyImg;
+            }
+          }
 
           if (photoImg) {
-            // Photo Billboard Marker on Map
-            const photoW = 44 * uiScale;
-            const photoH = 44 * uiScale;
+            // High-Definition Photo Billboard Marker on Map (Crisp & Enlarged)
+            const photoW = 60 * uiScale;
+            const photoH = 60 * uiScale;
             const photoX = pt.x - (photoW / 2);
-            const photoY = pt.y - photoH - (20 * uiScale);
+            const photoY = pt.y - photoH - (24 * uiScale);
 
             // Stem line down to pin ground point
             ctx.beginPath();
             ctx.moveTo(pt.x, pt.y);
             ctx.lineTo(pt.x, photoY + photoH);
             ctx.strokeStyle = isPassed ? '#10b981' : '#ffffff';
-            ctx.lineWidth = 1.8 * uiScale;
+            ctx.lineWidth = 2 * uiScale;
             ctx.stroke();
 
-            // Photo frame background and border
+            // Photo frame background and double border
             ctx.save();
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-            ctx.shadowBlur = 8 * uiScale;
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = isPassed ? '#10b981' : '#6366f1';
-            ctx.lineWidth = 2.2 * uiScale;
-            roundRect(ctx, photoX, photoY, photoW, photoH, 8 * uiScale, true, true);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+            ctx.shadowBlur = 10 * uiScale;
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = isPassed ? '#10b981' : (pin.color || '#38bdf8');
+            ctx.lineWidth = 2.5 * uiScale;
+            roundRect(ctx, photoX, photoY, photoW, photoH, 10 * uiScale, true, true);
             ctx.restore();
 
             // Draw cropped square image
             ctx.save();
+            ctx.imageSmoothingQuality = 'high';
             ctx.beginPath();
-            roundRect(ctx, photoX + (2 * uiScale), photoY + (2 * uiScale), photoW - (4 * uiScale), photoH - (4 * uiScale), 6 * uiScale, false, false);
+            roundRect(ctx, photoX + (2 * uiScale), photoY + (2 * uiScale), photoW - (4 * uiScale), photoH - (4 * uiScale), 8 * uiScale, false, false);
             ctx.clip();
             ctx.drawImage(photoImg, photoX + (2 * uiScale), photoY + (2 * uiScale), photoW - (4 * uiScale), photoH - (4 * uiScale));
             ctx.restore();
 
             // Badge number on top-left of photo
-            const badgeW = 16 * uiScale;
+            const badgeW = 18 * uiScale;
             const badgeX = photoX - (4 * uiScale);
             const badgeY = photoY - (4 * uiScale);
             ctx.beginPath();
             ctx.arc(badgeX + (badgeW / 2), badgeY + (badgeW / 2), badgeW / 2, 0, Math.PI * 2);
-            ctx.fillStyle = isPassed ? '#10b981' : '#6366f1';
+            ctx.fillStyle = isPassed ? '#10b981' : (pin.color || '#6366f1');
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5 * uiScale;
+            ctx.lineWidth = 1.8 * uiScale;
             ctx.fill();
             ctx.stroke();
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${index + 1}`, badgeX + (badgeW / 2), badgeY + (badgeW / 2));
 
             // Title Pill below photo
             const labelText = pin.title;
-            ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = Math.min(textMetrics.width + (14 * uiScale), 150 * uiScale);
-            const pillH = 18 * uiScale;
+            const pillW = Math.min(textMetrics.width + (16 * uiScale), 160 * uiScale);
+            const pillH = 20 * uiScale;
             const pillX = pt.x - (pillW / 2);
             const pillY = photoY + photoH + (3 * uiScale);
 
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.85)' : 'rgba(99, 102, 241, 0.85)';
-            ctx.lineWidth = 1 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 5 * uiScale, true, true);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : 'rgba(56, 189, 248, 0.9)';
+            ctx.lineWidth = 1.2 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 6 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             let dispText = labelText;
-            if (dispText.length > 16) dispText = dispText.substring(0, 14) + '..';
+            if (dispText.length > 18) dispText = dispText.substring(0, 16) + '..';
             ctx.fillText(dispText, pt.x, pillY + (pillH / 2));
           } else {
-            // Standard Upright Billboard Label Pill
+            // Standard Upright Billboard Label Pill (no photo)
             const labelText = `${index + 1}. ${pin.title}`;
             ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
             const textMetrics = ctx.measureText(labelText);
-            const pillW = textMetrics.width + (18 * uiScale);
-            const pillH = 24 * uiScale;
+            const pillW = textMetrics.width + (20 * uiScale);
+            const pillH = 26 * uiScale;
             const pillX = pt.x - (pillW / 2);
-            const pillY = pt.y - (36 * uiScale);
+            const pillY = pt.y - (38 * uiScale);
 
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.85)' : 'rgba(99, 102, 241, 0.85)';
-            ctx.lineWidth = 1.2 * uiScale;
-            roundRect(ctx, pillX, pillY, pillW, pillH, 6 * uiScale, true, true);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+            ctx.strokeStyle = isPassed ? 'rgba(16, 185, 129, 0.9)' : (pin.color || 'rgba(99, 102, 241, 0.9)');
+            ctx.lineWidth = 1.4 * uiScale;
+            roundRect(ctx, pillX, pillY, pillW, pillH, 7 * uiScale, true, true);
 
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
@@ -11347,106 +11408,121 @@
         }
       });
 
-      // Render Stop Arrival Card directly on Canvas (Recorded in video export)
-      const triggerThreshold = 85 * uiScale;
-      if (closestDist < triggerThreshold && closestStop) {
-        const stopIdx = activePins.findIndex(p => p.id === closestStop.id);
-        const stopPhotoImg = cinemaPinImageCache.get(closestStop.id) || (closestStop.photo ? cinemaPinImageCache.get(closestStop.photo) : null);
+      // Render Stop Arrival Card directly on Canvas (High-Definition, recorded in video)
+      if (closestStop) {
+        const stopIdx = closestStopIndex >= 0 ? closestStopIndex : activePins.findIndex(p => p.id === closestStop.id);
+        let stopPhotoImg = cinemaPinImageCache.get(closestStop.id) || cinemaPinImageCache.get(String(closestStop.id)) || (closestStop.photo ? cinemaPinImageCache.get(closestStop.photo) : null);
         const catConfig = CATEGORIES[closestStop.category] || CATEGORIES.sightseeing;
 
-        // Position: Sleek floating card below Top HUD
+        // Sleek floating Stop Showcase Card below Top HUD
         const isPortrait = h > w;
-        const cardW = isPortrait ? (w - 40 * uiScale) : Math.min(390 * uiScale, w * 0.42);
-        const cardH = 86 * uiScale;
-        const cardX = 20 * uiScale;
-        const cardY = 104 * uiScale;
+        const cardW = isPortrait ? (w - (36 * uiScale)) : Math.min(420 * uiScale, w * 0.44);
+        const cardH = 92 * uiScale;
+        const cardX = 18 * uiScale;
+        const cardY = 100 * uiScale;
 
         // Card background
         ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-        ctx.shadowBlur = 12 * uiScale;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-        ctx.lineWidth = 1.5 * uiScale;
-        roundRect(ctx, cardX, cardY, cardW, cardH, 14 * uiScale, true, true);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = 14 * uiScale;
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.96)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+        ctx.lineWidth = 1.6 * uiScale;
+        roundRect(ctx, cardX, cardY, cardW, cardH, 16 * uiScale, true, true);
         ctx.restore();
 
         let textStartX = cardX + (16 * uiScale);
 
-        if (stopPhotoImg) {
-          // Thumbnail photo
-          const imgSize = cardH - (18 * uiScale);
-          const imgX = cardX + (9 * uiScale);
-          const imgY = cardY + (9 * uiScale);
+        if (stopPhotoImg || closestStop.photo) {
+          if (!stopPhotoImg && closestStop.photo) {
+            const tempImg = new Image();
+            tempImg.src = closestStop.photo;
+            if (tempImg.naturalWidth > 0) stopPhotoImg = tempImg;
+          }
 
-          ctx.save();
-          roundRect(ctx, imgX, imgY, imgSize, imgSize, 9 * uiScale, false, false);
-          ctx.clip();
-          ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
-          ctx.restore();
+          if (stopPhotoImg) {
+            // Large HD Thumbnail photo
+            const imgSize = cardH - (16 * uiScale);
+            const imgX = cardX + (8 * uiScale);
+            const imgY = cardY + (8 * uiScale);
 
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-          ctx.lineWidth = 1.5 * uiScale;
-          roundRect(ctx, imgX, imgY, imgSize, imgSize, 9 * uiScale, false, true);
+            ctx.save();
+            ctx.imageSmoothingQuality = 'high';
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, false);
+            ctx.clip();
+            ctx.drawImage(stopPhotoImg, imgX, imgY, imgSize, imgSize);
+            ctx.restore();
 
-          textStartX = imgX + imgSize + (14 * uiScale);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8 * uiScale;
+            roundRect(ctx, imgX, imgY, imgSize, imgSize, 10 * uiScale, false, true);
+
+            textStartX = imgX + imgSize + (14 * uiScale);
+          }
         }
 
         const availTextW = cardX + cardW - textStartX - (14 * uiScale);
 
-        // Line 1: Stop Number & Category
+        // Line 1: Stop Number & Category & Rating
         ctx.fillStyle = '#38bdf8';
         ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx >= 0 ? stopIdx + 1 : 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (12 * uiScale));
+        ctx.fillText(`📍 ĐIỂM DỪNG #${stopIdx + 1} • ${catConfig.name.toUpperCase()}`, textStartX, cardY + (12 * uiScale));
 
-        // Line 2: Stop Title
+        // Line 2: Stop Title (High contrast crisp white)
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
-        let dispTitle = closestStop.title || 'Điểm đến';
+        ctx.font = `bold ${Math.round(14.5 * uiScale)}px sans-serif`;
+        let dispTitle = closestStop.title || `Điểm #${stopIdx + 1}`;
         if (ctx.measureText(dispTitle).width > availTextW) {
           while (dispTitle.length > 3 && ctx.measureText(dispTitle + '..').width > availTextW) {
             dispTitle = dispTitle.substring(0, dispTitle.length - 1);
           }
           dispTitle += '..';
         }
-        ctx.fillText(dispTitle, textStartX, cardY + (32 * uiScale));
+        ctx.fillText(dispTitle, textStartX, cardY + (33 * uiScale));
 
-        // Line 3: Location / Notes
+        // Line 3: Location / Notes / Rating
         ctx.fillStyle = '#94a3b8';
         ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
         let dispSub = closestStop.notes || closestStop.locationName || 'Điểm check-in trên lộ trình';
+        if (closestStop.rating) {
+          dispSub = `⭐ ${closestStop.rating}/5 • ` + dispSub;
+        }
         if (ctx.measureText(dispSub).width > availTextW) {
           while (dispSub.length > 3 && ctx.measureText(dispSub + '..').width > availTextW) {
             dispSub = dispSub.substring(0, dispSub.length - 1);
           }
           dispSub += '..';
         }
-        ctx.fillText(dispSub, textStartX, cardY + (56 * uiScale));
+        ctx.fillText(dispSub, textStartX, cardY + (58 * uiScale));
 
-        // Also update the UI DOM popup for preview
+        // Also update the UI DOM popup for live preview
         const popupEl = document.getElementById('cinema-stop-popup');
         if (popupEl) {
           popupEl.classList.remove('hidden');
-          document.getElementById('cinema-popup-num').textContent = `${stopIdx >= 0 ? stopIdx + 1 : 1}`;
-          document.getElementById('cinema-popup-title').textContent = closestStop.title;
-          document.getElementById('cinema-popup-cat').textContent = catConfig.name;
-          document.getElementById('cinema-popup-notes').textContent = closestStop.notes || 'Điểm check-in trong lộ trình Gạo Maps';
+          const popNum = document.getElementById('cinema-popup-num');
+          if (popNum) popNum.textContent = `${stopIdx + 1}`;
+          const popTitle = document.getElementById('cinema-popup-title');
+          if (popTitle) popTitle.textContent = closestStop.title || `Điểm #${stopIdx + 1}`;
+          const popCat = document.getElementById('cinema-popup-cat');
+          if (popCat) popCat.textContent = catConfig.name;
+          const popNotes = document.getElementById('cinema-popup-notes');
+          if (popNotes) popNotes.textContent = closestStop.notes || closestStop.locationName || 'Điểm check-in trong lộ trình Gạo Maps';
 
           const imgWrap = document.getElementById('cinema-popup-img-wrap');
           const imgEl = document.getElementById('cinema-popup-img');
-          const stopPhoto = getPhotoForPin(closestStop);
-          if (stopPhoto) {
+          const stopPhoto = closestStop.photo || (typeof getPhotoForPin === 'function' ? getPhotoForPin(closestStop) : null);
+          if (stopPhoto && imgWrap && imgEl) {
             imgEl.src = stopPhoto;
             imgWrap.classList.remove('hidden');
-          } else {
+          } else if (imgWrap) {
             imgWrap.classList.add('hidden');
           }
         }
       } else {
         const popupEl = document.getElementById('cinema-stop-popup');
-        if (popupEl && closestDist > (triggerThreshold * 1.5)) {
+        if (popupEl) {
           popupEl.classList.add('hidden');
         }
       }
@@ -12288,14 +12364,20 @@
       if (recBadge) recBadge.classList.remove('hidden');
       if (btnText) btnText.textContent = 'Đang ghi video 30 FPS...';
 
-      // Restart cinema simulation from beginning at smooth recording speed (1.5x)
+      // Restart cinema simulation from beginning with user's selected speed
       cinemaProgress = 0.0;
       cinemaLastTimestamp = null;
       cinemaSmoothedHeading = null;
       isCinemaPlaying = true;
-      setCinemaSpeed(1.5);
+
+      // Keep user's chosen speed from select input or active state
       const speedSelect = document.getElementById('cinema-speed-select');
-      if (speedSelect) speedSelect.value = '1.5';
+      const chosenSpeed = speedSelect ? (parseFloat(speedSelect.value) || cinemaSpeed || 2) : (cinemaSpeed || 2);
+      cinemaSpeed = chosenSpeed;
+      if (speedSelect && speedSelect.value !== chosenSpeed.toString()) {
+        speedSelect.value = chosenSpeed.toString();
+      }
+
       requestAnimationFrame(runCinemaLoop);
 
       // Auto-stop recording when progress finishes
